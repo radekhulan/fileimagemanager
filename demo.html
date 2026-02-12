@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>File Image Manager - Standalone</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #1a1a1a; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .container { text-align: center; }
+        h1 { color: #e0e0e0; font-size: 1.3rem; margin-bottom: 20px; font-weight: 500; }
+        #open-btn { padding: 12px 32px; background: #2563eb; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 500; transition: background 0.15s; }
+        #open-btn:hover { background: #1d4ed8; }
+        #result { margin-top: 20px; color: #a0a0a0; font-size: 13px; word-break: break-all; max-width: 600px; }
+        #result a { color: #60a5fa; text-decoration: none; }
+        #result a:hover { text-decoration: underline; }
+        #preview { margin-top: 16px; max-width: 400px; max-height: 300px; border-radius: 8px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>File Image Manager - Standalone</h1>
+    <button id="open-btn">Open File Manager</button>
+    <div id="result"></div>
+    <img id="preview" alt="">
+</div>
+
+<script>
+document.getElementById('open-btn').addEventListener('click', () => {
+    const w = 1200;
+    const h = 900;
+    const left = Math.round((screen.width - w) / 2);
+    const top = Math.round((screen.height - h) / 2);
+
+    const popup = window.open(
+        '/public/?popup=1&crossdomain=0',
+        'rfm_standalone',
+        `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
+
+    function handler(e) {
+        if (e.data?.sender === 'fileimagemanager') {
+            window.removeEventListener('message', handler);
+            const url = e.data.url;
+
+            document.getElementById('result').innerHTML = 'Selected: <a href="' + url + '" target="_blank">' + url + '</a>';
+
+            // Show preview if it's an image
+            const ext = url.split('.').pop().toLowerCase();
+            const imgEl = document.getElementById('preview');
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)) {
+                imgEl.src = url;
+                imgEl.style.display = 'block';
+            } else {
+                imgEl.style.display = 'none';
+            }
+
+            popup?.close();
+        }
+    }
+    window.addEventListener('message', handler);
+
+    const check = setInterval(() => {
+        if (popup?.closed) {
+            clearInterval(check);
+            window.removeEventListener('message', handler);
+        }
+    }, 500);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-rfm-primary: #3b82f6;
+  --color-rfm-primary-hover: #2563eb;
+  --color-rfm-danger: #ef4444;
+  --color-rfm-danger-hover: #dc2626;
+  --color-rfm-success: #10b981;
+  --color-rfm-warning: #f59e0b;
+  --color-rfm-surface-light: #ffffff;
+  --color-rfm-surface-dark: #1a1a1a;
+  --color-rfm-toolbar-light: #f3f4f6;
+  --color-rfm-toolbar-dark: #262626;
+  --color-rfm-border-light: #e5e7eb;
+  --color-rfm-border-dark: #404040;
+}
+
+/* Smooth transitions for dark mode */
+html {
+  transition: color-scheme 0.2s;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+/* File item hover effect */
+.file-item-hover {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.file-item-hover:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dark .file-item-hover:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Drop zone active state */
+.drop-zone-active {
+  border-color: var(--color-rfm-primary);
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.dark .drop-zone-active {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Context menu animation */
+.context-menu-enter-active {
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+
+.context-menu-leave-active {
+  transition: opacity 0.08s ease;
+}
+
+.context-menu-enter-from {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.context-menu-leave-to {
+  opacity: 0;
+}
+
+/* Loading spinner */
+@keyframes rfm-spin {
+  to { transform: rotate(360deg); }
+}
+
+.rfm-spinner {
+  animation: rfm-spin 0.8s linear infinite;
+}
