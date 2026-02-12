@@ -22,6 +22,9 @@ media/thumbs/
 *.log
 npm-debug.log*
 
+# Claude Code
+.claude/
+
 # IDE
 .idea/
 .vscode/
