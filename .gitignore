@@ -40,5 +40,8 @@ desktop.ini
 # Local config override
 config/filemanager.local.php
 
+# PHPUnit
+.phpunit.cache/
+
 # Misc local files
 cookies.txt
