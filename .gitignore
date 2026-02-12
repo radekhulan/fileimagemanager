@@ -7,8 +7,12 @@ public/assets/
 dist/
 .vite/
 
-# User uploads
-media/
+# User uploads (keep screenshots tracked)
+media/source/*
+media/thumbs/
+!media/source/Theme-Dark.webp
+!media/source/Theme-Light.webp
+!media/source/ImageEditor.webp
 
 # Environment
 .env
