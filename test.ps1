@@ -29,6 +29,13 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 Set-Location $ScriptDir
 
+# Resolve directory junctions to real path (Vitest 4 requires consistent paths).
+# PowerShell's Get-Item().Target is unreliable for junctions, so use Node.js.
+$realDir = node -e "process.stdout.write(require('fs').realpathSync(process.cwd()))"
+if ($realDir -and $realDir -ne (Get-Location).Path) {
+    Set-Location $realDir
+}
+
 # Colors
 function Write-Title($msg) {
     Write-Host "`n$msg" -ForegroundColor Cyan
