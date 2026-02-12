@@ -15,6 +15,7 @@ export const useConfigStore = defineStore('config', () => {
   const fieldId = ref<string | null>(null)
   const isCrossDomain = ref(false)
   const editorType = ref<string | null>(null) // 'tinymce', 'ckeditor', null
+  const forceTypeFilter = ref<string | null>(null) // from &type=image URL param
 
   const isReady = computed(() => initialized.value && config.value !== null)
   const isEditorMode = computed(() => !!editorType.value)
@@ -42,6 +43,7 @@ export const useConfigStore = defineStore('config', () => {
     fieldId.value = params.get('field_id')
     isCrossDomain.value = params.get('crossdomain') === '1'
     editorType.value = params.get('editor')
+    forceTypeFilter.value = params.get('type')
 
     const akey = params.get('akey') || undefined
     const response = await configApi.initSession(akey)
@@ -76,7 +78,7 @@ export const useConfigStore = defineStore('config', () => {
 
   return {
     config, translations, language, csrfToken, initialized, isReady,
-    isPopup, callback, fieldId, isCrossDomain, editorType,
+    isPopup, callback, fieldId, isCrossDomain, editorType, forceTypeFilter,
     isEditorMode, isPopupMode, isDark, editorParams,
     initialize, t, changeLanguage, getFileUrl,
   }

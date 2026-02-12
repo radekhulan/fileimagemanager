@@ -57,11 +57,12 @@
       return '/public/';
     }
 
-    function openManager(callback) {
+    function openManager(callback, filetype) {
       var base = getBaseUrl();
       var crossdomain = editor.options.get('fileimagemanager_crossdomain') ? '1' : '0';
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       var url = base + sep + 'editor=tinymce&popup=1&crossdomain=' + crossdomain;
+      if (filetype) url += '&type=' + filetype;
       var title = editor.options.get('fileimagemanager_title') || 'File Image Manager';
 
       var width = window.innerWidth - 20;
@@ -117,7 +118,7 @@
     editor.options.set('file_picker_callback', function (cb, _value, _meta) {
       openManager(function (url) {
         cb(url, { alt: '' });
-      });
+      }, _meta && _meta.filetype);
     });
 
     // Toolbar button

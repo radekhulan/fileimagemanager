@@ -46,6 +46,14 @@ onMounted(async () => {
     ui.initDarkMode(configStore.config.darkMode)
     ui.viewMode = configStore.config.defaultView as 0 | 1 | 2
   }
+  // Auto-set type filter from URL param (e.g., TinyMCE image dialog passes &type=image)
+  if (configStore.forceTypeFilter) {
+    const typeMap: Record<string, string> = { image: 'image', media: 'video' }
+    const mapped = typeMap[configStore.forceTypeFilter]
+    if (mapped) {
+      fileStore.typeFilter = mapped as any
+    }
+  }
   const lastPath = fileStore.getLastPath()
   await fileStore.loadDirectory(lastPath)
 })

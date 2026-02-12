@@ -254,21 +254,46 @@ const config = computed(() => configStore.config)
           </button>
         </div>
 
-        <!-- Type filter buttons -->
+        <!-- Type filter buttons (hidden when type is forced via URL param, e.g. TinyMCE image dialog) -->
         <div
-          v-if="config?.showFilterButtons"
+          v-if="config?.showFilterButtons && !configStore.forceTypeFilter"
           class="inline-flex flex-wrap items-center gap-1"
         >
           <button
             v-for="filter in filterOptions"
             :key="filter.value"
-            class="rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+            class="inline-flex items-center gap-1 rounded-full px-1.5 xl:px-2.5 py-1 text-xs font-medium transition-colors"
             :class="fileStore.typeFilter === filter.value
               ? 'bg-rfm-primary text-white'
               : 'bg-gray-200 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-neutral-600'"
+            :title="t(filter.labelKey)"
             @click="fileStore.changeTypeFilter(filter.value)"
           >
-            {{ t(filter.labelKey) }}
+            <!-- All -->
+            <svg v-if="filter.value === 'all'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+            </svg>
+            <!-- Files -->
+            <svg v-else-if="filter.value === 'file'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+            </svg>
+            <!-- Images -->
+            <svg v-else-if="filter.value === 'image'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><polyline points="21 15 16 10 5 21" />
+            </svg>
+            <!-- Archives -->
+            <svg v-else-if="filter.value === 'archive'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
+            <!-- Video -->
+            <svg v-else-if="filter.value === 'video'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" />
+            </svg>
+            <!-- Audio -->
+            <svg v-else-if="filter.value === 'audio'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+            </svg>
+            <span class="hidden xl:inline">{{ t(filter.labelKey) }}</span>
           </button>
         </div>
       </div>
