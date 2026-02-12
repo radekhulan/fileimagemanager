@@ -37,7 +37,7 @@ const config = configStore.config
 
       <!-- Hover action bar -->
       <div
-        class="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 px-1.5 py-1.5
+        class="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-0.5 px-1 py-1
                bg-gradient-to-t from-black/60 via-black/40 to-transparent
                opacity-0 group-hover/card:opacity-100 transition-opacity duration-150"
         @click.stop
@@ -69,7 +69,7 @@ const config = configStore.config
     </div>
 
     <!-- Folder name -->
-    <div class="px-2.5 py-2 min-w-0">
+    <div class="px-2 py-1.5 min-w-0">
       <p
         class="text-xs font-medium text-gray-800 dark:text-gray-200 truncate leading-tight"
         :title="props.item.name"
@@ -86,8 +86,11 @@ const config = configStore.config
 <style scoped>
 @reference "tailwindcss";
 .rfm-action-btn {
-  @apply flex items-center justify-center w-7 h-7 rounded-md
+  @apply flex items-center justify-center w-6 h-6 rounded
          text-white/90 hover:text-white hover:bg-white/20
          transition-colors duration-100 cursor-pointer;
+}
+.rfm-action-btn svg {
+  @apply w-3.5 h-3.5;
 }
 </style>

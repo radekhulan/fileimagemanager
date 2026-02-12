@@ -453,6 +453,36 @@ html.dark .fie-dark ::-webkit-scrollbar-track {
   background: #242438 !important;
 }
 
+/* ── Top bar: 10% bigger ──────────────────────────────── */
+[class*="FIE_topbar-buttons-wrapper"] {
+  padding: 10px 14px !important;
+}
+
+[class*="FIE_topbar-buttons-wrapper"] button {
+  font-size: 15px !important;
+  padding: 7px 16px !important;
+}
+
+[class*="FIE_topbar-buttons-wrapper"] button svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+[class*="FIE_tabs"] {
+  padding: 5px 0 !important;
+}
+
+[class*="FIE_tab"] {
+  font-size: 13px !important;
+  padding: 10px 16px !important;
+}
+
+[class*="FIE_tab"] svg,
+[class*="FIE_tab"] [class*="Icon"] {
+  width: 19px !important;
+  height: 19px !important;
+}
+
 /* ── Save button icon (floppy disk) ────────────────────── */
 .FIE_buttons-save-btn-button [class*="SfxButton-Label"]::before {
   content: '';
