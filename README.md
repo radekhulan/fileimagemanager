@@ -13,9 +13,6 @@ with the amazing assistance of [Claude Code](https://claude.ai/claude-code).
 ### Light Theme
 ![Light Theme](media/source/Theme-Light.webp)
 
-### Image Editor
-![Image Editor](media/source/ImageEditor.webp)
-
 > [!CAUTION]
 > **The file manager does NOT include built-in authentication.** Without protection, anyone with the URL can upload, delete, and modify files on your server. You **must** secure it before deploying to production. See [Security](#security) below.
 
@@ -642,6 +639,10 @@ The script runs the full frontend build, installs production-only Composer depen
 | Backend | PHP 8.5, GD library |
 | Storage | Filesystem only (no database) |
 
+### Image Editor
+![Image Editor](media/source/ImageEditor.webp)
+
 ## License
 
 [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) - Public Domain
+
