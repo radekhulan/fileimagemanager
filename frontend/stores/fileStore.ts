@@ -34,7 +34,12 @@ export const useFileStore = defineStore('files', () => {
   const clipboard = ref<ClipboardState>({ hasItems: false, action: null })
 
   // Computed
-  const folders = computed(() => items.value.filter(i => i.isDir))
+  const folders = computed(() => {
+    if (typeFilter.value !== 'all') {
+      return []
+    }
+    return items.value.filter(i => i.isDir)
+  })
   const files = computed(() => items.value.filter(i => !i.isDir))
   const hasSelection = computed(() => selectedItems.value.size > 0)
   const selectionCount = computed(() => selectedItems.value.size)
