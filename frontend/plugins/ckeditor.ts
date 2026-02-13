@@ -37,6 +37,18 @@ export function createRfmBrowseAdapter(options: RfmBrowseOptions = {}) {
     height = 600,
   } = options
 
+  // Derive expected origin from the file manager URL
+  let expectedOrigin: string
+  try {
+    expectedOrigin = new URL(filemanagerUrl, window.location.origin).origin
+  } catch {
+    expectedOrigin = window.location.origin
+  }
+
+  function isValidOrigin(eventOrigin: string): boolean {
+    return eventOrigin === window.location.origin || eventOrigin === expectedOrigin
+  }
+
   function buildUrl(): string {
     const params = new URLSearchParams({
       editor: 'ckeditor',
@@ -61,7 +73,7 @@ export function createRfmBrowseAdapter(options: RfmBrowseOptions = {}) {
 
     // Listen for postMessage from the file manager
     const handler = (event: MessageEvent) => {
-      if (event.data?.sender === 'fileimagemanager') {
+      if (event.data?.sender === 'fileimagemanager' && isValidOrigin(event.origin)) {
         window.removeEventListener('message', handler)
         callback(event.data.url)
         popup?.close()

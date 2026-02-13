@@ -352,8 +352,36 @@ final class OperationController
             return false;
         }
 
+        $realDest = realpath($destDir);
+        if ($realDest === false) {
+            $zip->close();
+            return false;
+        }
+
+        // Validate all entry paths before extracting (Zip Slip prevention)
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $entryName = $zip->getNameIndex($i);
+            if ($entryName === false) {
+                continue;
+            }
+            if (str_contains($entryName, '..')) {
+                $zip->close();
+                return false;
+            }
+            $targetPath = $realDest . DIRECTORY_SEPARATOR . $entryName;
+            $normalizedTarget = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $targetPath);
+            if (!str_starts_with($normalizedTarget, $realDest . DIRECTORY_SEPARATOR) && $normalizedTarget !== $realDest) {
+                $zip->close();
+                return false;
+            }
+        }
+
         $result = $zip->extractTo($destDir);
         $zip->close();
+
+        if ($result) {
+            $this->removeBlacklistedFiles($destDir);
+        }
 
         return $result;
     }
@@ -366,10 +394,52 @@ final class OperationController
 
         try {
             $phar = new \PharData($file);
+
+            $realDest = realpath($destDir);
+            if ($realDest === false) {
+                return false;
+            }
+
+            // Validate all entry paths before extracting (Zip Slip prevention)
+            foreach (new \RecursiveIteratorIterator($phar) as $entry) {
+                /** @var \PharFileInfo $entry */
+                $entryPath = $entry->getPathname();
+                // PharData entries use phar:// prefix — extract relative path
+                $relativePath = preg_replace('#^phar://.+\.(?:tar|gz|bz2)/(.+)$#', '$1', $entryPath);
+                if ($relativePath !== null && str_contains($relativePath, '..')) {
+                    return false;
+                }
+            }
+
             $phar->extractTo($destDir, null, true);
+
+            $this->removeBlacklistedFiles($destDir);
+
             return true;
         } catch (\Throwable) {
             return false;
+        }
+    }
+
+    /**
+     * Remove files with blacklisted extensions from an extracted directory.
+     */
+    private function removeBlacklistedFiles(string $dir): void
+    {
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST,
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $ext = mb_strtolower(pathinfo($file->getFilename(), PATHINFO_EXTENSION));
+                try {
+                    $this->security->validateExtension($ext);
+                } catch (\RFM\Exception\InvalidExtensionException) {
+                    @unlink($file->getPathname());
+                }
+            }
         }
     }
 }

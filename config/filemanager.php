@@ -3,8 +3,9 @@
 /**
  * File Image Manager v1.0.0 Configuration
  *
- * Per-folder overrides: create a .config file in any subfolder
+ * Per-folder overrides: create a .rfm.config.json file in any subfolder
  * to override settings for that folder and its children.
+ * Security-critical settings (ext_blacklist, access_keys, paths) cannot be overridden.
  */
 
 $config = [
@@ -21,7 +22,7 @@ $config = [
     | thumbs_base_path    - Absolute filesystem path to the thumbnails directory.
     |
     */
-    'base_url' => ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost'),
+    'base_url' => ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . preg_replace('/[^\w.\-:]/', '', $_SERVER['HTTP_HOST'] ?? 'localhost'),
     'upload_dir' => '/media/source/',
     'thumbs_upload_dir' => '/media/thumbs/',
     'current_path' => dirname(__DIR__) . '/media/source/',
@@ -210,9 +211,9 @@ $config = [
     'copy_cut_dirs' => true,
     'chmod_files' => false,
     'chmod_dirs' => false,
-    'preview_text_files' => false,
-    'edit_text_files' => false,
-    'create_text_files' => false,
+    'preview_text_files' => true,
+    'edit_text_files' => true,
+    'create_text_files' => true,
     'download_files' => true,
     'url_upload' => true,
 
@@ -282,8 +283,8 @@ $config = [
     | ext_misc  - Archives and other files.
     |
     */
-    'ext_img' => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'ico', 'webp'],
-    'ext_file' => ['doc', 'docx', 'xls', 'xlsx', 'pdf'],
+    'ext_img' => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'webp'],
+    'ext_file' => ['doc', 'docx', 'xls', 'xlsx', 'pdf', 'txt', 'log', 'xml', 'css', 'csv', 'json'],
     'ext_video' => ['mov', 'mpeg', 'm4v', 'mp4', 'avi', 'mpg', 'wma', 'flv', 'webm'],
     'ext_music' => ['mp3', 'mpga', 'm4a', 'ac3', 'aiff', 'mid', 'ogg', 'wav'],
     'ext_misc' => ['zip', 'rar', 'gz', 'tar'],
@@ -308,6 +309,7 @@ $config = [
         'jsp', 'jspx', 'cfm', 'cfc', 'shtml',
         'htaccess', 'htpasswd', 'ini', 'config', 'env',
         'rb', 'erb', 'go', 'rs', 'java', 'class', 'war', 'jar',
+        'html', 'htm', 'xhtml', 'svg',
     ],
 
     /*
@@ -321,7 +323,7 @@ $config = [
     |
     */
     'hidden_folders' => [],
-    'hidden_files' => ['config.php'],
+    'hidden_files' => ['config.php', '.rfm.config.json'],
 
     /*
     |--------------------------------------------------------------------------
@@ -439,6 +441,19 @@ $config = [
     |
     */
     'debug_error_message' => false,
+
+    /*
+    |--------------------------------------------------------------------------
+    | CORS allowed origins
+    |--------------------------------------------------------------------------
+    |
+    | cors_allowed_origins - Array of origins (e.g. 'https://example.com')
+    |                        allowed to make cross-origin requests.
+    |                        Same-origin requests are always allowed.
+    |                        Leave empty to disallow all cross-origin requests.
+    |
+    */
+    'cors_allowed_origins' => [],
 ];
 
 // Merge all extension arrays into 'ext'

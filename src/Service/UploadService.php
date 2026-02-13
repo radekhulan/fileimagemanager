@@ -69,6 +69,13 @@ final class UploadService
             throw new UploadException('Invalid URL format');
         }
 
+        // Block private/reserved IP ranges (SSRF prevention)
+        $host = parse_url($url, PHP_URL_HOST);
+        if ($host === null || $host === false || $host === '') {
+            throw new UploadException('Invalid URL host');
+        }
+        $this->validateUrlHost($host);
+
         $targetPath = $this->config->currentPath . $targetDir;
         $this->security->validatePath($targetPath);
 
@@ -93,13 +100,23 @@ final class UploadService
             throw new UploadException('Failed to open temporary file');
         }
 
+        $maxBytes = $this->config->maxSizeUpload * 1024 * 1024;
+
         curl_setopt_array($ch, [
             CURLOPT_FILE => $fp,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_FOLLOWLOCATION => false,
             CURLOPT_TIMEOUT => 120,
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_USERAGENT => 'FileImageManager/1.0.0',
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_NOPROGRESS => false,
+            CURLOPT_PROGRESSFUNCTION => function ($ch, $dlTotal, $dlNow) use ($maxBytes, $tempFile) {
+                // Abort download if it exceeds max upload size
+                if ($dlNow > $maxBytes) {
+                    return 1; // non-zero aborts the transfer
+                }
+                return 0;
+            },
         ]);
 
         $success = curl_exec($ch);
@@ -127,10 +144,12 @@ final class UploadService
             }
         }
 
-        // Validate extension
-        if ($ext !== '') {
-            $this->security->validateExtension($ext);
+        // Validate extension (reject files without extension)
+        if ($ext === '') {
+            @unlink($tempFile);
+            throw new UploadException('Cannot determine file type — file has no extension');
         }
+        $this->security->validateExtension($ext);
 
         // Check file size
         $fileSize = filesize($tempFile);
@@ -365,6 +384,23 @@ final class UploadService
         }
 
         return $size;
+    }
+
+    /**
+     * Block requests to private/reserved IP ranges (SSRF prevention).
+     */
+    private function validateUrlHost(string $host): void
+    {
+        // Resolve hostname to IP
+        $ip = gethostbyname($host);
+        if ($ip === $host && !filter_var($host, FILTER_VALIDATE_IP)) {
+            throw new UploadException('Cannot resolve hostname');
+        }
+
+        // Block private and reserved IP ranges
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            throw new UploadException('URLs pointing to private or reserved IP ranges are not allowed');
+        }
     }
 
     private function getUploadErrorMessage(int $error): string

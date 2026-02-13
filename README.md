@@ -7,6 +7,67 @@ with the amazing assistance of [Claude Code](https://claude.ai/claude-code).
 
 **[Quick Start (Deploy)](#quick-start)** | **[What to Deploy](#what-to-deploy)** | **[Security](#security)** | **[Configuration](#configuration)** | **[Editor Integration](#editor-integration)**
 
+---
+
+## Features
+
+### Browsing & Navigation
+- **Three view modes** — Grid (thumbnails), List (detailed rows), and Columns
+- **Breadcrumb navigation** with one-click access to any parent folder
+- **Sort** by name, date, or size (ascending / descending)
+- **Real-time search** with instant filtering as you type
+- **Type filters** — show only images, videos, audio, documents, or archives
+- **Remembers last folder** across sessions
+
+### File Operations
+- **Upload** files via drag & drop, file picker, or paste from URL
+- Upload queue with per-file progress bars and batch controls
+- **Create, rename, delete** files and folders (single or bulk)
+- **Copy / Cut / Paste** files and folders across directories
+- **Duplicate** files with one click
+- **Download** any file directly from the browser
+- **Extract** ZIP, GZ, and TAR archives
+- **Edit text files** (create new or modify existing)
+- **Change permissions** (chmod) on Linux servers
+
+### Previews
+- **Images** — full-size preview with click-to-zoom
+- **Video & Audio** — HTML5 player with playback controls
+- **Text / Code** — syntax-colored preview
+- **PDF & Office documents** — Google Docs Viewer integration
+
+### Image Editor
+- Built-in **Filerobot Image Editor** for JPG, PNG, and WebP
+- Crop, rotate, flip, resize with aspect ratio control
+- Brightness, contrast, saturation, hue adjustments
+- Filters (blur, sharpen, sepia, vintage, …)
+- Annotations — shapes, text, brush, watermark
+- Saves directly back to the server
+
+### Editor Integration
+- **TinyMCE 8** — ready-to-use plugin with toolbar button and native file picker
+- **CKEditor 5 / 4** — postMessage-based integration
+- **Standalone popup** — open in a window, receive selected file URL via postMessage
+- Smart insertion: images as `<img>`, video as `<video>`, audio as `<audio>`, links as `<a>`
+- Automatic relative URL conversion
+
+### UI & Customization
+- **Dark & Light themes** — auto-detects system preference, manual toggle
+- **8 languages** — English, Czech, German, Croatian, Hungarian, Italian, Slovak, Slovenian
+- **Keyboard shortcuts** — Ctrl+A/C/X/V, Delete, F2, F5, Backspace, Escape
+- **Right-click context menu** with all available actions
+- **Multi-file selection** with checkboxes and Ctrl+A
+- **Responsive design** — works on desktop, tablet, and mobile
+
+### Security
+- Session-based authentication or simple access keys
+- CSRF token protection on every request
+- Extension blacklist blocks executable uploads
+- Path traversal protection via `realpath()` validation
+- No database required — pure filesystem storage
+
+---
+
 ### Dark Theme
 ![Dark Theme](media/source/Theme-Dark.webp)
 

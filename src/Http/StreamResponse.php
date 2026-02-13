@@ -33,7 +33,13 @@ final class StreamResponse
             if (preg_match('/bytes=(\d+)-(\d*)/', $range, $matches)) {
                 $start = (int) $matches[1];
                 if (!empty($matches[2])) {
-                    $end = (int) $matches[2];
+                    $end = min((int) $matches[2], $size - 1);
+                }
+                // Validate range bounds
+                if ($start > $end || $start >= $size) {
+                    http_response_code(416);
+                    header("Content-Range: bytes */{$size}");
+                    exit;
                 }
                 $statusCode = 206;
             }
@@ -43,7 +49,8 @@ final class StreamResponse
 
         http_response_code($statusCode);
         header('Content-Type: ' . $mime);
-        header('Content-Disposition: attachment; filename="' . $this->fileName . '"');
+        $safeFileName = str_replace(['"', "\r", "\n", "\0"], '', $this->fileName);
+        header('Content-Disposition: attachment; filename="' . $safeFileName . '"');
         header('Content-Length: ' . $length);
         header('Accept-Ranges: bytes');
         header('X-Content-Type-Options: nosniff');

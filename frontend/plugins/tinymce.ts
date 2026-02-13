@@ -20,10 +20,30 @@ declare const tinymce: any
 ;(function () {
   'use strict'
 
+  function escapeHtmlAttr(str: string): string {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
+
+  function escapeHtml(str: string): string {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
+
   tinymce.PluginManager.add('fileimagemanager', function (editor: any) {
     const filemanagerUrl = editor.getParam('filemanager_url', '/filemanager/')
     const accessKey = editor.getParam('filemanager_access_key', '')
     const crossdomain = editor.getParam('filemanager_crossdomain', false)
+
+    // Derive expected origin from the file manager URL
+    let expectedOrigin: string
+    try {
+      expectedOrigin = new URL(filemanagerUrl, window.location.origin).origin
+    } catch {
+      expectedOrigin = window.location.origin
+    }
+
+    function isValidOrigin(eventOrigin: string): boolean {
+      return eventOrigin === window.location.origin || eventOrigin === expectedOrigin
+    }
 
     function buildUrl(fieldId?: string): string {
       const params = new URLSearchParams({
@@ -45,7 +65,7 @@ declare const tinymce: any
         // If crossdomain, use postMessage
         if (crossdomain) {
           const handler = (event: MessageEvent) => {
-            if (event.data?.sender === 'fileimagemanager') {
+            if (event.data?.sender === 'fileimagemanager' && isValidOrigin(event.origin)) {
               window.removeEventListener('message', handler)
               callback(event.data.url, { alt: '' })
             }
@@ -71,26 +91,27 @@ declare const tinymce: any
 
         if (crossdomain) {
           const handler = (event: MessageEvent) => {
-            if (event.data?.sender === 'fileimagemanager') {
+            if (event.data?.sender === 'fileimagemanager' && isValidOrigin(event.origin)) {
               window.removeEventListener('message', handler)
               const fileUrl = event.data.url
 
               // Determine insertion type based on extension
               const ext = fileUrl.split('.').pop()?.toLowerCase() || ''
-              const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico']
+              const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'ico']
               const mediaExts = ['mp4', 'webm', 'ogg', 'mp3', 'wav']
+              const safeUrl = escapeHtmlAttr(fileUrl)
 
               if (imageExts.includes(ext)) {
-                editor.insertContent(`<img src="${fileUrl}" alt="" />`)
+                editor.insertContent(`<img src="${safeUrl}" alt="" />`)
               } else if (mediaExts.includes(ext)) {
                 if (['mp4', 'webm', 'ogg'].includes(ext)) {
-                  editor.insertContent(`<video src="${fileUrl}" controls></video>`)
+                  editor.insertContent(`<video src="${safeUrl}" controls></video>`)
                 } else {
-                  editor.insertContent(`<audio src="${fileUrl}" controls></audio>`)
+                  editor.insertContent(`<audio src="${safeUrl}" controls></audio>`)
                 }
               } else {
-                const name = fileUrl.split('/').pop() || 'file'
-                editor.insertContent(`<a href="${fileUrl}">${name}</a>`)
+                const name = escapeHtml(fileUrl.split('/').pop() || 'file')
+                editor.insertContent(`<a href="${safeUrl}">${name}</a>`)
               }
             }
           }

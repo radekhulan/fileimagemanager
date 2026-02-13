@@ -86,7 +86,11 @@ final class FileController
         }
 
         $fullPath = $this->fileSystem->getFullPath($path);
-        $name = $request->get('name', basename($path));
+        $this->fileSystem->validateFilePath($fullPath);
+
+        $name = basename($request->get('name', basename($path)));
+        // Sanitize filename for Content-Disposition header
+        $name = str_replace(['"', "\r", "\n", "\0"], '', $name);
 
         $response = new StreamResponse($fullPath, $name);
         $response->send();
@@ -103,6 +107,7 @@ final class FileController
         }
 
         $fullPath = $this->fileSystem->getFullPath($path);
+        $this->fileSystem->validateFilePath($fullPath);
         $ext = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
         // Text preview
@@ -173,6 +178,7 @@ final class FileController
         }
 
         $fullPath = $this->fileSystem->getFullPath($path);
+        $this->fileSystem->validateFilePath($fullPath);
         $content = @file_get_contents($fullPath);
 
         if ($content === false) {

@@ -422,6 +422,14 @@ final class FileSystemService
     }
 
     /**
+     * Validate that a full file path is within allowed directories.
+     */
+    public function validateFilePath(string $fullPath): void
+    {
+        $this->security->validatePath($fullPath);
+    }
+
+    /**
      * Calculate total size of a folder.
      */
     public function calculateFolderSize(string $path): int

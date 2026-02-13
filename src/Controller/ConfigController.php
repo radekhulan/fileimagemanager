@@ -23,6 +23,11 @@ final class ConfigController
         // Validate access key if enabled
         $this->security->validateAccessKey($request->get('akey'));
 
+        // Regenerate session ID to prevent session fixation
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+
         // Set session verification
         $_SESSION['RFM']['verify'] = 'FILEimagemanager';
 
@@ -34,7 +39,7 @@ final class ConfigController
         if (!is_string($lang)) {
             $lang = $this->config->defaultLanguage;
         }
-        $_SESSION['RFM']['language'] = $lang;
+        $_SESSION['RFM']['language'] = basename($lang);
 
         // Load translations
         $translations = $this->loadTranslations($lang);
@@ -109,14 +114,16 @@ final class ConfigController
             return JsonResponse::error('Unknown language');
         }
 
-        $_SESSION['RFM']['language'] = $lang;
+        $_SESSION['RFM']['language'] = basename($lang);
 
         // Set cookie for 1 year
-        setcookie('rfm_lang', $lang, [
+        $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+        setcookie('rfm_lang', basename($lang), [
             'expires' => time() + 365 * 86400,
             'path' => '/',
             'httponly' => true,
             'samesite' => 'Lax',
+            'secure' => $isHttps,
         ]);
 
         $translations = $this->loadTranslations($lang);

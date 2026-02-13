@@ -82,14 +82,16 @@ final class SecurityService
     {
         $ext = mb_strtolower($extension);
 
+        // Always check blacklist first
         if (!empty($this->config->extBlacklist)) {
             if (in_array($ext, $this->config->extBlacklist, true)) {
                 throw new InvalidExtensionException("Extension '{$ext}' is blacklisted");
             }
-        } else {
-            if (!in_array($ext, $this->config->ext, true)) {
-                throw new InvalidExtensionException("Extension '{$ext}' is not allowed");
-            }
+        }
+
+        // Then also check whitelist
+        if (!in_array($ext, $this->config->ext, true)) {
+            throw new InvalidExtensionException("Extension '{$ext}' is not allowed");
         }
     }
 

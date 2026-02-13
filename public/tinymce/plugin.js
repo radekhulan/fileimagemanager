@@ -15,12 +15,20 @@
 (function () {
   'use strict';
 
-  var imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'avif'];
+  var imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'ico', 'avif'];
   var videoExts = ['mp4', 'webm', 'ogg'];
   var audioExts = ['mp3', 'wav', 'ogg', 'm4a'];
 
   function getExtension(url) {
     return (url.split('?')[0].split('.').pop() || '').toLowerCase();
+  }
+
+  function escapeHtmlAttr(str) {
+    return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   function toRelativeUrl(url) {
@@ -42,19 +50,36 @@
     editor.options.register('fileimagemanager_crossdomain', { processor: 'boolean', default: false });
     editor.options.register('fileimagemanager_title', { processor: 'string', default: 'File Image Manager' });
 
+    // Derive expected origin for postMessage validation
+    var expectedOrigin = window.location.origin;
+
     function getBaseUrl() {
       var pluginUrl = editor.options.get('fileimagemanager_url');
-      if (pluginUrl) return pluginUrl;
+      if (pluginUrl) {
+        try {
+          expectedOrigin = new URL(pluginUrl, window.location.origin).origin;
+        } catch (e) { /* keep default */ }
+        return pluginUrl;
+      }
 
       var scripts = document.querySelectorAll('script[src*="fileimagemanager"][src*="plugin"]');
       for (var i = 0; i < scripts.length; i++) {
         var src = scripts[i].getAttribute('src');
         if (src) {
           var base = src.replace(/\/tinymce\/plugin(\.min)?\.js(\?.*)?$/, '/');
-          if (base !== src) return base;
+          if (base !== src) {
+            try {
+              expectedOrigin = new URL(base, window.location.origin).origin;
+            } catch (e) { /* keep default */ }
+            return base;
+          }
         }
       }
       return '/public/';
+    }
+
+    function isValidOrigin(eventOrigin) {
+      return eventOrigin === window.location.origin || eventOrigin === expectedOrigin;
     }
 
     function openManager(callback, filetype) {
@@ -75,7 +100,7 @@
       var dialogApi = null;
 
       function handler(e) {
-        if (e.data && e.data.sender === 'fileimagemanager') {
+        if (e.data && e.data.sender === 'fileimagemanager' && isValidOrigin(e.origin)) {
           window.removeEventListener('message', handler);
           callback(toRelativeUrl(e.data.url));
           if (dialogApi) dialogApi.close();
@@ -98,18 +123,19 @@
     function insertFromManager(url) {
       var ext = getExtension(url);
       var selectedHtml = editor.selection.getContent();
+      var safeUrl = escapeHtmlAttr(url);
 
       if (selectedHtml) {
-        editor.insertContent('<a href="' + url + '">' + selectedHtml + '</a>');
+        editor.insertContent('<a href="' + safeUrl + '">' + selectedHtml + '</a>');
       } else if (imageExts.indexOf(ext) !== -1) {
-        editor.insertContent('<img src="' + url + '" alt="" />');
+        editor.insertContent('<img src="' + safeUrl + '" alt="" />');
       } else if (videoExts.indexOf(ext) !== -1) {
-        editor.insertContent('<video src="' + url + '" controls></video>');
+        editor.insertContent('<video src="' + safeUrl + '" controls></video>');
       } else if (audioExts.indexOf(ext) !== -1) {
-        editor.insertContent('<audio src="' + url + '" controls></audio>');
+        editor.insertContent('<audio src="' + safeUrl + '" controls></audio>');
       } else {
-        var filename = url.split('/').pop() || 'file';
-        editor.insertContent('<a href="' + url + '">' + filename + '</a>');
+        var filename = escapeHtml(url.split('/').pop() || 'file');
+        editor.insertContent('<a href="' + safeUrl + '">' + filename + '</a>');
       }
     }
 

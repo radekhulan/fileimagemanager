@@ -170,9 +170,9 @@ final class SecurityServiceTest extends TestCase
     #[Test]
     public function validateExtensionBlacklistAllowsNonMatchingExtension(): void
     {
-        $config = self::createConfig(extBlacklist: ['exe', 'bat']);
+        $config = self::createConfig(ext: ['jpg', 'png'], extBlacklist: ['exe', 'bat']);
         $service = new SecurityService($config);
-        // When blacklist is set, anything not in it is allowed
+        // Extension must pass both blacklist AND whitelist checks
         $service->validateExtension('jpg');
         $this->expectNotToPerformAssertions();
     }

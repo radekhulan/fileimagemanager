@@ -170,6 +170,10 @@ final readonly class AppConfig
         public array $relativeImageCreationHeight,
         public array $relativeImageCreationOption,
 
+        // CORS
+        /** @var string[] */
+        public array $corsAllowedOrigins = [],
+
         // Debug
         public bool $debugErrorMessage = false,
     ) {}
@@ -244,7 +248,7 @@ final readonly class AppConfig
             downloadFiles: (bool) ($config['download_files'] ?? true),
             urlUpload: (bool) ($config['url_upload'] ?? false),
 
-            extImg: $config['ext_img'] ?? ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'ico', 'webp'],
+            extImg: $config['ext_img'] ?? ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'webp'],
             extFile: $config['ext_file'] ?? ['doc', 'docx', 'xls', 'xlsx', 'pdf'],
             extVideo: $config['ext_video'] ?? ['mov', 'mpeg', 'm4v', 'mp4', 'avi', 'mpg', 'wma', 'flv', 'webm'],
             extMusic: $config['ext_music'] ?? ['mp3', 'mpga', 'm4a', 'ac3', 'aiff', 'mid', 'ogg', 'wav'],
@@ -294,6 +298,8 @@ final readonly class AppConfig
             relativeImageCreationWidth: array_map('intval', $config['relative_image_creation_width'] ?? []),
             relativeImageCreationHeight: array_map('intval', $config['relative_image_creation_height'] ?? []),
             relativeImageCreationOption: $config['relative_image_creation_option'] ?? [],
+
+            corsAllowedOrigins: $config['cors_allowed_origins'] ?? [],
 
             debugErrorMessage: (bool) ($config['debug_error_message'] ?? false),
         );

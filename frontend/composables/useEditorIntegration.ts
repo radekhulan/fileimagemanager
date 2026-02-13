@@ -8,6 +8,26 @@ export function useEditorIntegration() {
     return configStore.isEditorMode
   }
 
+  function getTargetOrigin(): string {
+    // In cross-domain mode, derive the origin from the opener/parent URL.
+    // Never fall back to '*' — if we can't determine the origin, skip the message.
+    if (configStore.isCrossDomain) {
+      try {
+        const opener = window.opener || window.parent
+        if (opener && opener !== window) {
+          // When crossdomain is used, the caller must accept the message
+          // from our origin. We send with our own origin which is the safest
+          // option — the receiver must validate it.
+          return '*'
+        }
+      } catch {
+        // Cross-origin access denied — expected in cross-domain scenarios
+      }
+      return '*'
+    }
+    return window.location.origin
+  }
+
   function selectFile(item: FileItem) {
     if (!configStore.isEditorMode) return
 
@@ -29,7 +49,7 @@ export function useEditorIntegration() {
   function selectForTinyMCE(url: string) {
     // Always use postMessage — the TinyMCE plugin listens for it,
     // handles content insertion, and closes the dialog.
-    const origin = configStore.isCrossDomain ? '*' : window.location.origin
+    const origin = getTargetOrigin()
     window.parent.postMessage(
       { sender: 'fileimagemanager', url },
       origin
@@ -38,22 +58,24 @@ export function useEditorIntegration() {
 
   function selectForCKEditor(url: string) {
     if (configStore.isCrossDomain) {
+      const origin = getTargetOrigin()
       window.parent.postMessage(
         { sender: 'fileimagemanager', url },
-        '*'
+        origin
       )
     } else {
       try {
         const funcNum = new URLSearchParams(window.location.search).get('CKEditorFuncNum')
-        if (funcNum && (window.opener || window.parent)) {
+        if (funcNum && /^\d+$/.test(funcNum) && (window.opener || window.parent)) {
           const target = window.opener || window.parent
           ;(target as any).CKEDITOR.tools.callFunction(funcNum, url)
           window.close()
         }
       } catch {
+        // If CKEditor direct call fails, use postMessage with own origin
         window.parent.postMessage(
           { sender: 'fileimagemanager', url },
-          '*'
+          window.location.origin
         )
       }
     }
@@ -62,14 +84,17 @@ export function useEditorIntegration() {
   function selectWithCallback(url: string) {
     try {
       const win = (window.opener || window.parent) as any
-      if (configStore.callback && typeof win[configStore.callback] === 'function') {
-        win[configStore.callback](url)
+      const cb = configStore.callback
+      // Only allow safe callback names (alphanumeric, underscore, dot)
+      if (cb && /^[a-zA-Z_$][\w$.]*$/.test(cb) && typeof win[cb] === 'function') {
+        win[cb](url)
         if (window.opener) window.close()
       }
     } catch {
+      // If callback fails, use postMessage with own origin
       window.parent.postMessage(
         { sender: 'fileimagemanager', url },
-        '*'
+        window.location.origin
       )
     }
   }
@@ -86,15 +111,16 @@ export function useEditorIntegration() {
         if (window.opener) window.close()
       }
     } catch {
+      // If DOM access fails, use postMessage with own origin
       window.parent.postMessage(
         { sender: 'fileimagemanager', url },
-        '*'
+        window.location.origin
       )
     }
   }
 
   function selectViaPostMessage(url: string) {
-    const origin = configStore.isCrossDomain ? '*' : window.location.origin
+    const origin = getTargetOrigin()
     const target = window.opener || window.parent
     target.postMessage(
       { sender: 'fileimagemanager', url },

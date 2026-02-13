@@ -1,9 +1,18 @@
 <script setup lang="ts">
+import { onUnmounted } from 'vue'
 import type { UploadItem } from '@/stores/uploadStore'
 import { formatFileSize } from '@/utils/filesize'
 
-defineProps<{ item: UploadItem }>()
+const props = defineProps<{ item: UploadItem }>()
 defineEmits<{ remove: [] }>()
+
+const previewUrl = props.item.file.type.startsWith('image/')
+  ? URL.createObjectURL(props.item.file)
+  : null
+
+onUnmounted(() => {
+  if (previewUrl) URL.revokeObjectURL(previewUrl)
+})
 </script>
 
 <template>
@@ -23,6 +32,14 @@ defineEmits<{ remove: [] }>()
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
       </svg>
     </div>
+
+    <!-- Thumbnail preview -->
+    <img
+      v-if="previewUrl"
+      :src="previewUrl"
+      class="w-10 h-10 rounded object-cover flex-shrink-0"
+      alt=""
+    />
 
     <!-- File info -->
     <div class="flex-1 min-w-0">

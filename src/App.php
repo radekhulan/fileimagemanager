@@ -38,11 +38,13 @@ final class App
     {
         // Start session with explicit cookie params
         if (session_status() === PHP_SESSION_NONE) {
+            $isHttps = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
             session_set_cookie_params([
                 'lifetime' => 0,
                 'path' => '/',
                 'httponly' => true,
                 'samesite' => 'Lax',
+                'secure' => $isHttps,
             ]);
 
             // Ensure session save path is writable (common issue on IIS)
@@ -202,12 +204,26 @@ final class App
     private function setCorsHeaders(): void
     {
         $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-        if ($origin) {
-            header("Access-Control-Allow-Origin: {$origin}");
-            header('Access-Control-Allow-Credentials: true');
-            header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-            header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, X-Requested-With');
-            header('Access-Control-Max-Age: 86400');
+        if ($origin === '') {
+            return;
         }
+
+        // Only allow same-origin, base_url origin, or explicitly configured origins
+        $allowed = $this->config->corsAllowedOrigins;
+        $selfOrigin = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http')
+            . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+        $baseOrigin = parse_url($this->config->baseUrl, PHP_URL_SCHEME) . '://'
+            . parse_url($this->config->baseUrl, PHP_URL_HOST)
+            . (($port = parse_url($this->config->baseUrl, PHP_URL_PORT)) ? ':' . $port : '');
+
+        if ($origin !== $selfOrigin && $origin !== $baseOrigin && !in_array($origin, $allowed, true)) {
+            return;
+        }
+
+        header("Access-Control-Allow-Origin: {$origin}");
+        header('Access-Control-Allow-Credentials: true');
+        header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, X-Requested-With');
+        header('Access-Control-Max-Age: 86400');
     }
 }

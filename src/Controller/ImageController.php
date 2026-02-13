@@ -57,6 +57,12 @@ final class ImageController
             return JsonResponse::error('Invalid image data');
         }
 
+        // Validate that the decoded data is actually a valid image
+        $imageInfo = @getimagesizefromstring($decodedData);
+        if ($imageInfo === false) {
+            return JsonResponse::error('Decoded data is not a valid image');
+        }
+
         // Save the image
         if (file_put_contents($fullPath, $decodedData) === false) {
             return JsonResponse::error('Failed to save image');

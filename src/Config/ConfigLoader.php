@@ -44,16 +44,34 @@ final class ConfigLoader
      */
     public function loadFolderConfig(AppConfig $baseConfig, string $folderPath): AppConfig
     {
-        $configFile = rtrim($folderPath, '/\\') . DIRECTORY_SEPARATOR . 'config.php';
+        // Use JSON config files to prevent code execution from upload directories
+        $configFile = rtrim($folderPath, '/\\') . DIRECTORY_SEPARATOR . '.rfm.config.json';
 
         if (!is_file($configFile)) {
             return $baseConfig;
         }
 
-        $folderConfig = $this->loadFile($configFile);
-        if (empty($folderConfig)) {
+        $content = file_get_contents($configFile);
+        if ($content === false) {
             return $baseConfig;
         }
+
+        $folderConfig = json_decode($content, true);
+        if (!is_array($folderConfig) || empty($folderConfig)) {
+            return $baseConfig;
+        }
+
+        // Never allow overriding security-critical settings from folder configs
+        unset(
+            $folderConfig['ext_blacklist'],
+            $folderConfig['use_access_keys'],
+            $folderConfig['access_keys'],
+            $folderConfig['current_path'],
+            $folderConfig['thumbs_base_path'],
+            $folderConfig['base_url'],
+            $folderConfig['cors_allowed_origins'],
+            $folderConfig['debug_error_message'],
+        );
 
         // Merge folder config over base config
         $baseArray = $this->configToArray($baseConfig);
@@ -213,6 +231,7 @@ final class ConfigLoader
             'relative_image_creation_width' => $config->relativeImageCreationWidth,
             'relative_image_creation_height' => $config->relativeImageCreationHeight,
             'relative_image_creation_option' => $config->relativeImageCreationOption,
+            'cors_allowed_origins' => $config->corsAllowedOrigins,
         ];
     }
 }
