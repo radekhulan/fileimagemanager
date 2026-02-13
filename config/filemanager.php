@@ -8,6 +8,18 @@
  * Security-critical settings (ext_blacklist, access_keys, paths) cannot be overridden.
  */
 
+// Example: session-based access control
+// Uncomment the following block to restrict access to users
+// with $_SESSION['ImageEditorAllowed'] set to true.
+//
+// if (session_status() === PHP_SESSION_NONE) {
+//     session_start();
+// }
+// if (empty($_SESSION['ImageEditorAllowed'])) {
+//     http_response_code(403);
+//     exit('Access denied');
+// }
+
 $config = [
 
     /*
