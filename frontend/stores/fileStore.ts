@@ -139,6 +139,30 @@ export const useFileStore = defineStore('files', () => {
     await loadDirectory()
   }
 
+  type SortPreset = 'name' | 'newest' | 'oldest' | 'largest' | 'smallest'
+
+  const sortPreset = computed<SortPreset>(() => {
+    if (sortBy.value === 'name') return 'name'
+    if (sortBy.value === 'date') return descending.value ? 'newest' : 'oldest'
+    if (sortBy.value === 'size') return descending.value ? 'largest' : 'smallest'
+    return 'name'
+  })
+
+  async function setSortPreset(preset: SortPreset) {
+    const map: Record<SortPreset, { field: SortField; desc: boolean }> = {
+      name: { field: 'name', desc: false },
+      newest: { field: 'date', desc: true },
+      oldest: { field: 'date', desc: false },
+      largest: { field: 'size', desc: true },
+      smallest: { field: 'size', desc: false },
+    }
+    const { field, desc } = map[preset]
+    sortBy.value = field
+    descending.value = desc
+    await configApi.changeSort(sortBy.value, descending.value)
+    await loadDirectory()
+  }
+
   async function changeTypeFilter(filter: TypeFilter) {
     typeFilter.value = filter
     await loadDirectory()
@@ -161,6 +185,6 @@ export const useFileStore = defineStore('files', () => {
     folders, files, hasSelection, selectionCount, selectedFiles, parentPath,
     // Actions
     getLastPath, loadDirectory, navigate, goUp, toggleSelection, selectAll, deselectAll,
-    changeSort, changeTypeFilter, setTextFilter, refresh,
+    changeSort, changeTypeFilter, setTextFilter, refresh, sortPreset, setSortPreset,
   }
 })
