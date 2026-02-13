@@ -46,7 +46,6 @@ final class ImageProcessingService
         // Create target image
         $target = imagecreatetruecolor($targetWidth, $targetHeight);
         if ($target === false) {
-            imagedestroy($source);
             return false;
         }
 
@@ -63,9 +62,6 @@ final class ImageProcessingService
 
         // Save
         $result = $this->saveImage($target, $destPath, $type, $quality);
-
-        imagedestroy($source);
-        imagedestroy($target);
 
         return $result;
     }
@@ -107,9 +103,6 @@ final class ImageProcessingService
         // Save back
         $result = $this->saveImage($image, $imagePath, $imgType, 90);
 
-        imagedestroy($image);
-        imagedestroy($watermark);
-
         return $result;
     }
 
@@ -145,13 +138,10 @@ final class ImageProcessingService
         };
 
         if ($rotated === false) {
-            imagedestroy($image);
             return false;
         }
 
         $result = $this->saveImage($rotated, $imagePath, $imageInfo[2], 90);
-        imagedestroy($image);
-        imagedestroy($rotated);
 
         return $result;
     }
