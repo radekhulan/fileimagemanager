@@ -213,7 +213,7 @@ $config = [
     'chmod_dirs' => false,
     'preview_text_files' => true,
     'edit_text_files' => true,
-    'create_text_files' => true,
+    'create_text_files' => false,
     'download_files' => true,
     'url_upload' => true,
 

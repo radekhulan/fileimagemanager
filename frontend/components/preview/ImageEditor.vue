@@ -82,6 +82,7 @@ function initEditor(imageUrl: string) {
     },
     language: locale.language,
     translations: locale.translations,
+    useBackendTranslations: false,
   }
 
   editorInstance = new FilerobotImageEditor(containerRef.value, config)
