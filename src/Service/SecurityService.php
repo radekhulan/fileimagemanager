@@ -96,6 +96,28 @@ final class SecurityService
     }
 
     /**
+     * Validate ALL dot-separated parts of a filename against the blacklist.
+     * Prevents double-extension attacks like "shell.php.jpg".
+     */
+    public function validateFilenameExtensions(string $filename): void
+    {
+        if (empty($this->config->extBlacklist)) {
+            return;
+        }
+
+        $parts = explode('.', $filename);
+        // Skip the first part (the actual name before any dot)
+        array_shift($parts);
+
+        foreach ($parts as $part) {
+            $ext = mb_strtolower($part);
+            if ($ext !== '' && in_array($ext, $this->config->extBlacklist, true)) {
+                throw new InvalidExtensionException("Extension '{$ext}' is blacklisted");
+            }
+        }
+    }
+
+    /**
      * Check if an extension is an image type.
      */
     public function isImageExtension(string $extension): bool
@@ -143,8 +165,8 @@ final class SecurityService
             $name = mb_strtolower($name);
         }
 
-        // Remove dangerous characters
-        $name = str_replace(['"', "'", '/', '\\'], '', $name);
+        // Remove dangerous characters (: and \0 prevent NTFS ADS bypass on Windows)
+        $name = str_replace(['"', "'", '/', '\\', ':', "\0"], '', $name);
         $name = strip_tags($name);
 
         // Prevent dot-only filenames (e.g. ".jpg")

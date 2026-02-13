@@ -110,16 +110,20 @@ final class FileController
         $this->fileSystem->validateFilePath($fullPath);
         $ext = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
-        // Text preview
+        // Text preview (limit to 1 MB to prevent OOM)
         if (in_array($ext, $this->config->previewableTextFileExts, true)) {
             if (!$this->config->previewTextFiles) {
                 return JsonResponse::error('Text preview disabled', 403);
             }
-            $content = @file_get_contents($fullPath);
+            $maxPreviewBytes = 1024 * 1024;
+            $fileSize = @filesize($fullPath);
+            $truncated = $fileSize !== false && $fileSize > $maxPreviewBytes;
+            $content = @file_get_contents($fullPath, false, null, 0, $maxPreviewBytes);
             return new JsonResponse([
                 'type' => 'text',
                 'content' => $content !== false ? $content : '',
                 'extension' => $ext,
+                'truncated' => $truncated,
             ]);
         }
 
@@ -179,6 +183,14 @@ final class FileController
 
         $fullPath = $this->fileSystem->getFullPath($path);
         $this->fileSystem->validateFilePath($fullPath);
+
+        // Limit to 1 MB to prevent OOM on large files
+        $maxEditBytes = 1024 * 1024;
+        $fileSize = @filesize($fullPath);
+        if ($fileSize !== false && $fileSize > $maxEditBytes) {
+            return JsonResponse::error('File is too large to edit (max 1 MB)');
+        }
+
         $content = @file_get_contents($fullPath);
 
         if ($content === false) {

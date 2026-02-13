@@ -210,6 +210,9 @@ final class FileSystemService
             }
         }
 
+        // Check all dot-separated parts against blacklist (double-extension attack)
+        $this->security->validateFilenameExtensions($newName);
+
         $dir = dirname($relativePath);
         $newRelativePath = ($dir !== '.' ? $dir . '/' : '') . $newName;
         $newFullPath = $this->config->currentPath . $newRelativePath;

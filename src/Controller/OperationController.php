@@ -257,19 +257,33 @@ final class OperationController
         $ext = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
         $extractDir = dirname($fullPath) . '/' . pathinfo($path, PATHINFO_FILENAME);
 
-        if (!is_dir($extractDir)) {
-            @mkdir($extractDir, $this->config->folderPermission, true);
+        // Extract to a temp directory first, validate, then move to target.
+        // This prevents a window where blacklisted files are accessible via web.
+        $tempDir = sys_get_temp_dir() . '/rfm_extract_' . bin2hex(random_bytes(8));
+        if (!@mkdir($tempDir, $this->config->folderPermission, true)) {
+            return JsonResponse::error('Failed to create temp directory');
         }
 
         $success = match ($ext) {
-            'zip' => $this->extractZip($fullPath, $extractDir),
-            'gz', 'tar' => $this->extractTar($fullPath, $extractDir),
+            'zip' => $this->extractZip($fullPath, $tempDir),
+            'gz', 'tar' => $this->extractTar($fullPath, $tempDir),
             default => false,
         };
 
         if (!$success) {
+            $this->deleteDirectoryRecursive($tempDir);
             return JsonResponse::error('Extraction failed');
         }
+
+        // Remove blacklisted files in temp before moving to webroot
+        $this->removeBlacklistedFiles($tempDir);
+
+        // Move validated contents to final destination
+        if (!is_dir($extractDir)) {
+            @mkdir($extractDir, $this->config->folderPermission, true);
+        }
+        $this->moveDirectoryContents($tempDir, $extractDir);
+        $this->deleteDirectoryRecursive($tempDir);
 
         return JsonResponse::success();
     }
@@ -285,6 +299,9 @@ final class OperationController
 
         if (!is_string($path) || $path === '') {
             return JsonResponse::error('File path required');
+        }
+        if (!is_string($content)) {
+            return JsonResponse::error('Content must be a string');
         }
 
         $ext = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
@@ -317,6 +334,9 @@ final class OperationController
         }
         if (!is_string($path)) {
             $path = '';
+        }
+        if (!is_string($content)) {
+            $content = '';
         }
 
         $ext = mb_strtolower(pathinfo($name, PATHINFO_EXTENSION));
@@ -379,10 +399,6 @@ final class OperationController
         $result = $zip->extractTo($destDir);
         $zip->close();
 
-        if ($result) {
-            $this->removeBlacklistedFiles($destDir);
-        }
-
         return $result;
     }
 
@@ -413,11 +429,59 @@ final class OperationController
 
             $phar->extractTo($destDir, null, true);
 
-            $this->removeBlacklistedFiles($destDir);
-
             return true;
         } catch (\Throwable) {
             return false;
+        }
+    }
+
+    private function deleteDirectoryRecursive(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $entries = @scandir($dir);
+        if ($entries === false) {
+            return;
+        }
+
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $path = $dir . DIRECTORY_SEPARATOR . $entry;
+            if (is_dir($path)) {
+                $this->deleteDirectoryRecursive($path);
+            } else {
+                @unlink($path);
+            }
+        }
+        @rmdir($dir);
+    }
+
+    private function moveDirectoryContents(string $source, string $dest): void
+    {
+        $entries = @scandir($source);
+        if ($entries === false) {
+            return;
+        }
+
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            $srcPath = $source . DIRECTORY_SEPARATOR . $entry;
+            $dstPath = $dest . DIRECTORY_SEPARATOR . $entry;
+
+            if (is_dir($srcPath)) {
+                if (!is_dir($dstPath)) {
+                    @mkdir($dstPath, $this->config->folderPermission, true);
+                }
+                $this->moveDirectoryContents($srcPath, $dstPath);
+            } else {
+                @rename($srcPath, $dstPath);
+            }
         }
     }
 
@@ -433,9 +497,12 @@ final class OperationController
 
         foreach ($iterator as $file) {
             if ($file->isFile()) {
-                $ext = mb_strtolower(pathinfo($file->getFilename(), PATHINFO_EXTENSION));
+                $filename = $file->getFilename();
+                $ext = mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION));
                 try {
                     $this->security->validateExtension($ext);
+                    // Also check all dot-separated parts (double-extension attack)
+                    $this->security->validateFilenameExtensions($filename);
                 } catch (\RFM\Exception\InvalidExtensionException) {
                     @unlink($file->getPathname());
                 }

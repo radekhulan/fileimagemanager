@@ -261,10 +261,12 @@ $config = [
     |
     | googledoc_enabled   - Use Google Docs Viewer for previewing office documents
     |                       and PDFs. Requires that the file is publicly accessible.
+    |                       WARNING: Enabling this sends full file URLs to Google
+    |                       servers, which may leak information about your files.
     | googledoc_file_exts - Extensions to open with Google Docs Viewer.
     |
     */
-    'googledoc_enabled' => true,
+    'googledoc_enabled' => false,
     'googledoc_file_exts' => ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'odt', 'odp', 'ods'],
 
     /*

@@ -74,7 +74,7 @@ final class UploadService
         if ($host === null || $host === false || $host === '') {
             throw new UploadException('Invalid URL host');
         }
-        $this->validateUrlHost($host);
+        $resolvedIp = $this->validateUrlHost($host);
 
         $targetPath = $this->config->currentPath . $targetDir;
         $this->security->validatePath($targetPath);
@@ -102,6 +102,16 @@ final class UploadService
 
         $maxBytes = $this->config->maxSizeUpload * 1024 * 1024;
 
+        // Pin DNS resolution to the validated IP to prevent DNS rebinding attacks
+        $port = parse_url($url, PHP_URL_PORT);
+        $resolveEntries = [
+            "{$host}:80:{$resolvedIp}",
+            "{$host}:443:{$resolvedIp}",
+        ];
+        if ($port !== null) {
+            $resolveEntries[] = "{$host}:{$port}:{$resolvedIp}";
+        }
+
         curl_setopt_array($ch, [
             CURLOPT_FILE => $fp,
             CURLOPT_FOLLOWLOCATION => false,
@@ -109,6 +119,7 @@ final class UploadService
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_USERAGENT => 'FileImageManager/1.0.0',
             CURLOPT_PROTOCOLS => CURLPROTO_HTTP | CURLPROTO_HTTPS,
+            CURLOPT_RESOLVE => $resolveEntries,
             CURLOPT_NOPROGRESS => false,
             CURLOPT_PROGRESSFUNCTION => function ($ch, $dlTotal, $dlNow) use ($maxBytes, $tempFile) {
                 // Abort download if it exceeds max upload size
@@ -150,6 +161,7 @@ final class UploadService
             throw new UploadException('Cannot determine file type — file has no extension');
         }
         $this->security->validateExtension($ext);
+        $this->security->validateFilenameExtensions($fileName);
 
         // Check file size
         $fileSize = filesize($tempFile);
@@ -199,10 +211,11 @@ final class UploadService
         $fileName = $this->security->sanitizeFilename($originalName);
         $ext = mb_strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-        // Validate extension
+        // Validate extension (single + all dot-separated parts for double-extension attacks)
         if ($ext !== '' || !$this->config->filesWithoutExtension) {
             $this->security->validateExtension($ext);
         }
+        $this->security->validateFilenameExtensions($fileName);
 
         // Check MIME type and optionally rename extension
         if ($this->config->mimeExtensionRename && $ext !== '') {
@@ -388,8 +401,10 @@ final class UploadService
 
     /**
      * Block requests to private/reserved IP ranges (SSRF prevention).
+     * Returns the resolved IP so it can be pinned via CURLOPT_RESOLVE
+     * to prevent DNS rebinding attacks.
      */
-    private function validateUrlHost(string $host): void
+    private function validateUrlHost(string $host): string
     {
         // Resolve hostname to IP
         $ip = gethostbyname($host);
@@ -401,6 +416,8 @@ final class UploadService
         if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
             throw new UploadException('URLs pointing to private or reserved IP ranges are not allowed');
         }
+
+        return $ip;
     }
 
     private function getUploadErrorMessage(int $error): string

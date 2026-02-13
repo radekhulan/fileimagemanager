@@ -378,7 +378,7 @@ final readonly class AppConfig
     private static function detectBaseUrl(): string
     {
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $host = preg_replace('/[^\w.\-:]/', '', $_SERVER['HTTP_HOST'] ?? 'localhost');
         return "{$scheme}://{$host}";
     }
 }
