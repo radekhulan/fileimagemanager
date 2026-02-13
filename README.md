@@ -1,4 +1,4 @@
-# File Image Manager
+# File Image Manager (PHP 8.5, Vue 3, TypeScript, TinyMCE)
 
 Modern, responsive web file manager built with **Vue 3 + TypeScript** frontend and **PHP 8.5** backend. Supports light/dark themes, drag & drop uploads, image editing (Filerobot), and integration with TinyMCE 8 / CKEditor 5. Includes a ready-to-use TinyMCE plugin. No database required.
 
