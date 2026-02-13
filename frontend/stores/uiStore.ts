@@ -114,8 +114,14 @@ export const useUiStore = defineStore('ui', () => {
   }
 
   // View mode
+  function initViewMode(configDefault: ViewMode) {
+    const cookie = document.cookie.split('; ').find(c => c.startsWith('rfm_view_mode='))
+    viewMode.value = cookie ? Number(cookie.split('=')[1]) as ViewMode : configDefault
+  }
+
   async function setViewMode(mode: ViewMode) {
     viewMode.value = mode
+    document.cookie = `rfm_view_mode=${mode};path=/;max-age=${86400 * 365};SameSite=Lax`
     await configApi.changeView(mode)
   }
 
@@ -203,7 +209,7 @@ export const useUiStore = defineStore('ui', () => {
     // Context menu
     contextMenu, contextMenuVisible, contextMenuX, contextMenuY, contextMenuItem,
     // Actions
-    initDarkMode, toggleDarkMode, setViewMode,
+    initDarkMode, toggleDarkMode, initViewMode, setViewMode,
     confirm, prompt, alert,
     showContextMenu, hideContextMenu,
     openImageEditor, closeImageEditor,

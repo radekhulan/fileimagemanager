@@ -44,7 +44,7 @@ onMounted(async () => {
   await configStore.initialize()
   if (configStore.config) {
     ui.initDarkMode(configStore.config.darkMode)
-    ui.viewMode = configStore.config.defaultView as 0 | 1 | 2
+    ui.initViewMode(configStore.config.defaultView as 0 | 1 | 2)
   }
   // Auto-set type filter from URL param (e.g., TinyMCE image dialog passes &type=image)
   if (configStore.forceTypeFilter) {
