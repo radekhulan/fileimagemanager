@@ -35,7 +35,8 @@ export const useFileStore = defineStore('files', () => {
 
   // Computed
   const folders = computed(() => {
-    if (typeFilter.value !== 'all') {
+    const configStore = useConfigStore()
+    if (typeFilter.value !== 'all' && !configStore.forceTypeFilter) {
       return []
     }
     return items.value.filter(i => i.isDir)
