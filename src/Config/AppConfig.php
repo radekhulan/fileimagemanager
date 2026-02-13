@@ -184,8 +184,8 @@ final readonly class AppConfig
             baseUrl: $config['base_url'] ?? self::detectBaseUrl(),
             uploadDir: $config['upload_dir'] ?? '/source/',
             thumbsUploadDir: $config['thumbs_upload_dir'] ?? '/thumbs/',
-            currentPath: $config['current_path'] ?? '../source/',
-            thumbsBasePath: $config['thumbs_base_path'] ?? '../thumbs/',
+            currentPath: rtrim(str_replace('\\', '/', $config['current_path'] ?? '../source/'), '/') . '/',
+            thumbsBasePath: rtrim(str_replace('\\', '/', $config['thumbs_base_path'] ?? '../thumbs/'), '/') . '/',
 
             autoUpload: (bool) ($config['auto_upload'] ?? true),
             mimeExtensionRename: (bool) ($config['mime_extension_rename'] ?? true),
