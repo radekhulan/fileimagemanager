@@ -8,6 +8,8 @@ export const filesApi = {
     descending?: string
     filter?: string
     type_filter?: string
+    limit?: number
+    offset?: number
   }): Promise<FileListResponse> {
     const { data } = await apiClient.get('/files', { params })
     return data

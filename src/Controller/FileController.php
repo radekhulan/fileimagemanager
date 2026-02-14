@@ -26,6 +26,8 @@ final class FileController
         $descending = filter_var($request->get('descending', $_SESSION['RFM']['descending'] ?? '0'), FILTER_VALIDATE_BOOLEAN);
         $filter = $request->get('filter', '');
         $typeFilter = $request->get('type_filter');
+        $limit = max(0, (int) $request->get('limit', '0'));
+        $offset = max(0, (int) $request->get('offset', '0'));
 
         $result = $this->fileSystem->listDirectory(
             subdir: $path,
@@ -33,6 +35,8 @@ final class FileController
             descending: $descending,
             filter: $filter,
             typeFilter: $typeFilter,
+            limit: $limit,
+            offset: $offset,
         );
 
         // Convert DTOs to arrays
@@ -52,6 +56,7 @@ final class FileController
             'breadcrumb' => $breadcrumb,
             'counts' => $result['counts'],
             'totalSize' => $result['totalSize'],
+            'total' => $result['total'],
             'clipboard' => $clipboardState,
         ]);
     }

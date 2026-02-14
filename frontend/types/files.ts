@@ -40,6 +40,7 @@ export interface FileListResponse {
     folders: number
   }
   totalSize: number
+  total: number
   clipboard: ClipboardState
 }
 

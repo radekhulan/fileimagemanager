@@ -18,9 +18,9 @@ final class FileSystemService
     ) {}
 
     /**
-     * List the contents of a directory.
+     * List the contents of a directory with optional pagination.
      *
-     * @return array{items: FileItem[], breadcrumb: BreadcrumbItem[], counts: array{files: int, folders: int}, totalSize: int}
+     * @return array{items: FileItem[], breadcrumb: BreadcrumbItem[], counts: array{files: int, folders: int}, totalSize: int, total: int}
      */
     public function listDirectory(
         string $subdir = '',
@@ -28,6 +28,8 @@ final class FileSystemService
         bool $descending = false,
         string $filter = '',
         ?string $typeFilter = null,
+        int $limit = 0,
+        int $offset = 0,
     ): array {
         $subdir = $this->normalizeSubdir($subdir);
         $fullPath = $this->config->currentPath . $subdir;
@@ -38,23 +40,75 @@ final class FileSystemService
             throw new FileNotFoundException("Directory not found: {$subdir}");
         }
 
-        $items = [];
+        // Pass 1: cheap scan — collect lightweight metadata for filtering/sorting
+        $lightweight = $this->scanEntries($fullPath, $filter, $typeFilter);
+
+        // Aggregate counts from all entries (before pagination)
         $fileCount = 0;
         $folderCount = 0;
         $totalSize = 0;
-        $entries = @scandir($fullPath);
-
-        if ($entries === false) {
-            throw new FileNotFoundException("Cannot read directory: {$subdir}");
+        foreach ($lightweight as $e) {
+            if ($e['isDir']) {
+                $folderCount++;
+            } else {
+                $fileCount++;
+                $totalSize += $e['size'];
+            }
         }
 
+        // Sort lightweight entries (folders first, then files)
+        $lightweight = $this->sortLightweight($lightweight, $sortBy, $descending);
+
+        $total = count($lightweight);
+
+        // Apply pagination
+        if ($limit > 0) {
+            $lightweight = array_slice($lightweight, $offset, $limit);
+        }
+
+        // Pass 2: build full FileItem DTOs only for the paginated slice
+        $items = [];
+        foreach ($lightweight as $e) {
+            $items[] = $this->buildFileItem($fullPath, $subdir, $e['name']);
+        }
+
+        $breadcrumb = $this->buildBreadcrumb($subdir);
+
+        return [
+            'items' => $items,
+            'breadcrumb' => $breadcrumb,
+            'counts' => [
+                'files' => $fileCount,
+                'folders' => $folderCount,
+            ],
+            'totalSize' => $totalSize,
+            'total' => $total,
+        ];
+    }
+
+    /**
+     * Cheap first-pass scan: collect only lightweight metadata needed for filtering and sorting.
+     *
+     * @return list<array{name: string, isDir: bool, size: int, mtime: int, ext: string, category: string}>
+     */
+    private function scanEntries(string $fullPath, string $filter, ?string $typeFilter): array
+    {
+        $entries = @scandir($fullPath);
+        if ($entries === false) {
+            throw new FileNotFoundException("Cannot read directory");
+        }
+
+        $result = [];
         foreach ($entries as $entry) {
             if ($entry === '.' || $entry === '..') {
                 continue;
             }
 
+            $entryPath = $fullPath . $entry;
+            $isDir = is_dir($entryPath);
+
             // Skip hidden items
-            if (is_dir($fullPath . $entry)) {
+            if ($isDir) {
                 if (in_array($entry, $this->config->hiddenFolders, true)) {
                     continue;
                 }
@@ -69,38 +123,63 @@ final class FileSystemService
                 continue;
             }
 
-            $item = $this->buildFileItem($fullPath, $subdir, $entry);
+            $ext = $isDir ? '' : mb_strtolower(pathinfo($entry, PATHINFO_EXTENSION));
+            $category = $isDir ? 'directory' : FileCategory::fromExtension($ext, $this->config->getExtConfig())->value;
 
             // Type filter
-            if ($typeFilter !== null && !$this->matchesTypeFilter($item, $typeFilter)) {
-                continue;
+            if ($typeFilter !== null && !$isDir) {
+                $matches = match ($typeFilter) {
+                    'image' => $category === 'image',
+                    'video' => $category === 'video',
+                    'audio' => $category === 'audio',
+                    'file' => $category === 'document',
+                    'archive' => $category === 'archive',
+                    default => true,
+                };
+                if (!$matches) {
+                    continue;
+                }
             }
 
-            $items[] = $item;
+            $size = $isDir ? 0 : (int) @filesize($entryPath);
+            $mtime = (int) @filemtime($entryPath);
 
-            if ($item->isDir) {
-                $folderCount++;
-            } else {
-                $fileCount++;
-                $totalSize += $item->size;
-            }
+            $result[] = [
+                'name' => $entry,
+                'isDir' => $isDir,
+                'size' => $size,
+                'mtime' => $mtime,
+                'ext' => $ext,
+                'category' => $category,
+            ];
         }
 
-        // Sort items (folders first, then files)
-        $items = $this->sortItems($items, $sortBy, $descending);
+        return $result;
+    }
 
-        // Build breadcrumb
-        $breadcrumb = $this->buildBreadcrumb($subdir);
+    /**
+     * Sort lightweight entry arrays (folders first, then files).
+     *
+     * @param list<array{name: string, isDir: bool, size: int, mtime: int, ext: string}> $entries
+     * @return list<array{name: string, isDir: bool, size: int, mtime: int, ext: string}>
+     */
+    private function sortLightweight(array $entries, SortField $sortBy, bool $descending): array
+    {
+        $folders = array_filter($entries, fn(array $e) => $e['isDir']);
+        $files = array_filter($entries, fn(array $e) => !$e['isDir']);
 
-        return [
-            'items' => $items,
-            'breadcrumb' => $breadcrumb,
-            'counts' => [
-                'files' => $fileCount,
-                'folders' => $folderCount,
-            ],
-            'totalSize' => $totalSize,
-        ];
+        $multiplier = $descending ? -1 : 1;
+        $comparator = match ($sortBy) {
+            SortField::Name => fn(array $a, array $b) => $multiplier * strnatcasecmp($a['name'], $b['name']),
+            SortField::Date => fn(array $a, array $b) => $multiplier * ($a['mtime'] <=> $b['mtime']),
+            SortField::Size => fn(array $a, array $b) => $multiplier * ($a['size'] <=> $b['size']),
+            SortField::Extension => fn(array $a, array $b) => $multiplier * strcmp($a['ext'], $b['ext']),
+        };
+
+        usort($folders, $comparator);
+        usort($files, $comparator);
+
+        return [...$folders, ...$files];
     }
 
     /**
@@ -520,9 +599,9 @@ final class FileSystemService
 
         if ($category === FileCategory::Image) {
             $thumbUrl = $this->thumbnails->getThumbnailUrl($subdir . $entry);
-            $imgSize = @getimagesize($fullPath);
-            if ($imgSize !== false) {
-                [$width, $height] = $imgSize;
+            $dims = $this->getImageDimensionsFast($fullPath);
+            if ($dims !== null) {
+                [$width, $height] = $dims;
             }
         }
 
@@ -705,6 +784,177 @@ final class FileSystemService
                 }
             }
         }
+    }
+
+    /**
+     * Read image dimensions from file headers without loading the entire image.
+     *
+     * @return ?array{0: int, 1: int} [width, height] or null on failure
+     */
+    private function getImageDimensionsFast(string $path): ?array
+    {
+        $ext = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+        $fp = @fopen($path, 'rb');
+        if ($fp === false) {
+            return null;
+        }
+
+        try {
+            return match ($ext) {
+                'png' => $this->readPngDimensions($fp),
+                'gif' => $this->readGifDimensions($fp),
+                'bmp' => $this->readBmpDimensions($fp),
+                'webp' => $this->readWebpDimensions($fp),
+                'jpg', 'jpeg' => $this->readJpegDimensions($fp),
+                default => null,
+            };
+        } finally {
+            fclose($fp);
+        }
+    }
+
+    /** @param resource $fp */
+    private function readPngDimensions($fp): ?array
+    {
+        $data = fread($fp, 24);
+        if ($data === false || strlen($data) < 24) {
+            return null;
+        }
+        // PNG signature (8 bytes) + IHDR length (4) + "IHDR" (4) + width (4) + height (4)
+        $width = unpack('N', $data, 16);
+        $height = unpack('N', $data, 20);
+        if ($width === false || $height === false) {
+            return null;
+        }
+        return [$width[1], $height[1]];
+    }
+
+    /** @param resource $fp */
+    private function readGifDimensions($fp): ?array
+    {
+        $data = fread($fp, 10);
+        if ($data === false || strlen($data) < 10) {
+            return null;
+        }
+        // GIF87a/GIF89a header: bytes 6-7 = width, 8-9 = height (little-endian)
+        $dims = unpack('vwidth/vheight', $data, 6);
+        return $dims !== false ? [$dims['width'], $dims['height']] : null;
+    }
+
+    /** @param resource $fp */
+    private function readBmpDimensions($fp): ?array
+    {
+        $data = fread($fp, 26);
+        if ($data === false || strlen($data) < 26) {
+            return null;
+        }
+        // BMP header: bytes 18-21 = width, 22-25 = height (little-endian signed int32)
+        $dims = unpack('lwidth/lheight', $data, 18);
+        if ($dims === false) {
+            return null;
+        }
+        return [abs($dims['width']), abs($dims['height'])];
+    }
+
+    /** @param resource $fp */
+    private function readWebpDimensions($fp): ?array
+    {
+        $data = fread($fp, 30);
+        if ($data === false || strlen($data) < 30) {
+            return null;
+        }
+        // RIFF....WEBP
+        if (substr($data, 0, 4) !== 'RIFF' || substr($data, 8, 4) !== 'WEBP') {
+            return null;
+        }
+
+        $chunk = substr($data, 12, 4);
+        if ($chunk === 'VP8 ') {
+            // Lossy: skip 4 bytes chunk size + 3 bytes frame tag + 3 bytes start code
+            if (strlen($data) < 30) {
+                return null;
+            }
+            // Bytes 26-27 = width (14 bits), 28-29 = height (14 bits)
+            $w = unpack('v', $data, 26);
+            $h = unpack('v', $data, 28);
+            if ($w === false || $h === false) {
+                return null;
+            }
+            return [$w[1] & 0x3FFF, $h[1] & 0x3FFF];
+        }
+
+        if ($chunk === 'VP8L') {
+            // Lossless: signature byte at offset 21, then 4 bytes with packed width/height
+            if (strlen($data) < 25) {
+                $data .= fread($fp, 25 - strlen($data)) ?: '';
+            }
+            if (strlen($data) < 25) {
+                return null;
+            }
+            $bits = unpack('V', $data, 21);
+            if ($bits === false) {
+                return null;
+            }
+            $val = $bits[1];
+            $width = ($val & 0x3FFF) + 1;
+            $height = (($val >> 14) & 0x3FFF) + 1;
+            return [$width, $height];
+        }
+
+        if ($chunk === 'VP8X') {
+            // Extended: bytes 24-26 = width-1 (24-bit LE), 27-29 = height-1 (24-bit LE)
+            $w = ord($data[24]) | (ord($data[25]) << 8) | (ord($data[26]) << 16);
+            $h = ord($data[27]) | (ord($data[28]) << 8) | (ord($data[29]) << 16);
+            return [$w + 1, $h + 1];
+        }
+
+        return null;
+    }
+
+    /** @param resource $fp */
+    private function readJpegDimensions($fp): ?array
+    {
+        // Read up to 64 KB looking for SOF marker
+        $maxRead = 65536;
+        $data = fread($fp, $maxRead);
+        if ($data === false || strlen($data) < 4) {
+            return null;
+        }
+
+        $len = strlen($data);
+        $i = 2; // skip SOI marker (FF D8)
+
+        while ($i < $len - 1) {
+            if (ord($data[$i]) !== 0xFF) {
+                $i++;
+                continue;
+            }
+
+            $marker = ord($data[$i + 1]);
+
+            // SOF markers: C0-C3, C5-C7, C9-CB, CD-CF
+            if (($marker >= 0xC0 && $marker <= 0xC3) ||
+                ($marker >= 0xC5 && $marker <= 0xC7) ||
+                ($marker >= 0xC9 && $marker <= 0xCB) ||
+                ($marker >= 0xCD && $marker <= 0xCF)) {
+                if ($i + 9 >= $len) {
+                    return null;
+                }
+                $height = (ord($data[$i + 5]) << 8) | ord($data[$i + 6]);
+                $width = (ord($data[$i + 7]) << 8) | ord($data[$i + 8]);
+                return [$width, $height];
+            }
+
+            // Skip non-SOF segments
+            if ($i + 3 >= $len) {
+                return null;
+            }
+            $segLen = (ord($data[$i + 2]) << 8) | ord($data[$i + 3]);
+            $i += 2 + $segLen;
+        }
+
+        return null;
     }
 
     private function normalizePath(string $path): string

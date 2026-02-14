@@ -28,6 +28,8 @@ export const useFileStore = defineStore('files', () => {
   const textFilter = ref('')
   const typeFilter = ref<TypeFilter>('all')
   const loading = ref(false)
+  const loadingMore = ref(false)
+  const totalItems = ref(0)
   const fileCount = ref(0)
   const folderCount = ref(0)
   const totalSize = ref(0)
@@ -60,39 +62,83 @@ export const useFileStore = defineStore('files', () => {
   }
 
   const loadError = ref<string | null>(null)
+  // Incremented each time loadDirectory is called; background fetches check this to abort if stale.
+  let loadGeneration = 0
+
+  const FIRST_PAGE = 50
+  const NEXT_PAGE = 200
 
   async function loadDirectory(path?: string) {
     if (path !== undefined) {
       currentPath.value = path
     }
     loading.value = true
+    loadingMore.value = false
     loadError.value = null
+    const generation = ++loadGeneration
+
     try {
-      const response = await filesApi.list({
+      const baseParams = {
         path: currentPath.value,
         sort_by: sortBy.value,
         descending: descending.value ? '1' : '0',
         filter: textFilter.value || undefined,
         type_filter: typeFilter.value !== 'all' ? typeFilter.value : undefined,
-      })
+      }
+
+      // First page — show immediately
+      const response = await filesApi.list({ ...baseParams, limit: FIRST_PAGE, offset: 0 })
+
+      if (generation !== loadGeneration) return // navigation changed
+
       items.value = response.items
       breadcrumb.value = response.breadcrumb
       fileCount.value = response.counts.files
       folderCount.value = response.counts.folders
       totalSize.value = response.totalSize
+      totalItems.value = response.total
       clipboard.value = response.clipboard
       selectedItems.value.clear()
       setCookie(LAST_PATH_COOKIE, currentPath.value)
+
+      loading.value = false
+
+      // Fetch remaining pages in background
+      if (response.total > response.items.length) {
+        loadingMore.value = true
+        let offset = response.items.length
+
+        while (offset < response.total) {
+          if (generation !== loadGeneration) return
+
+          const page = await filesApi.list({ ...baseParams, limit: NEXT_PAGE, offset })
+
+          if (generation !== loadGeneration) return
+
+          items.value = [...items.value, ...page.items]
+          offset += page.items.length
+
+          // No more items from server
+          if (page.items.length === 0) break
+        }
+
+        loadingMore.value = false
+      }
     } catch (err: any) {
+      if (generation !== loadGeneration) return
       const configStore = useConfigStore()
       loadError.value = err?.response?.data?.error || err?.message || configStore.t('Load_Dir_Failed')
       items.value = []
       fileCount.value = 0
       folderCount.value = 0
       totalSize.value = 0
+      totalItems.value = 0
       console.error('loadDirectory failed:', loadError.value)
     } finally {
-      loading.value = false
+      if (generation === loadGeneration) {
+        loading.value = false
+        loadingMore.value = false
+      }
     }
   }
 
@@ -179,8 +225,8 @@ export const useFileStore = defineStore('files', () => {
   return {
     // State
     items, currentPath, breadcrumb, selectedItems, sortBy,
-    descending, textFilter, typeFilter, loading, loadError, fileCount,
-    folderCount, totalSize, clipboard,
+    descending, textFilter, typeFilter, loading, loadingMore, loadError, fileCount,
+    folderCount, totalSize, totalItems, clipboard,
     // Computed
     folders, files, hasSelection, selectionCount, selectedFiles, parentPath,
     // Actions
