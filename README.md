@@ -5,7 +5,26 @@ Modern, responsive web file manager built with **Vue 3 + TypeScript** frontend a
 Developed by **[Radek Hulán](https://mywebdesign.dev/)**
 with the amazing assistance of [Claude Code](https://claude.ai/claude-code).
 
-**[Quick Start (Deploy)](#quick-start)** | **[What to Deploy](#what-to-deploy)** | **[Security](#security)** | **[Configuration](#configuration)** | **[Editor Integration](#editor-integration)**
+## Table of Contents
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Docker](#docker)
+- [Security](#security)
+- [Requirements](#requirements)
+- [Configuration](#configuration)
+- [Editor Integration](#editor-integration)
+- [Web Server Configuration](#web-server-configuration)
+- [Production Deployment](#production-deployment)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Available Languages](#available-languages)
+- [Development](#development)
+- [Testing](#testing)
+- [API Reference](#api-reference)
+- [Project Structure](#project-structure)
+- [Building Distribution Package](#building-distribution-package)
+- [Technology Stack](#technology-stack)
+- [License](#license)
 
 ---
 
@@ -102,6 +121,54 @@ chmod 755 media/source media/thumbs
 
 ---
 
+## Docker
+
+Run File Image Manager in a Docker container with PHP 8.4-FPM + Nginx. No need to install PHP, Composer, or Node.js on your machine.
+
+### Quick Start
+
+```bash
+# PowerShell
+.\docker\build.ps1 -Run
+
+# Bash / Linux / macOS
+./docker/build.sh --run
+
+# Docker Compose
+docker compose up -d
+```
+
+The app will be available at **http://localhost:8080**.
+
+### Media Files
+
+Uploaded files are bind-mounted to the local `media/` folder, so they persist across container restarts and are directly accessible on the host.
+
+### Configuration
+
+Mount your own config file as read-only:
+
+```bash
+docker run -p 8080:80 \
+    -v ./media:/var/www/html/media \
+    -v ./config/filemanager.php:/var/www/html/config/filemanager.php:ro \
+    fileimagemanager
+```
+
+### PHP Limits (defaults in image)
+
+| Parameter | Value |
+|-----------|-------|
+| `upload_max_filesize` | 64 MB |
+| `post_max_size` | 64 MB |
+| `memory_limit` | 256 MB |
+| `max_execution_time` | 120 s |
+| `client_max_body_size` (Nginx) | 64 MB |
+
+See [`docker/README.md`](docker/README.md) for full Docker documentation.
+
+---
+
 ## Security
 
 > [!CAUTION]
@@ -141,7 +208,7 @@ The backend validates all paths using `realpath()`. Never bypass these checks.
 
 | Component | Version |
 |-----------|---------|
-| PHP | >= 8.5 (`gd`, `mbstring`, `json`, `curl`, `fileinfo`) |
+| PHP | >= 8.4 (`gd`, `mbstring`, `json`, `curl`, `fileinfo`) |
 | Composer | 2.x |
 | Node.js | >= 20 (build only) |
 | npm | >= 10 (build only) |
@@ -433,7 +500,7 @@ server {
     }
 
     location ~ \.php$ {
-        fastcgi_pass unix:/run/php/php8.5-fpm.sock;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
         fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
         include fastcgi_params;
     }
@@ -697,7 +764,7 @@ The script runs the full frontend build, installs production-only Composer depen
 |-------|-----------|
 | Frontend | Vue 3.5, TypeScript, Vite 7, Tailwind CSS 4, Pinia 2.3 |
 | Image Editor | Filerobot Image Editor 4.8 |
-| Backend | PHP 8.5, GD library |
+| Backend | PHP 8.4+, GD library |
 | Storage | Filesystem only (no database) |
 
 ### Image Editor

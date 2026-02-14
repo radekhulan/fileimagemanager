@@ -1,6 +1,6 @@
 {
     "name": "rfm/fileimagemanager",
-    "description": "File Image Manager v1.0.0 - Modern PHP 8.5 + Vue 3 file manager",
+    "description": "File Image Manager - Modern PHP 8.4+ / Vue 3 file manager",
     "type": "project",
     "license": "CC0-1.0",
     "authors": [

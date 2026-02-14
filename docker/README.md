@@ -1,6 +1,6 @@
 # Docker - File Image Manager
 
-Multi-stage Docker image: **Node 22** (frontend build) → **PHP 8.5-FPM + Nginx** (production).
+Multi-stage Docker image: **Node 22** (frontend build) → **PHP 8.4-FPM + Nginx** (production).
 
 ## Rychlý start
 
@@ -58,7 +58,7 @@ docker-compose.yml     # Compose konfigurace
 | Vrstva | Obsah |
 |---|---|
 | OS | Alpine Linux |
-| PHP 8.5-FPM | + extensions: gd (freetype, jpeg, webp, avif), mbstring, curl, fileinfo, opcache |
+| PHP 8.4-FPM | + extensions: gd (freetype, jpeg, webp, avif), mbstring, curl, fileinfo, opcache |
 | Nginx | Rewrite pravidla, security headers (CSP, X-Frame-Options, X-Content-Type-Options) |
 | Supervisor | Řídí souběh PHP-FPM a Nginx procesů |
 | Aplikace | PHP backend, zkompilované Vue frontend assets |
