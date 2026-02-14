@@ -37,8 +37,8 @@ $config = [
     'base_url' => ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . preg_replace('/[^\w.\-:]/', '', $_SERVER['HTTP_HOST'] ?? 'localhost'),
     'upload_dir' => '/media/source/',
     'thumbs_upload_dir' => '/media/thumbs/',
-    'current_path' => dirname(__DIR__) . '/media/source/',
-    'thumbs_base_path' => dirname(__DIR__) . '/media/thumbs/',
+    'current_path' => rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . 'source' . DIRECTORY_SEPARATOR,
+    'thumbs_base_path' => rtrim($_SERVER['DOCUMENT_ROOT'], '/\\') . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . 'thumbs' . DIRECTORY_SEPARATOR,
 
     /*
     |--------------------------------------------------------------------------
