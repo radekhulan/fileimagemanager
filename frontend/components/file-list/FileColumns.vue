@@ -218,7 +218,6 @@ function onGoUp() {
           :src="file.thumbnailUrl"
           :alt="file.name"
           class="object-cover w-full h-full"
-          loading="lazy"
         />
       </div>
       <svg

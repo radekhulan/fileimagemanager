@@ -87,7 +87,6 @@ onUnmounted(() => {
       :alt="props.alt"
       class="object-cover w-full h-full transition-opacity duration-200"
       :class="isLoaded ? 'opacity-100' : 'opacity-0'"
-      loading="lazy"
       @load="onLoad"
       @error="onError"
     />

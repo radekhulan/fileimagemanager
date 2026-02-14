@@ -97,6 +97,15 @@ function onDownload() {
             :name="preview.name"
             @close="onClose"
           />
+          <div
+            v-else-if="preview.type === 'pdf'"
+            class="flex flex-col w-full h-full p-4"
+          >
+            <iframe
+              :src="preview.url"
+              class="flex-1 w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-white"
+            />
+          </div>
           <GoogleDocPreview
             v-else-if="preview.type === 'googledoc'"
             :url="preview.url"

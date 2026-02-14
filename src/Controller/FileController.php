@@ -152,7 +152,15 @@ final class FileController
             ]);
         }
 
-        // Google Docs preview
+        // PDF – native browser preview (no external service needed)
+        if ($ext === 'pdf') {
+            return new JsonResponse([
+                'type' => 'pdf',
+                'url' => $this->config->baseUrl . $this->config->uploadDir . $path,
+            ]);
+        }
+
+        // Google Docs preview for office documents
         if ($this->config->googledocEnabled && in_array($ext, $this->config->googledocFileExts, true)) {
             $fileUrl = $this->config->baseUrl . $this->config->uploadDir . $path;
             return new JsonResponse([

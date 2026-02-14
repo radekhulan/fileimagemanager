@@ -267,7 +267,7 @@ $config = [
     |
     */
     'googledoc_enabled' => false,
-    'googledoc_file_exts' => ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'odt', 'odp', 'ods'],
+    'googledoc_file_exts' => ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'odp', 'ods'],
 
     /*
     |--------------------------------------------------------------------------

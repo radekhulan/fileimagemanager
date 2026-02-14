@@ -261,7 +261,7 @@ final readonly class AppConfig
             jplayerExts: $config['jplayer_exts'] ?? ['mp4', 'flv', 'webmv', 'webma', 'webm', 'm4a', 'm4v', 'ogv', 'oga', 'mp3', 'midi', 'mid', 'ogg', 'wav'],
             cadExts: $config['cad_exts'] ?? ['dwg', 'dxf', 'hpgl', 'plt', 'spl', 'step', 'stp', 'iges', 'igs', 'sat', 'cgm', 'svg'],
             googledocEnabled: (bool) ($config['googledoc_enabled'] ?? true),
-            googledocFileExts: $config['googledoc_file_exts'] ?? ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'odt', 'odp', 'ods'],
+            googledocFileExts: $config['googledoc_file_exts'] ?? ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'odp', 'ods'],
 
             copyCutMaxSize: isset($config['copy_cut_max_size']) && $config['copy_cut_max_size'] !== false
                 ? (int) $config['copy_cut_max_size'] : false,

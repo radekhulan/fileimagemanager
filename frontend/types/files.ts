@@ -52,7 +52,7 @@ export interface UploadResult {
 }
 
 export interface PreviewData {
-  type: 'text' | 'image' | 'video' | 'audio' | 'googledoc' | 'unsupported'
+  type: 'text' | 'image' | 'video' | 'audio' | 'pdf' | 'googledoc' | 'unsupported'
   url?: string
   content?: string
   extension?: string
