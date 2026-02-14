@@ -25,8 +25,14 @@ echo "Build OK: $TAG"
 
 if [ "$RUN" = true ]; then
     echo "Starting container on port $PORT ..."
+    MEDIA_PATH="${PROJECT_ROOT}/media"
+    mkdir -p "$MEDIA_PATH"
+    # Convert to Windows path for Docker Desktop bind mount
+    if command -v cygpath &>/dev/null; then
+        MEDIA_PATH="$(cygpath -w "$MEDIA_PATH")"
+    fi
     docker run --rm -p "${PORT}:80" \
-        -v "${TAG}_media:/var/www/html/media" \
+        -v "${MEDIA_PATH}:/var/www/html/media" \
         --name "$TAG" \
         "$TAG"
 fi
