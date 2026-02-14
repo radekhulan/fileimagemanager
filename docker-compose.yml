@@ -1,0 +1,11 @@
+services:
+  fileimagemanager:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      # Persist uploaded files and config
+      - ./media:/var/www/html/media
+      - ./config/filemanager.php:/var/www/html/config/filemanager.php:ro
+    restart: unless-stopped
+
