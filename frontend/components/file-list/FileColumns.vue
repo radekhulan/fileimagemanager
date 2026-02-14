@@ -217,6 +217,7 @@ function onGoUp() {
         <img
           :src="file.thumbnailUrl"
           :alt="file.name"
+          loading="lazy"
           class="object-cover w-full h-full"
         />
       </div>
