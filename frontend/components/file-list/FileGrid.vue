@@ -21,6 +21,18 @@ function isSelected(item: FileItemType): boolean {
   return fileStore.selectedItems.has(item.path)
 }
 
+// --- Helpers for event delegation ---
+
+function findItemByPath(path: string): FileItemType | undefined {
+  return fileStore.items.find(i => i.path === path)
+}
+
+function getItemFromEvent(e: Event): FileItemType | null {
+  const li = (e.target as HTMLElement).closest<HTMLElement>('li[data-path]')
+  if (!li) return null
+  return findItemByPath(li.dataset.path!) ?? null
+}
+
 // --- File actions ---
 
 let clickTimer: ReturnType<typeof setTimeout> | null = null
@@ -88,7 +100,6 @@ function onFolderNavigate(item: FileItemType) {
   fileStore.navigate(item.path + '/')
 }
 
-
 function onFolderRename(item: FileItemType) {
   ops.renameItem(item)
 }
@@ -97,23 +108,27 @@ function onFolderDelete(item: FileItemType) {
   ops.deleteItem(item)
 }
 
-// --- Shared ---
+// --- Delegated event handlers ---
 
-function onContextMenu(event: MouseEvent, item: FileItemType) {
+function onGridContextMenu(event: MouseEvent) {
+  const item = getItemFromEvent(event)
+  if (!item) return
   event.preventDefault()
   ui.showContextMenu(event.clientX, event.clientY, item)
+}
+
+function onGridDblClick(event: MouseEvent) {
+  const item = getItemFromEvent(event)
+  if (!item || item.isDir) return
+  if (isPopupMode()) {
+    if (clickTimer) { clearTimeout(clickTimer); clickTimer = null }
+    selectForPopup(item)
+  }
 }
 
 function onSelectionChange(item: FileItemType, checked: boolean) {
   if (checked !== isSelected(item)) {
     fileStore.toggleSelection(item.path)
-  }
-}
-
-function onDblClick(item: FileItemType) {
-  if (isPopupMode()) {
-    if (clickTimer) { clearTimeout(clickTimer); clickTimer = null }
-    selectForPopup(item)
   }
 }
 
@@ -126,6 +141,8 @@ function onGoUp() {
   <ul
     class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-8 gap-2
            list-none m-0 p-0"
+    @contextmenu="onGridContextMenu"
+    @dblclick="onGridDblClick"
   >
     <!-- Back button -->
     <BackButton
@@ -137,10 +154,10 @@ function onGoUp() {
     <li
       v-for="folder in fileStore.folders"
       :key="'d-' + folder.path"
-      class="relative group"
+      :data-path="folder.path"
+      class="relative group cv-auto"
       :class="{ 'ring-2 ring-rfm-primary ring-offset-1 dark:ring-offset-neutral-900 rounded-lg': isSelected(folder) }"
       draggable="true"
-      @contextmenu="onContextMenu($event, folder)"
     >
       <SelectionCheckbox
         v-if="configStore.config?.multipleSelection"
@@ -159,11 +176,10 @@ function onGoUp() {
     <li
       v-for="file in fileStore.files"
       :key="'f-' + file.path"
-      class="relative group"
+      :data-path="file.path"
+      class="relative group cv-auto"
       :class="{ 'ring-2 ring-rfm-primary ring-offset-1 dark:ring-offset-neutral-900 rounded-lg': isSelected(file) }"
       draggable="true"
-      @contextmenu="onContextMenu($event, file)"
-      @dblclick="onDblClick(file)"
     >
       <SelectionCheckbox
         v-if="configStore.config?.multipleSelection"
@@ -208,3 +224,11 @@ function onGoUp() {
     </li>
   </ul>
 </template>
+
+<style scoped>
+/* Skip rendering of off-screen grid items — browser uses placeholder size for layout */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 150px auto 180px;
+}
+</style>

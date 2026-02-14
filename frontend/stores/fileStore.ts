@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, shallowRef, computed } from 'vue'
 import type { FileItem, BreadcrumbItem, SortField, TypeFilter, ClipboardState } from '@/types/files'
 import { filesApi } from '@/api/files'
 import { configApi } from '@/api/config'
@@ -19,7 +19,7 @@ function setCookie(name: string, value: string, days: number = 365) {
 
 export const useFileStore = defineStore('files', () => {
   // State
-  const items = ref<FileItem[]>([])
+  const items = shallowRef<FileItem[]>([])
   const currentPath = ref('')
   const breadcrumb = ref<BreadcrumbItem[]>([])
   const selectedItems = ref<Set<string>>(new Set())
@@ -35,15 +35,42 @@ export const useFileStore = defineStore('files', () => {
   const totalSize = ref(0)
   const clipboard = ref<ClipboardState>({ hasItems: false, action: null })
 
-  // Computed
-  const folders = computed(() => {
+  // Pre-split arrays — updated directly during loading to avoid repeated filtering
+  const folders = shallowRef<FileItem[]>([])
+  const files = shallowRef<FileItem[]>([])
+
+  function shouldShowFolders(): boolean {
+    if (typeFilter.value === 'all') return true
     const configStore = useConfigStore()
-    if (typeFilter.value !== 'all' && !configStore.forceTypeFilter) {
-      return []
+    return !!configStore.forceTypeFilter
+  }
+
+  /** Split items into folders/files arrays. Called once after full load or reset. */
+  function rebuildSplit() {
+    if (shouldShowFolders()) {
+      folders.value = items.value.filter(i => i.isDir)
+    } else {
+      folders.value = []
     }
-    return items.value.filter(i => i.isDir)
-  })
-  const files = computed(() => items.value.filter(i => !i.isDir))
+    files.value = items.value.filter(i => !i.isDir)
+  }
+
+  /** Append a chunk of items to the pre-split arrays (avoids re-filtering entire list). */
+  function appendChunk(chunk: FileItem[]) {
+    const showFolders = shouldShowFolders()
+    const newFolders: FileItem[] = []
+    const newFiles: FileItem[] = []
+    for (const item of chunk) {
+      if (item.isDir) {
+        if (showFolders) newFolders.push(item)
+      } else {
+        newFiles.push(item)
+      }
+    }
+    items.value = [...items.value, ...chunk]
+    if (newFolders.length) folders.value = [...folders.value, ...newFolders]
+    if (newFiles.length) files.value = [...files.value, ...newFiles]
+  }
   const hasSelection = computed(() => selectedItems.value.size > 0)
   const selectionCount = computed(() => selectedItems.value.size)
   const selectedFiles = computed(() =>
@@ -65,8 +92,8 @@ export const useFileStore = defineStore('files', () => {
   // Incremented each time loadDirectory is called; background fetches check this to abort if stale.
   let loadGeneration = 0
 
-  const FIRST_PAGE = 50
-  const NEXT_PAGE = 200
+  const FIRST_PAGE = 100
+  const NEXT_PAGE = 500
 
   async function loadDirectory(path?: string) {
     if (path !== undefined) {
@@ -92,6 +119,7 @@ export const useFileStore = defineStore('files', () => {
       if (generation !== loadGeneration) return // navigation changed
 
       items.value = response.items
+      rebuildSplit()
       breadcrumb.value = response.breadcrumb
       fileCount.value = response.counts.files
       folderCount.value = response.counts.folders
@@ -107,6 +135,7 @@ export const useFileStore = defineStore('files', () => {
       if (response.total > response.items.length) {
         loadingMore.value = true
         let offset = response.items.length
+        const accumulated: FileItem[] = []
 
         while (offset < response.total) {
           if (generation !== loadGeneration) return
@@ -115,13 +144,24 @@ export const useFileStore = defineStore('files', () => {
 
           if (generation !== loadGeneration) return
 
-          items.value = [...items.value, ...page.items]
+          accumulated.push(...page.items)
           offset += page.items.length
 
           // No more items from server
           if (page.items.length === 0) break
         }
 
+        if (generation !== loadGeneration) return
+        // Add items in small chunks so the browser can paint between them
+        const CHUNK = 50
+        for (let i = 0; i < accumulated.length; i += CHUNK) {
+          if (generation !== loadGeneration) return
+          appendChunk(accumulated.slice(i, i + CHUNK))
+          // Yield to browser between chunks so scrolling stays responsive
+          if (i + CHUNK < accumulated.length) {
+            await new Promise(r => requestAnimationFrame(r))
+          }
+        }
         loadingMore.value = false
       }
     } catch (err: any) {
@@ -129,6 +169,8 @@ export const useFileStore = defineStore('files', () => {
       const configStore = useConfigStore()
       loadError.value = err?.response?.data?.error || err?.message || configStore.t('Load_Dir_Failed')
       items.value = []
+      folders.value = []
+      files.value = []
       fileCount.value = 0
       folderCount.value = 0
       totalSize.value = 0

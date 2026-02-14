@@ -20,7 +20,7 @@ const config = configStore.config
   <div
     class="rfm-card group/card flex flex-col rounded-lg border border-gray-200 dark:border-neutral-700
            bg-white dark:bg-neutral-800 overflow-hidden cursor-pointer
-           hover:shadow-md hover:border-gray-300 dark:hover:border-neutral-600 transition-all duration-150"
+           hover:shadow-md hover:border-gray-300 dark:hover:border-neutral-600 transition-[box-shadow,border-color] duration-150"
     @click="emit('navigate', props.item)"
   >
     <!-- Folder icon area -->

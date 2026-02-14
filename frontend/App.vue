@@ -23,6 +23,7 @@ import AlertDialog from '@/components/dialogs/AlertDialog.vue'
 import TextEditorDialog from '@/components/dialogs/TextEditorDialog.vue'
 import ChmodDialog from '@/components/dialogs/ChmodDialog.vue'
 import LanguageDialog from '@/components/dialogs/LanguageDialog.vue'
+import FileIconSprite from '@/components/file-list/FileIconSprite.vue'
 
 const configStore = useConfigStore()
 const fileStore = useFileStore()
@@ -111,6 +112,9 @@ function onGlobalDrop(e: DragEvent) {
     @dragleave="onGlobalDragLeave"
     @drop="onGlobalDrop"
   >
+    <!-- SVG icon sprite (rendered once, hidden) -->
+    <FileIconSprite />
+
     <!-- Header toolbar -->
     <AppHeader />
 

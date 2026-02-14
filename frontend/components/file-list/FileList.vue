@@ -10,6 +10,12 @@ import { filesApi, operationsApi, foldersApi } from '@/api/files'
 import SelectionCheckbox from './SelectionCheckbox.vue'
 import Thumbnail from './Thumbnail.vue'
 
+const ICON_MAP: Record<string, string> = {
+  pdf: '#rfm-i24-pdf', word: '#rfm-i24-word', excel: '#rfm-i24-excel',
+  video: '#rfm-i24-video', audio: '#rfm-i24-audio', archive: '#rfm-i24-archive',
+  image: '#rfm-i24-image',
+}
+
 const fileStore = useFileStore()
 const configStore = useConfigStore()
 const ui = useUiStore()
@@ -19,7 +25,23 @@ function isSelected(item: FileItem): boolean {
   return fileStore.selectedItems.has(item.path)
 }
 
-function onRowClick(item: FileItem) {
+// --- Helpers for event delegation ---
+
+function findItemByPath(path: string): FileItem | undefined {
+  return fileStore.items.find(i => i.path === path)
+}
+
+function getItemFromEvent(e: Event): FileItem | null {
+  const li = (e.target as HTMLElement).closest<HTMLElement>('li[data-path]')
+  if (!li) return null
+  return findItemByPath(li.dataset.path!) ?? null
+}
+
+function onListClick(event: MouseEvent) {
+  // Ignore clicks on action buttons
+  if ((event.target as HTMLElement).closest('button')) return
+  const item = getItemFromEvent(event)
+  if (!item) return
   if (item.isDir) {
     fileStore.navigate(item.path + '/')
   } else {
@@ -27,7 +49,9 @@ function onRowClick(item: FileItem) {
   }
 }
 
-function onContextMenu(event: MouseEvent, item: FileItem) {
+function onListContextMenu(event: MouseEvent) {
+  const item = getItemFromEvent(event)
+  if (!item) return
   event.preventDefault()
   ui.showContextMenu(event.clientX, event.clientY, item)
 }
@@ -40,8 +64,9 @@ function onSelectionChange(item: FileItem, checked: boolean) {
 
 let clickTimer: ReturnType<typeof setTimeout> | null = null
 
-function onDblClick(item: FileItem) {
-  if (item.isDir) return
+function onListDblClick(event: MouseEvent) {
+  const item = getItemFromEvent(event)
+  if (!item || item.isDir) return
   if (isPopupMode()) {
     if (clickTimer) { clearTimeout(clickTimer); clickTimer = null }
     selectForPopup(item)
@@ -155,13 +180,13 @@ function getDimension(item: FileItem): string {
       <span class="w-28 text-center">{{ configStore.t('Actions') }}</span>
     </div>
 
-    <ul class="list-none m-0 p-0">
+    <ul class="list-none m-0 p-0" @click="onListClick" @contextmenu="onListContextMenu" @dblclick="onListDblClick">
       <!-- Back button row -->
       <li
         v-if="fileStore.currentPath !== ''"
         class="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-x-4 px-3 py-2
                hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer
-               border-b border-gray-100 dark:border-gray-800 transition-colors items-center"
+               border-b border-gray-100 dark:border-gray-800 transition-[background-color] items-center"
         @click="onGoUp"
       >
         <div class="flex items-center gap-2 min-w-0">
@@ -182,13 +207,12 @@ function getDimension(item: FileItem): string {
       <li
         v-for="folder in fileStore.folders"
         :key="'d-' + folder.path"
-        class="relative group grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_auto_auto_auto_auto] gap-x-4 px-3 py-2
+        :data-path="folder.path"
+        class="cv-auto relative group grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_auto_auto_auto_auto] gap-x-4 px-3 py-2
                hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer
-               border-b border-gray-100 dark:border-gray-800 transition-colors items-center"
+               border-b border-gray-100 dark:border-gray-800 transition-[background-color] items-center"
         :class="{ 'bg-rfm-primary/5 ring-2 ring-inset ring-rfm-primary': isSelected(folder) }"
         draggable="true"
-        @click="onRowClick(folder)"
-        @contextmenu="onContextMenu($event, folder)"
       >
         <!-- Selection checkbox -->
         <SelectionCheckbox
@@ -260,14 +284,12 @@ function getDimension(item: FileItem): string {
       <li
         v-for="file in fileStore.files"
         :key="'f-' + file.path"
-        class="relative group grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_auto_auto_auto_auto] gap-x-4 px-3 py-2
+        :data-path="file.path"
+        class="cv-auto relative group grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_auto_auto_auto_auto] gap-x-4 px-3 py-2
                hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer
-               border-b border-gray-100 dark:border-gray-800 transition-colors items-center"
+               border-b border-gray-100 dark:border-gray-800 transition-[background-color] items-center"
         :class="{ 'bg-rfm-primary/5 ring-2 ring-inset ring-rfm-primary': isSelected(file) }"
         draggable="true"
-        @click="onRowClick(file)"
-        @dblclick="onDblClick(file)"
-        @contextmenu="onContextMenu($event, file)"
       >
         <!-- Selection checkbox -->
         <SelectionCheckbox
@@ -286,74 +308,14 @@ function getDimension(item: FileItem): string {
             <Thumbnail :src="file.thumbnailUrl" :alt="file.name" />
           </div>
 
-          <!-- File type icon for non-images -->
+          <!-- File type icon for non-images — references shared SVG sprite -->
           <svg
             v-else
             class="w-6 h-6 flex-shrink-0"
             :class="getIconColor(file.extension, file.category)"
             viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
           >
-            <!-- PDF -->
-            <template v-if="getIconType(file.extension, file.category) === 'pdf'">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <rect x="6" y="13" width="12" height="7" rx="1" fill="currentColor" opacity="0.15" />
-              <path d="M9 17.5v-3h1.5a1.25 1.25 0 010 2.5H9" stroke-width="1.2" />
-            </template>
-            <!-- Word -->
-            <template v-else-if="getIconType(file.extension, file.category) === 'word'">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="8" y1="13" x2="16" y2="13" />
-              <line x1="8" y1="16" x2="14" y2="16" />
-              <line x1="8" y1="19" x2="12" y2="19" />
-            </template>
-            <!-- Excel -->
-            <template v-else-if="getIconType(file.extension, file.category) === 'excel'">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <rect x="7" y="12" width="10" height="8" rx="0.5" />
-              <line x1="7" y1="16" x2="17" y2="16" />
-              <line x1="12" y1="12" x2="12" y2="20" />
-            </template>
-            <!-- Video - clapperboard -->
-            <template v-else-if="file.category === 'video'">
-              <rect x="2" y="6" width="20" height="15" rx="2" />
-              <path d="M2 10h20" />
-              <path d="M6 6l-2.5 4M11 6l-2.5 4M16 6l-2.5 4M21 6l-2.5 4" stroke-width="1.2" />
-              <path d="M10 14v5l4.5-2.5L10 14z" fill="currentColor" opacity="0.3" />
-            </template>
-            <!-- Audio - speaker with waves -->
-            <template v-else-if="file.category === 'audio'">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor" opacity="0.15" />
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-              <path d="M15.54 8.46a5 5 0 010 7.07" />
-              <path d="M19.07 4.93a10 10 0 010 14.14" />
-            </template>
-            <!-- Archive - package box -->
-            <template v-else-if="file.category === 'archive'">
-              <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-              <line x1="12" y1="22.08" x2="12" y2="12" />
-            </template>
-            <!-- Image -->
-            <template v-else-if="file.category === 'image'">
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <path d="M21 15l-5-5L5 21" />
-            </template>
-            <!-- Generic document / Misc -->
-            <template v-else>
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="8" y1="13" x2="16" y2="13" />
-              <line x1="8" y1="17" x2="16" y2="17" />
-            </template>
+            <use :href="ICON_MAP[getIconType(file.extension, file.category)] || '#rfm-i24-generic'" />
           </svg>
 
           <span class="text-sm truncate text-gray-800 dark:text-gray-200" :title="file.name">
@@ -479,3 +441,10 @@ function getDimension(item: FileItem): string {
     </ul>
   </div>
 </template>
+
+<style scoped>
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100% auto 52px;
+}
+</style>

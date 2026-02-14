@@ -11,8 +11,6 @@ const isVisible = ref(false)
 const isLoaded = ref(false)
 const hasError = ref(false)
 
-let observer: IntersectionObserver | null = null
-
 function onLoad() {
   isLoaded.value = true
 }
@@ -22,29 +20,42 @@ function onError() {
   isLoaded.value = true
 }
 
+// Shared IntersectionObserver — one instance for all Thumbnail components
+const callbacks = new WeakMap<Element, () => void>()
+let shared: IntersectionObserver | null = null
+
+function getSharedObserver(): IntersectionObserver {
+  if (!shared) {
+    shared = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const cb = callbacks.get(entry.target)
+            if (cb) {
+              cb()
+              callbacks.delete(entry.target)
+              shared!.unobserve(entry.target)
+            }
+          }
+        }
+      },
+      { rootMargin: '200px' }
+    )
+  }
+  return shared
+}
+
 onMounted(() => {
   if (!imgRef.value) return
-
-  observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          isVisible.value = true
-          observer?.disconnect()
-          observer = null
-          break
-        }
-      }
-    },
-    { rootMargin: '200px' }
-  )
-
-  observer.observe(imgRef.value)
+  const el = imgRef.value
+  callbacks.set(el, () => { isVisible.value = true })
+  getSharedObserver().observe(el)
 })
 
 onUnmounted(() => {
-  observer?.disconnect()
-  observer = null
+  if (!imgRef.value) return
+  callbacks.delete(imgRef.value)
+  getSharedObserver().unobserve(imgRef.value)
 })
 </script>
 
@@ -53,7 +64,8 @@ onUnmounted(() => {
     <!-- Placeholder shown until image loads -->
     <div
       v-if="!isLoaded"
-      class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 animate-pulse"
+      class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800"
+      :class="{ 'animate-pulse': isVisible }"
     >
       <svg
         class="w-8 h-8 text-gray-300 dark:text-gray-600"

@@ -9,7 +9,7 @@ const emit = defineEmits<{
     class="flex flex-col rounded-lg border border-dashed border-gray-300 dark:border-neutral-600
            bg-gray-50 dark:bg-neutral-800/50 overflow-hidden cursor-pointer
            hover:border-gray-400 dark:hover:border-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800
-           transition-all duration-150"
+           transition-[border-color] duration-150"
     @click="emit('click')"
   >
     <!-- Icon area -->
