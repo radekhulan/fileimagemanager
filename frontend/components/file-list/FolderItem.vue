@@ -24,15 +24,18 @@ const config = configStore.config
     @click="emit('navigate', props.item)"
   >
     <!-- Folder icon area -->
-    <div class="relative aspect-[4/3] bg-amber-50 dark:bg-amber-950/20 flex items-center justify-center overflow-hidden">
+    <div class="relative aspect-[4/3] bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50
+                dark:from-amber-950/30 dark:via-orange-950/20 dark:to-yellow-950/10
+                flex items-center justify-center overflow-hidden p-3.5">
       <svg
-        class="w-24 h-24 text-amber-500 dark:text-amber-400 drop-shadow-sm"
-        viewBox="0 0 48 48"
+        class="w-full h-full text-amber-500 dark:text-amber-400 drop-shadow-md"
+        viewBox="0 0 48 40"
         fill="currentColor"
+        preserveAspectRatio="xMidYMid meet"
       >
-        <path d="M4 12c0-1.1.9-2 2-2h10l4 4h20c1.1 0 2 .9 2 2v2H4v-6z" opacity="0.7" />
-        <path d="M4 18h40v20c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V18z" opacity="0.9" />
-        <path d="M4 18h40v3H4z" fill="white" opacity="0.15" />
+        <path d="M2 10c0-1.1.9-2 2-2h12l4 4h22c1.1 0 2 .9 2 2v1H2v-5z" opacity="0.5" />
+        <path d="M2 15h44v21c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V15z" />
+        <path d="M2 15h44v3H2z" fill="white" opacity="0.2" />
       </svg>
 
       <!-- Hover action bar -->
@@ -71,12 +74,12 @@ const config = configStore.config
     <!-- Folder name -->
     <div class="px-2 py-1.5 min-w-0">
       <p
-        class="text-xs font-medium text-gray-800 dark:text-gray-200 truncate leading-tight"
+        class="text-xs font-medium text-gray-700 dark:text-gray-200 truncate leading-tight"
         :title="props.item.name"
       >
         {{ props.item.name }}
       </p>
-      <p class="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500 leading-tight">
+      <p class="mt-0.5 text-[10px] text-amber-500/70 dark:text-amber-400/50 font-medium uppercase tracking-wide leading-tight">
         {{ configStore.t('Folder') }}
       </p>
     </div>

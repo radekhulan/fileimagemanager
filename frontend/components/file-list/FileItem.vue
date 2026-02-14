@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { FileItem } from '@/types/files'
 import { formatFileSize } from '@/utils/filesize'
 import { getIconColor, getIconType, isEditableImage } from '@/utils/extensions'
@@ -21,6 +22,16 @@ const emit = defineEmits<{
 
 const configStore = useConfigStore()
 const config = configStore.config
+
+/** File name without extension (extension is shown in the badge) */
+const nameWithoutExt = computed(() => {
+  const ext = props.item.extension
+  if (!ext) return props.item.name
+  const suffix = '.' + ext
+  return props.item.name.endsWith(suffix)
+    ? props.item.name.slice(0, -suffix.length)
+    : props.item.name
+})
 </script>
 
 <template>
@@ -40,9 +51,9 @@ const config = configStore.config
       />
 
       <!-- File type icon (non-image) -->
-      <div v-else class="flex items-center justify-center w-full h-full">
+      <div v-else class="flex items-center justify-center w-full h-full bg-gradient-to-br from-gray-50 via-gray-100/50 to-gray-50 dark:from-neutral-900 dark:via-neutral-800/50 dark:to-neutral-900">
         <svg
-          class="w-14 h-14"
+          class="w-3/5 h-3/5 drop-shadow-sm"
           :class="getIconColor(props.item.extension, props.item.category)"
           viewBox="0 0 48 48"
           fill="none"
@@ -213,7 +224,7 @@ const config = configStore.config
         class="text-xs font-medium text-gray-800 dark:text-gray-200 truncate leading-tight"
         :title="props.item.name"
       >
-        {{ props.item.name }}
+        {{ nameWithoutExt }}
       </p>
       <p class="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500 truncate leading-tight">
         {{ formatFileSize(props.item.size) }}

@@ -392,11 +392,14 @@ const config = computed(() => configStore.config)
         <!-- Close window (TinyMCE / popup mode) -->
         <button
           v-if="configStore.isEditorMode && config?.removeHeader"
-          class="rounded-full p-1.5 text-gray-500 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          class="rounded-full p-2 bg-red-50 dark:bg-red-950/40 text-red-400 dark:text-red-400
+                 hover:bg-red-500 hover:text-white dark:hover:bg-red-600 dark:hover:text-white
+                 ring-1 ring-red-200 dark:ring-red-800/50 hover:ring-red-500 dark:hover:ring-red-600
+                 transition-all duration-150 shadow-sm hover:shadow"
           :title="t('Cancel')"
           @click="closeWindow"
         >
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="w-4.5 h-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
