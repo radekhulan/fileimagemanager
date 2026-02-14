@@ -9,6 +9,7 @@ import { useEditorIntegration } from '@/composables/useEditorIntegration'
 import { filesApi, operationsApi, foldersApi } from '@/api/files'
 import SelectionCheckbox from './SelectionCheckbox.vue'
 import Thumbnail from './Thumbnail.vue'
+import { useRenderLimit } from '@/composables/useRenderLimit'
 
 const ICON_MAP: Record<string, string> = {
   pdf: '#rfm-i24-pdf', word: '#rfm-i24-word', excel: '#rfm-i24-excel',
@@ -20,6 +21,7 @@ const fileStore = useFileStore()
 const configStore = useConfigStore()
 const ui = useUiStore()
 const { isEditorMode, isPopupMode, selectFile, selectForPopup } = useEditorIntegration()
+const { visibleFolders, visibleFiles, allRendered, sentinelRef } = useRenderLimit(() => fileStore.folders, () => fileStore.files, () => fileStore.items)
 
 function isSelected(item: FileItem): boolean {
   return fileStore.selectedItems.has(item.path)
@@ -205,7 +207,7 @@ function getDimension(item: FileItem): string {
 
       <!-- Folder rows -->
       <li
-        v-for="folder in fileStore.folders"
+        v-for="folder in visibleFolders"
         :key="'d-' + folder.path"
         :data-path="folder.path"
         class="cv-auto relative group grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_auto_auto_auto_auto] gap-x-4 px-3 py-2
@@ -282,7 +284,7 @@ function getDimension(item: FileItem): string {
 
       <!-- File rows -->
       <li
-        v-for="file in fileStore.files"
+        v-for="file in visibleFiles"
         :key="'f-' + file.path"
         :data-path="file.path"
         class="cv-auto relative group grid grid-cols-[1fr] sm:grid-cols-[1fr_auto_auto_auto_auto_auto] gap-x-4 px-3 py-2
@@ -413,6 +415,9 @@ function getDimension(item: FileItem): string {
           </button>
         </div>
       </li>
+
+      <!-- Render-limit sentinel — triggers loading more VNodes on scroll -->
+      <li v-if="!allRendered" ref="sentinelRef" class="h-px" aria-hidden="true" />
 
       <!-- Error state -->
       <li

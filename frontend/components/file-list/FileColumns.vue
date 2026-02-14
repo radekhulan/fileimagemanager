@@ -9,6 +9,7 @@ import type { FileItem } from '@/types/files'
 import { formatFileSize } from '@/utils/filesize'
 import { getIconColor, getIconType, isEditableImage } from '@/utils/extensions'
 import SelectionCheckbox from './SelectionCheckbox.vue'
+import { useRenderLimit } from '@/composables/useRenderLimit'
 
 const ICON_MAP: Record<string, string> = {
   pdf: '#rfm-i24-pdf', word: '#rfm-i24-word', excel: '#rfm-i24-excel',
@@ -21,6 +22,7 @@ const configStore = useConfigStore()
 const ui = useUiStore()
 const ops = useFileOperations()
 const { isEditorMode, isPopupMode, selectFile, selectForPopup } = useEditorIntegration()
+const { visibleFolders, visibleFiles, allRendered, sentinelRef } = useRenderLimit(() => fileStore.folders, () => fileStore.files, () => fileStore.items)
 
 function isSelected(item: FileItem): boolean {
   return fileStore.selectedItems.has(item.path)
@@ -138,7 +140,7 @@ function onGoUp() {
 
     <!-- Folders -->
     <div
-      v-for="folder in fileStore.folders"
+      v-for="folder in visibleFolders"
       :key="'d-' + folder.path"
       :data-path="folder.path"
       class="cv-auto relative group flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-900
@@ -194,7 +196,7 @@ function onGoUp() {
 
     <!-- Files -->
     <div
-      v-for="file in fileStore.files"
+      v-for="file in visibleFiles"
       :key="'f-' + file.path"
       :data-path="file.path"
       class="cv-auto relative group flex items-center gap-2 px-3 py-2 bg-white dark:bg-neutral-900
@@ -316,6 +318,9 @@ function onGoUp() {
         </button>
       </div>
     </div>
+
+    <!-- Render-limit sentinel -->
+    <div v-if="!allRendered" ref="sentinelRef" class="h-px col-span-full" aria-hidden="true" />
 
     <!-- Error state -->
     <div

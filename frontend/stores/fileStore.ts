@@ -152,16 +152,8 @@ export const useFileStore = defineStore('files', () => {
         }
 
         if (generation !== loadGeneration) return
-        // Add items in small chunks so the browser can paint between them
-        const CHUNK = 50
-        for (let i = 0; i < accumulated.length; i += CHUNK) {
-          if (generation !== loadGeneration) return
-          appendChunk(accumulated.slice(i, i + CHUNK))
-          // Yield to browser between chunks so scrolling stays responsive
-          if (i + CHUNK < accumulated.length) {
-            await new Promise(r => requestAnimationFrame(r))
-          }
-        }
+        // Single bulk append — one reactive update instead of many chunks
+        appendChunk(accumulated)
         loadingMore.value = false
       }
     } catch (err: any) {

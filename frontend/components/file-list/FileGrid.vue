@@ -10,12 +10,14 @@ import FileItemComponent from './FileItem.vue'
 import FolderItem from './FolderItem.vue'
 import BackButton from './BackButton.vue'
 import SelectionCheckbox from './SelectionCheckbox.vue'
+import { useRenderLimit } from '@/composables/useRenderLimit'
 
 const fileStore = useFileStore()
 const configStore = useConfigStore()
 const ui = useUiStore()
 const ops = useFileOperations()
 const { isEditorMode, isPopupMode, selectFile, selectForPopup } = useEditorIntegration()
+const { visibleFolders, visibleFiles, allRendered, sentinelRef } = useRenderLimit(() => fileStore.folders, () => fileStore.files, () => fileStore.items)
 
 function isSelected(item: FileItemType): boolean {
   return fileStore.selectedItems.has(item.path)
@@ -152,7 +154,7 @@ function onGoUp() {
 
     <!-- Folders first -->
     <li
-      v-for="folder in fileStore.folders"
+      v-for="folder in visibleFolders"
       :key="'d-' + folder.path"
       :data-path="folder.path"
       class="relative group cv-auto"
@@ -174,7 +176,7 @@ function onGoUp() {
 
     <!-- Files -->
     <li
-      v-for="file in fileStore.files"
+      v-for="file in visibleFiles"
       :key="'f-' + file.path"
       :data-path="file.path"
       class="relative group cv-auto"
@@ -197,6 +199,9 @@ function onGoUp() {
         @delete="onDelete"
       />
     </li>
+
+    <!-- Render-limit sentinel -->
+    <li v-if="!allRendered" ref="sentinelRef" class="h-px" aria-hidden="true" />
 
     <!-- Error state -->
     <li
