@@ -135,6 +135,13 @@ export const darkPalette: Record<string, string> = {
 
   // Tag
   'tag': '#6a6a82',
+
+  // Warning/status states
+  'warning-active': '#d08018',
+  'modified': '#5b8def',
+
+  // Overlay
+  'orange-0-1-overlay': 'rgba(240, 160, 48, 0.1)',
 }
 
 /** Light-mode palette (minimal overrides, editor defaults are fine) */

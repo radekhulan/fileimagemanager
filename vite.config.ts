@@ -51,6 +51,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(cwd, 'frontend'),
+      // Deduplicate React — filerobot-image-editor bundles its own React 18
+      // but react-filerobot-image-editor needs React 19. Force single copy.
+      'react': resolve(cwd, 'node_modules/react'),
+      'react-dom': resolve(cwd, 'node_modules/react-dom'),
     },
   },
   server: {

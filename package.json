@@ -13,13 +13,18 @@
   },
   "dependencies": {
     "axios": "^1.7",
-    "filerobot-image-editor": "^4.8",
+    "filerobot-image-editor": "^5.0.0",
     "pinia": "^2.3",
-    "react": "^18.3",
-    "react-dom": "^18.3",
-    "react-filerobot-image-editor": "^5.0.0-beta.153",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-filerobot-image-editor": "^5.0.1",
     "vue": "^3.5",
     "vue-router": "^4.5"
+  },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "react-konva": "19.2.2"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0",
