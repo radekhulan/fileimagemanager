@@ -95,3 +95,33 @@ html.dark {
 .rfm-spinner {
   animation: rfm-spin 0.8s linear infinite;
 }
+
+/* Touch devices (tablets, phones): always show action icons — no hover needed */
+@media (pointer: coarse) {
+  .rfm-actions {
+    opacity: 1 !important;
+    display: flex !important;
+  }
+
+  /* Grid view cards: force single row of icons (visibility managed by JS tap-to-reveal) */
+  .rfm-actions-grid {
+    flex-wrap: nowrap !important;
+  }
+}
+
+/* Touch + small screen: overlay actions in list view rows (single-column grid) */
+@media (pointer: coarse) and (max-width: 639px) {
+  .rfm-actions-list {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: auto;
+    background: linear-gradient(to right, transparent, var(--color-rfm-surface-light) 8px);
+    padding-left: 12px;
+  }
+
+  .dark .rfm-actions-list {
+    background: linear-gradient(to right, transparent, var(--color-rfm-surface-dark) 8px);
+  }
+}

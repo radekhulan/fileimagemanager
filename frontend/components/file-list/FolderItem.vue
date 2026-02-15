@@ -4,6 +4,7 @@ import { useConfigStore } from '@/stores/configStore'
 
 const props = defineProps<{
   item: FileItem
+  active?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -40,9 +41,10 @@ const config = configStore.config
 
       <!-- Hover action bar -->
       <div
-        class="absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-0.5 px-1 py-1
+        class="rfm-actions-grid absolute inset-x-0 bottom-0 flex items-center justify-center gap-0.5 px-1 py-1
                bg-gradient-to-t from-black/60 via-black/40 to-transparent
-               opacity-0 group-hover/card:opacity-100 transition-opacity duration-150"
+               transition-opacity duration-150"
+        :class="active ? 'opacity-100' : 'opacity-0 group-hover/card:opacity-100 pointer-events-none group-hover/card:pointer-events-auto'"
         @click.stop
       >
         <!-- Rename -->

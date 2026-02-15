@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useFileStore } from '@/stores/fileStore'
 import { useConfigStore } from '@/stores/configStore'
 import { useUiStore } from '@/stores/uiStore'
@@ -18,6 +19,15 @@ const ui = useUiStore()
 const ops = useFileOperations()
 const { isEditorMode, isPopupMode, selectFile, selectForPopup } = useEditorIntegration()
 const { visibleFolders, visibleFiles, allRendered, sentinelRef } = useRenderLimit(() => fileStore.folders, () => fileStore.files, () => fileStore.items)
+
+// --- Touch: tap-to-reveal pattern (all modes) ---
+// First tap on a card reveals action icons, second tap performs the action.
+const activeCardPath = ref<string | null>(null)
+let lastPointerType = ''
+
+function onPointerDown(e: PointerEvent) {
+  lastPointerType = e.pointerType
+}
 
 function isSelected(item: FileItemType): boolean {
   return fileStore.selectedItems.has(item.path)
@@ -63,6 +73,13 @@ async function doPreview(item: FileItemType) {
 }
 
 function onPreview(item: FileItemType) {
+  // Touch: first tap reveals actions, second tap performs the action
+  if (lastPointerType === 'touch' && activeCardPath.value !== item.path) {
+    activeCardPath.value = item.path
+    return
+  }
+  activeCardPath.value = null
+
   if (isEditorMode()) {
     selectFile(item)
     return
@@ -99,6 +116,11 @@ function onDelete(item: FileItemType) {
 // --- Folder actions ---
 
 function onFolderNavigate(item: FileItemType) {
+  if (lastPointerType === 'touch' && activeCardPath.value !== item.path) {
+    activeCardPath.value = item.path
+    return
+  }
+  activeCardPath.value = null
   fileStore.navigate(item.path + '/')
 }
 
@@ -112,6 +134,14 @@ function onFolderDelete(item: FileItemType) {
 
 // --- Delegated event handlers ---
 
+/** Deactivate card when tapping empty grid area */
+function onGridClick(event: MouseEvent) {
+  const card = (event.target as HTMLElement).closest('[data-path]')
+  if (!card) {
+    activeCardPath.value = null
+  }
+}
+
 function onGridContextMenu(event: MouseEvent) {
   const item = getItemFromEvent(event)
   if (!item) return
@@ -122,6 +152,10 @@ function onGridContextMenu(event: MouseEvent) {
 function onGridDblClick(event: MouseEvent) {
   const item = getItemFromEvent(event)
   if (!item || item.isDir) return
+  // Double-tap on touch bypasses tap-to-reveal — go straight to action
+  if (lastPointerType === 'touch') {
+    activeCardPath.value = null
+  }
   if (isPopupMode()) {
     if (clickTimer) { clearTimeout(clickTimer); clickTimer = null }
     selectForPopup(item)
@@ -143,6 +177,8 @@ function onGoUp() {
   <ul
     class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-8 gap-2
            list-none m-0 p-0"
+    @pointerdown="onPointerDown"
+    @click="onGridClick"
     @contextmenu="onGridContextMenu"
     @dblclick="onGridDblClick"
   >
@@ -168,6 +204,7 @@ function onGoUp() {
       />
       <FolderItem
         :item="folder"
+        :active="activeCardPath === folder.path"
         @navigate="onFolderNavigate"
         @rename="onFolderRename"
         @delete="onFolderDelete"
@@ -190,6 +227,7 @@ function onGoUp() {
       />
       <FileItemComponent
         :item="file"
+        :active="activeCardPath === file.path"
         @click="onPreview"
         @preview="doPreview"
         @edit-image="onEditImage"

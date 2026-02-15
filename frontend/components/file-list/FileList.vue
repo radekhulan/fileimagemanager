@@ -253,7 +253,7 @@ function getDimension(item: FileItem): string {
         </span>
 
         <!-- Actions -->
-        <div class="w-28 hidden sm:flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="rfm-actions rfm-actions-list w-28 hidden sm:flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <!-- Rename -->
           <button
             v-if="configStore.config?.renameFolders"
@@ -346,7 +346,7 @@ function getDimension(item: FileItem): string {
         </span>
 
         <!-- Action buttons -->
-        <div class="w-28 hidden sm:flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div class="rfm-actions rfm-actions-list w-28 hidden sm:flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <!-- Download -->
           <button
             v-if="configStore.config?.downloadFiles"

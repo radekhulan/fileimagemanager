@@ -167,7 +167,7 @@ function onGoUp() {
       </span>
 
       <!-- Action buttons -->
-      <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" @click.stop>
+      <div class="rfm-actions flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" @click.stop>
         <!-- Rename -->
         <button
           v-if="configStore.config?.renameFolders"
@@ -243,7 +243,7 @@ function onGoUp() {
       </span>
 
       <!-- Action buttons -->
-      <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" @click.stop>
+      <div class="rfm-actions flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" @click.stop>
         <!-- Preview -->
         <button
           v-if="file.category === 'image'"
