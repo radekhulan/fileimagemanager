@@ -189,7 +189,7 @@ const nameWithoutExt = computed(() => {
 </template>
 
 <style scoped>
-@reference "tailwindcss";
+@reference "@/style.css";
 .rfm-action-btn {
   @apply flex items-center justify-center w-6 h-6 rounded
          text-white/90 hover:text-white hover:bg-white/20

@@ -29,7 +29,7 @@ const hasExpandArrow = (node: TreeNode) => node.hasChildren || node.children.len
 <template>
   <div>
     <button
-      class="flex items-center gap-1.5 w-full py-1 pr-2 text-xs transition-colors text-left truncate"
+      class="flex items-center gap-1.5 w-full py-1 pr-2 text-sm transition-colors text-left truncate"
       :class="isActive(node.path)
         ? 'text-rfm-primary bg-rfm-primary/10 font-semibold'
         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700'"
@@ -38,16 +38,16 @@ const hasExpandArrow = (node: TreeNode) => node.hasChildren || node.children.len
       @click="onClick"
     >
       <!-- Loading spinner -->
-      <svg v-if="sidebar.isLoading(node.path)" class="w-3 h-3 shrink-0 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <svg v-if="sidebar.isLoading(node.path)" class="w-3.5 h-3.5 shrink-0 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
         <path d="M12 2a10 10 0 0 1 10 10" />
       </svg>
       <!-- Expand arrow -->
-      <svg v-else-if="hasExpandArrow(node)" class="w-3 h-3 shrink-0 transition-transform" :class="{ 'rotate-90': isExpanded(node.path) }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg v-else-if="hasExpandArrow(node)" class="w-3.5 h-3.5 shrink-0 transition-transform" :class="{ 'rotate-90': isExpanded(node.path) }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="9 18 15 12 9 6" />
       </svg>
-      <span v-else class="w-3 shrink-0" />
-      <svg class="w-3.5 h-3.5 shrink-0 text-gray-400 dark:text-gray-500" viewBox="0 0 24 24" fill="currentColor">
+      <span v-else class="w-3.5 shrink-0" />
+      <svg class="w-4 h-4 shrink-0 text-gray-400 dark:text-gray-500" viewBox="0 0 24 24" fill="currentColor">
         <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z" />
       </svg>
       <span class="truncate">{{ node.name }}</span>

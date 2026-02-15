@@ -64,13 +64,13 @@ defineProps<{
   >
     <!-- Home root item -->
     <button
-      class="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium transition-colors text-left"
+      class="flex items-center gap-2 w-full px-3 py-1.5 text-sm font-medium transition-colors text-left"
       :class="fileStore.currentPath === ''
         ? 'text-rfm-primary bg-rfm-primary/10'
         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-neutral-700'"
       @click="navigate('')"
     >
-      <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         <polyline points="9 22 9 12 15 12 15 22" />
       </svg>

@@ -93,7 +93,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside, true))
             : 'text-gray-600 dark:text-gray-400 hover:text-rfm-primary hover:bg-gray-200 dark:hover:bg-neutral-700'"
           @click="navigateToSegment(segment.path)"
         >
-          {{ segment.name }}
+          {{ segment.name === 'Home' ? t('Home') : segment.name }}
         </button>
       </template>
     </div>

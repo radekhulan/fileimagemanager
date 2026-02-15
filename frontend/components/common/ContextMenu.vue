@@ -330,7 +330,7 @@ async function onExtract() {
         <!-- Delete -->
         <button
           v-if="item.isDir ? config?.deleteFolders : config?.deleteFiles"
-          class="context-menu-item text-rfm-danger hover:!bg-red-50 dark:hover:!bg-red-900/20"
+          class="context-menu-item !text-rfm-danger hover:!bg-red-50 dark:hover:!bg-red-900/20"
           @click="onDelete"
         >
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
@@ -342,8 +342,8 @@ async function onExtract() {
 </template>
 
 <style scoped>
-@reference "tailwindcss";
+@reference "@/style.css";
 .context-menu-item {
-  @apply flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors;
+  @apply flex items-center gap-2.5 w-full px-3 py-1.5 text-left text-gray-900 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors;
 }
 </style>
