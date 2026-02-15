@@ -8,7 +8,7 @@ use RFM\Config\AppConfig;
 use RFM\Enum\ImageResizeMode;
 use RFM\Exception\{UploadException, InvalidExtensionException};
 
-final class UploadService
+class UploadService
 {
     public function __construct(
         private readonly AppConfig $config,

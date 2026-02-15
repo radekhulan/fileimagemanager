@@ -9,7 +9,7 @@ use RFM\DTO\{FileItem, BreadcrumbItem};
 use RFM\Enum\{FileCategory, SortField};
 use RFM\Exception\{FileNotFoundException, PathTraversalException};
 
-final class FileSystemService
+class FileSystemService
 {
     public function __construct(
         private readonly AppConfig $config,

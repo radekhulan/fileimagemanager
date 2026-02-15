@@ -16,6 +16,19 @@ final class JsonResponse
         private readonly array $headers = [],
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function getData(): array
+    {
+        return $this->data;
+    }
+
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
     public function send(): never
     {
         http_response_code($this->statusCode);

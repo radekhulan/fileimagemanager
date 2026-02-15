@@ -8,7 +8,7 @@ use RFM\Config\AppConfig;
 use RFM\Enum\ClipboardAction;
 use RFM\Exception\ForbiddenException;
 
-final class ClipboardService
+class ClipboardService
 {
     public function __construct(
         private readonly AppConfig $config,

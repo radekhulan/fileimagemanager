@@ -7,7 +7,7 @@ namespace RFM\Service;
 use RFM\Config\AppConfig;
 use RFM\Enum\ImageResizeMode;
 
-final class ThumbnailService
+class ThumbnailService
 {
     private const THUMB_WIDTH = 213;
     private const THUMB_HEIGHT = 160;
