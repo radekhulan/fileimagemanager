@@ -18,7 +18,7 @@ export type SortField = 'name' | 'date' | 'size' | 'extension'
 
 export type ViewMode = 0 | 1 | 2 // 0=grid, 1=list, 2=columns
 
-export type TypeFilter = 'all' | 'image' | 'video' | 'audio' | 'file' | 'archive'
+export type TypeFilter = 'all' | 'image' | 'video' | 'audio' | 'media' | 'file' | 'archive'
 
 export interface TreeNode {
   name: string

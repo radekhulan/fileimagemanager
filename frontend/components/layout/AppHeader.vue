@@ -109,8 +109,7 @@ const filterOptions: { value: TypeFilter; labelKey: string }[] = [
   { value: 'file', labelKey: 'Files' },
   { value: 'image', labelKey: 'Images' },
   { value: 'archive', labelKey: 'Archives' },
-  { value: 'video', labelKey: 'Video' },
-  { value: 'audio', labelKey: 'Music' },
+  { value: 'media', labelKey: 'Media' },
 ]
 
 const config = computed(() => configStore.config)
@@ -256,9 +255,9 @@ const config = computed(() => configStore.config)
           </button>
         </div>
 
-        <!-- Type filter buttons (hidden when type is forced via URL param, e.g. TinyMCE image dialog) -->
+        <!-- Type filter buttons -->
         <div
-          v-if="config?.showFilterButtons && !configStore.forceTypeFilter"
+          v-if="config?.showFilterButtons"
           class="inline-flex flex-wrap items-center gap-1"
         >
           <button
@@ -287,13 +286,9 @@ const config = computed(() => configStore.config)
             <svg v-else-if="filter.value === 'archive'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" />
             </svg>
-            <!-- Video -->
-            <svg v-else-if="filter.value === 'video'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" />
-            </svg>
-            <!-- Audio -->
-            <svg v-else-if="filter.value === 'audio'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+            <!-- Media (video + audio) -->
+            <svg v-else-if="filter.value === 'media'" class="w-3.5 h-3.5 xl:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" />
             </svg>
             <span class="hidden xl:inline">{{ t(filter.labelKey) }}</span>
           </button>

@@ -52,7 +52,7 @@ onMounted(async () => {
   }
   // Auto-set type filter from URL param (e.g., TinyMCE image dialog passes &type=image)
   if (configStore.forceTypeFilter) {
-    const typeMap: Record<string, string> = { image: 'image', media: 'video' }
+    const typeMap: Record<string, string> = { image: 'image', media: 'media', file: 'all' }
     const mapped = typeMap[configStore.forceTypeFilter]
     if (mapped) {
       fileStore.typeFilter = mapped as any
