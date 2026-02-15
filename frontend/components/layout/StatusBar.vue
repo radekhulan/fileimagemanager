@@ -59,12 +59,9 @@ const formattedTotalSize = computed(() => formatFileSize(fileStore.totalSize))
       </span>
     </div>
 
-    <!-- Right: current path -->
-    <div
-      class="hidden sm:block text-gray-400 dark:text-gray-500 truncate max-w-xs"
-      :title="fileStore.currentPath || '/'"
-    >
-      {{ fileStore.currentPath || '/' }}
-    </div>
+    <!-- Right: tip about drag & drop (visible only on wide screens) -->
+    <span class="hidden xl:inline text-gray-400 dark:text-gray-500 italic">
+      {{ t('tip_drag_upload') }}
+    </span>
   </footer>
 </template>

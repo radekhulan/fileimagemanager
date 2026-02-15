@@ -219,5 +219,6 @@
     "fie_isNotImage": "non è un'immagine",
     "fie_toBeUploaded": "da caricare",
     "fie_plus": "+",
-    "fie_cropItemNoEffect": "Nessuna anteprima disponibile per questo ritaglio"
+    "fie_cropItemNoEffect": "Nessuna anteprima disponibile per questo ritaglio",
+    "tip_drag_upload": "Suggerimento: puoi caricare facilmente i file trascinandoli nella finestra principale"
 }

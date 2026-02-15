@@ -219,5 +219,6 @@
     "fie_isNotImage": "nije slika",
     "fie_toBeUploaded": "za učitavanje",
     "fie_plus": "+",
-    "fie_cropItemNoEffect": "Pregled za ovaj element izrezivanja nije dostupan"
+    "fie_cropItemNoEffect": "Pregled za ovaj element izrezivanja nije dostupan",
+    "tip_drag_upload": "Savjet: Datoteke možete jednostavno prenijeti povlačenjem u glavni prozor"
 }

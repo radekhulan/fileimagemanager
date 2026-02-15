@@ -219,5 +219,6 @@
     "fie_isNotImage": "nem kép",
     "fie_toBeUploaded": "feltöltendő",
     "fie_plus": "+",
-    "fie_cropItemNoEffect": "Ehhez a vágási elemhez nem érhető el előnézet"
+    "fie_cropItemNoEffect": "Ehhez a vágási elemhez nem érhető el előnézet",
+    "tip_drag_upload": "Tipp: A fájlokat egyszerűen feltöltheti a főablakba húzással"
 }

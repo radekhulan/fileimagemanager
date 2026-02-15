@@ -219,5 +219,6 @@
     "fie_isNotImage": "nie je obrázok",
     "fie_toBeUploaded": "na nahranie",
     "fie_plus": "+",
-    "fie_cropItemNoEffect": "Náhľad pre túto oblasť orezu nie je k dispozícii"
+    "fie_cropItemNoEffect": "Náhľad pre túto oblasť orezu nie je k dispozícii",
+    "tip_drag_upload": "Tip: Súbory môžete jednoducho nahrať pretiahnutím do hlavného okna"
 }

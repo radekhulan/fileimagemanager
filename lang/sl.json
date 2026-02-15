@@ -219,5 +219,6 @@
     "fie_isNotImage": "ni slika",
     "fie_toBeUploaded": "za nalaganje",
     "fie_plus": "+",
-    "fie_cropItemNoEffect": "Predogled za ta element obrezovanja ni na voljo"
+    "fie_cropItemNoEffect": "Predogled za ta element obrezovanja ni na voljo",
+    "tip_drag_upload": "Namig: Datoteke lahko preprosto naložite tako, da jih povlečete v glavno okno"
 }

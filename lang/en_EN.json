@@ -219,5 +219,6 @@
     "fie_isNotImage": "is not image",
     "fie_toBeUploaded": "to be uploaded",
     "fie_plus": "+",
-    "fie_cropItemNoEffect": "No preview available for this crop item"
+    "fie_cropItemNoEffect": "No preview available for this crop item",
+    "tip_drag_upload": "Tip: You can easily upload files by dragging them into the main window"
 }

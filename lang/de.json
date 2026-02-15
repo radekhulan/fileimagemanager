@@ -219,5 +219,6 @@
     "fie_isNotImage": "ist kein Bild",
     "fie_toBeUploaded": "zum Hochladen",
     "fie_plus": "+",
-    "fie_cropItemNoEffect": "Keine Vorschau für dieses Zuschnittelement verfügbar"
+    "fie_cropItemNoEffect": "Keine Vorschau für dieses Zuschnittelement verfügbar",
+    "tip_drag_upload": "Tipp: Sie können Dateien einfach per Drag & Drop in das Hauptfenster hochladen"
 }

@@ -219,5 +219,6 @@
     "fie_isNotImage": "není obrázek",
     "fie_toBeUploaded": "k nahrání",
     "fie_plus": "+",
-    "fie_cropItemNoEffect": "Náhled pro tuto oblast ořezu není k dispozici"
+    "fie_cropItemNoEffect": "Náhled pro tuto oblast ořezu není k dispozici",
+    "tip_drag_upload": "Tip: Soubory můžete snadno nahrát přetažením do hlavního okna"
 }
