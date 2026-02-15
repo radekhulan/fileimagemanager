@@ -46,6 +46,7 @@ final class Router
 
         // Image editor
         $this->post('/api/image/save', Controller\ImageController::class, 'saveEdited');
+        $this->post('/api/image/convert', Controller\ImageController::class, 'convert');
 
         // Config & session
         $this->get('/api/session/init', Controller\ConfigController::class, 'initSession');

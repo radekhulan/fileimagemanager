@@ -126,4 +126,9 @@ export const imageApi = {
     const { data } = await apiClient.post('/image/save', { path, image_data: imageData, name })
     return data
   },
+
+  async convert(path: string, format: 'webp' | 'jpg', keepOriginal: boolean = false) {
+    const { data } = await apiClient.post('/image/convert', { path, format, keep_original: keepOriginal })
+    return data
+  },
 }

@@ -221,5 +221,9 @@
     "fie_toBeUploaded": "k nahrání",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Náhled pro tuto oblast ořezu není k dispozici",
+    "Save_as_WebP": "Uložit jako WebP",
+    "Save_as_JPG": "Uložit jako JPEG",
+    "Convert_Failed": "Převod obrázku selhal",
+    "Keep_Original": "Chcete původní obrázek zachovat?",
     "tip_drag_upload": "Tip: Soubory můžete snadno nahrát přetažením do hlavního okna"
 }

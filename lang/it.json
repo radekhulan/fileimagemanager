@@ -221,5 +221,9 @@
     "fie_toBeUploaded": "da caricare",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Nessuna anteprima disponibile per questo ritaglio",
+    "Save_as_WebP": "Salva come WebP",
+    "Save_as_JPG": "Salva come JPEG",
+    "Convert_Failed": "Conversione immagine fallita",
+    "Keep_Original": "Vuoi mantenere l'immagine originale?",
     "tip_drag_upload": "Suggerimento: puoi caricare facilmente i file trascinandoli nella finestra principale"
 }

@@ -4,7 +4,7 @@ import { useUiStore } from '@/stores/uiStore'
 import { useFileStore } from '@/stores/fileStore'
 import { useConfigStore } from '@/stores/configStore'
 import { useClipboardStore } from '@/stores/clipboardStore'
-import { filesApi, operationsApi } from '@/api/files'
+import { filesApi, operationsApi, imageApi } from '@/api/files'
 import { isEditableImage } from '@/utils/extensions'
 
 const ui = useUiStore()
@@ -163,6 +163,32 @@ async function onCut() {
   close()
 }
 
+function isConvertibleImage(ext: string): boolean {
+  return ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].includes(ext.toLowerCase())
+}
+
+async function onConvert(format: 'webp' | 'jpg') {
+  if (!item.value) return
+  const result = await ui.confirm3(
+    format === 'webp' ? t('Save_as_WebP') : t('Save_as_JPG'),
+    t('Keep_Original'),
+  )
+  if (result === 'cancel') {
+    close()
+    return
+  }
+  close()
+  fileStore.converting = true
+  try {
+    await imageApi.convert(item.value.path, format, result === 'yes')
+    await fileStore.refresh()
+  } catch (err: any) {
+    await ui.alert(t('Error'), err?.response?.data?.error || t('Convert_Failed'))
+  } finally {
+    fileStore.converting = false
+  }
+}
+
 function onEditImage() {
   if (!item.value) return
   ui.openImageEditor(item.value.path, configStore.getFileUrl(item.value.path))
@@ -253,6 +279,26 @@ async function onExtract() {
           {{ t('Edit_image') }}
         </button>
 
+        <!-- Save as WebP -->
+        <button
+          v-if="config?.imageEditorActive && !item.isDir && isConvertibleImage(item.extension) && item.extension !== 'webp'"
+          class="context-menu-item"
+          @click="onConvert('webp')"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M10 12l2 2 4-4" /></svg>
+          {{ t('Save_as_WebP') }}
+        </button>
+
+        <!-- Save as JPG -->
+        <button
+          v-if="config?.imageEditorActive && !item.isDir && isConvertibleImage(item.extension) && !['jpg', 'jpeg'].includes(item.extension)"
+          class="context-menu-item"
+          @click="onConvert('jpg')"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M10 12l2 2 4-4" /></svg>
+          {{ t('Save_as_JPG') }}
+        </button>
+
         <!-- Edit text -->
         <button
           v-if="config?.editTextFiles && !item.isDir && config?.editableTextFileExts?.includes(item.extension)"
@@ -336,6 +382,8 @@ async function onExtract() {
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
           {{ t('Erase') }}
         </button>
+
+
       </div>
     </Transition>
   </Teleport>

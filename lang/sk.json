@@ -221,5 +221,9 @@
     "fie_toBeUploaded": "na nahranie",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Náhľad pre túto oblasť orezu nie je k dispozícii",
+    "Save_as_WebP": "Uložiť ako WebP",
+    "Save_as_JPG": "Uložiť ako JPEG",
+    "Convert_Failed": "Konverzia obrázka zlyhala",
+    "Keep_Original": "Chcete pôvodný obrázok zachovať?",
     "tip_drag_upload": "Tip: Súbory môžete jednoducho nahrať pretiahnutím do hlavného okna"
 }

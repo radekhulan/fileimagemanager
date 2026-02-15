@@ -6,7 +6,7 @@ namespace RFM\Controller;
 
 use RFM\Config\AppConfig;
 use RFM\Http\{Request, JsonResponse};
-use RFM\Service\{ThumbnailService, SecurityService};
+use RFM\Service\{ImageProcessingService, ThumbnailService, SecurityService};
 
 final class ImageController
 {
@@ -14,7 +14,74 @@ final class ImageController
         private readonly AppConfig $config,
         private readonly ThumbnailService $thumbnails,
         private readonly SecurityService $security,
+        private readonly ImageProcessingService $imageProcessor,
     ) {}
+
+    /**
+     * Convert an image to a different format (WebP or JPG).
+     */
+    public function convert(Request $request): JsonResponse
+    {
+        if (!$this->config->imageEditorActive) {
+            return JsonResponse::error('Image editor disabled', 403);
+        }
+
+        $path = $request->post('path', '');
+        $format = $request->post('format', '');
+        $keepOriginal = (bool) $request->post('keep_original', false);
+
+        if (!is_string($path) || $path === '') {
+            return JsonResponse::error('Image path required');
+        }
+        if (!in_array($format, ['webp', 'jpg'], true)) {
+            return JsonResponse::error('Invalid format. Use "webp" or "jpg"');
+        }
+
+        $fullPath = $this->config->currentPath . $path;
+        $this->security->validatePath($fullPath);
+
+        if (!is_file($fullPath)) {
+            return JsonResponse::error('File not found', 404);
+        }
+
+        // Validate source is a convertible image
+        $ext = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'];
+        if (!in_array($ext, $allowedExts, true)) {
+            return JsonResponse::error('File is not a supported image format');
+        }
+
+        $targetType = $format === 'webp' ? IMAGETYPE_WEBP : IMAGETYPE_JPEG;
+        $targetExt = $format === 'webp' ? 'webp' : 'jpg';
+
+        // Build new path with changed extension
+        $dir = dirname($path);
+        $baseName = pathinfo($path, PATHINFO_FILENAME);
+        $newRelPath = ($dir === '.' || $dir === '' ? '' : $dir . '/') . $baseName . '.' . $targetExt;
+        $newFullPath = $this->config->currentPath . $newRelPath;
+
+        // Convert
+        if (!$this->imageProcessor->convert($fullPath, $newFullPath, $targetType, 80)) {
+            return JsonResponse::error('Image conversion failed');
+        }
+
+        @chmod($newFullPath, $this->config->filePermission);
+
+        // Delete old file if the path changed and user doesn't want to keep it
+        if (!$keepOriginal && $fullPath !== $newFullPath && is_file($fullPath)) {
+            @unlink($fullPath);
+            $this->thumbnails->deleteThumbnail($path);
+        }
+
+        // Create new thumbnail
+        $thumbPath = $this->config->thumbsBasePath . $newRelPath;
+        $this->thumbnails->createThumbnail($newFullPath, $thumbPath);
+
+        return JsonResponse::success([
+            'path' => $newRelPath,
+            'name' => $baseName . '.' . $targetExt,
+        ]);
+    }
 
     /**
      * Save an edited image from the Filerobot Image Editor.

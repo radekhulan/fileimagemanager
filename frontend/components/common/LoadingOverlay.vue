@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useConfigStore } from '@/stores/configStore'
 
-defineProps<{ show: boolean }>()
+defineProps<{ show: boolean; transparent?: boolean }>()
 
 const configStore = useConfigStore()
 const { t } = configStore
@@ -16,7 +16,9 @@ const { t } = configStore
   >
     <div
       v-if="show"
-      class="absolute inset-0 z-30 flex items-center justify-center bg-white/60 dark:bg-neutral-900/60 backdrop-blur-sm"
+      :class="transparent
+        ? 'absolute inset-0 z-30 flex items-center justify-center bg-white/20 dark:bg-neutral-900/20'
+        : 'absolute inset-0 z-30 flex items-center justify-center bg-white/60 dark:bg-neutral-900/60 backdrop-blur-sm'"
     >
       <div class="flex flex-col items-center gap-3">
         <svg class="w-8 h-8 text-rfm-primary rfm-spinner" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

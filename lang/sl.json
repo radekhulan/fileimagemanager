@@ -221,5 +221,9 @@
     "fie_toBeUploaded": "za nalaganje",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Predogled za ta element obrezovanja ni na voljo",
+    "Save_as_WebP": "Shrani kot WebP",
+    "Save_as_JPG": "Shrani kot JPEG",
+    "Convert_Failed": "Pretvorba slike ni uspela",
+    "Keep_Original": "Ali želite obdržati izvorno sliko?",
     "tip_drag_upload": "Namig: Datoteke lahko preprosto naložite tako, da jih povlečete v glavno okno"
 }

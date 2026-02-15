@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use RFM\Controller\ImageController;
-use RFM\Service\{SecurityService, ThumbnailService};
+use RFM\Service\{ImageProcessingService, SecurityService, ThumbnailService};
 use RFM\Tests\Unit\TestConfigTrait;
 
 #[CoversClass(ImageController::class)]
@@ -31,7 +31,8 @@ final class ImageControllerTest extends TestCase
         $config = self::createConfig(imageEditorActive: false);
         $thumbnails = $this->createMock(ThumbnailService::class);
         $security = new SecurityService($config);
-        $controller = new ImageController($config, $thumbnails, $security);
+        $imageProcessor = new ImageProcessingService();
+        $controller = new ImageController($config, $thumbnails, $security, $imageProcessor);
 
         $request = self::createRequest('POST', '/api/image/save', post: [
             'path' => 'photo.jpg',
@@ -49,7 +50,8 @@ final class ImageControllerTest extends TestCase
         $config = self::createConfig(imageEditorActive: true);
         $thumbnails = $this->createMock(ThumbnailService::class);
         $security = new SecurityService($config);
-        $controller = new ImageController($config, $thumbnails, $security);
+        $imageProcessor = new ImageProcessingService();
+        $controller = new ImageController($config, $thumbnails, $security, $imageProcessor);
 
         $request = self::createRequest('POST', '/api/image/save', post: [
             'path' => '',
@@ -67,7 +69,8 @@ final class ImageControllerTest extends TestCase
         $config = self::createConfig(imageEditorActive: true);
         $thumbnails = $this->createMock(ThumbnailService::class);
         $security = new SecurityService($config);
-        $controller = new ImageController($config, $thumbnails, $security);
+        $imageProcessor = new ImageProcessingService();
+        $controller = new ImageController($config, $thumbnails, $security, $imageProcessor);
 
         $request = self::createRequest('POST', '/api/image/save', post: [
             'path' => 'photo.jpg',
@@ -85,7 +88,8 @@ final class ImageControllerTest extends TestCase
         $config = self::createConfig(imageEditorActive: true, currentPath: sys_get_temp_dir() . '/');
         $thumbnails = $this->createMock(ThumbnailService::class);
         $security = new SecurityService($config);
-        $controller = new ImageController($config, $thumbnails, $security);
+        $imageProcessor = new ImageProcessingService();
+        $controller = new ImageController($config, $thumbnails, $security, $imageProcessor);
 
         // Create a temporary file with .gif extension
         $tmpFile = sys_get_temp_dir() . '/test_img.gif';
@@ -111,7 +115,8 @@ final class ImageControllerTest extends TestCase
         $config = self::createConfig(imageEditorActive: true, currentPath: sys_get_temp_dir() . '/');
         $thumbnails = $this->createMock(ThumbnailService::class);
         $security = new SecurityService($config);
-        $controller = new ImageController($config, $thumbnails, $security);
+        $imageProcessor = new ImageProcessingService();
+        $controller = new ImageController($config, $thumbnails, $security, $imageProcessor);
 
         $tmpFile = sys_get_temp_dir() . '/test_img.png';
         file_put_contents($tmpFile, 'fake');

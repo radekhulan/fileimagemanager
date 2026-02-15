@@ -51,6 +51,20 @@ export const useUiStore = defineStore('ui', () => {
     message: '',
   })
 
+  const confirm3Dialog = ref<{
+    visible: boolean
+    title: string
+    message: string
+    onYes: (() => void) | null
+    onNo: (() => void) | null
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    onYes: null,
+    onNo: null,
+  })
+
   // Image editor
   const imageEditorState = ref<{
     url: string
@@ -172,6 +186,30 @@ export const useUiStore = defineStore('ui', () => {
     alertDialog.value = { visible: true, title, message }
   }
 
+  function confirm3(title: string, message: string): Promise<'yes' | 'no' | 'cancel'> {
+    return new Promise((resolve) => {
+      confirm3Dialog.value = {
+        visible: true,
+        title,
+        message,
+        onYes: () => {
+          confirm3Dialog.value.visible = false
+          resolve('yes')
+        },
+        onNo: () => {
+          confirm3Dialog.value.visible = false
+          resolve('no')
+        },
+      }
+      const stop = watch(() => confirm3Dialog.value.visible, (v) => {
+        if (!v) {
+          stop()
+          resolve('cancel')
+        }
+      })
+    })
+  }
+
   // Context menu computed helpers
   const contextMenuVisible = computed(() => contextMenu.value.visible)
   const contextMenuX = computed(() => contextMenu.value.x)
@@ -201,7 +239,7 @@ export const useUiStore = defineStore('ui', () => {
     // Panels
     showUploadPanel, showLanguageDialog,
     // Dialogs
-    confirmDialog, promptDialog, alertDialog,
+    confirmDialog, promptDialog, alertDialog, confirm3Dialog,
     // Image editor
     imageEditorState, textEditorFile, chmodTarget,
     // Preview
@@ -210,7 +248,7 @@ export const useUiStore = defineStore('ui', () => {
     contextMenu, contextMenuVisible, contextMenuX, contextMenuY, contextMenuItem,
     // Actions
     initDarkMode, toggleDarkMode, initViewMode, setViewMode,
-    confirm, prompt, alert,
+    confirm, confirm3, prompt, alert,
     showContextMenu, hideContextMenu,
     openImageEditor, closeImageEditor,
   }

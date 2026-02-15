@@ -165,6 +165,7 @@ final class App
                 $this->config,
                 $this->make(ThumbnailService::class),
                 $this->security(),
+                $this->make(ImageProcessingService::class),
             ),
             Controller\ConfigController::class => new Controller\ConfigController(
                 $this->config,

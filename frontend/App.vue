@@ -20,6 +20,7 @@ import ContextMenu from '@/components/common/ContextMenu.vue'
 import DirectorySidebar from '@/components/layout/DirectorySidebar.vue'
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue'
+import Confirm3Dialog from '@/components/dialogs/Confirm3Dialog.vue'
 import PromptDialog from '@/components/dialogs/PromptDialog.vue'
 import AlertDialog from '@/components/dialogs/AlertDialog.vue'
 import TextEditorDialog from '@/components/dialogs/TextEditorDialog.vue'
@@ -145,6 +146,7 @@ function onGlobalDrop(e: DragEvent) {
       </button>
       <main class="relative flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3">
         <LoadingOverlay :show="fileStore.loading" />
+        <LoadingOverlay :show="fileStore.converting" transparent />
         <component
           v-if="!fileStore.loading"
           :is="viewComponent"
@@ -189,6 +191,7 @@ function onGlobalDrop(e: DragEvent) {
 
     <!-- Dialogs -->
     <ConfirmDialog v-if="ui.confirmDialog.visible" />
+    <Confirm3Dialog v-if="ui.confirm3Dialog.visible" />
     <PromptDialog v-if="ui.promptDialog.visible" />
     <AlertDialog v-if="ui.alertDialog.visible" />
     <TextEditorDialog

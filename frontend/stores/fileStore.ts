@@ -29,6 +29,7 @@ export const useFileStore = defineStore('files', () => {
   const typeFilter = ref<TypeFilter>('all')
   const loading = ref(false)
   const loadingMore = ref(false)
+  const converting = ref(false)
   const totalItems = ref(0)
   const fileCount = ref(0)
   const folderCount = ref(0)
@@ -263,7 +264,7 @@ export const useFileStore = defineStore('files', () => {
   return {
     // State
     items, currentPath, breadcrumb, selectedItems, sortBy,
-    descending, textFilter, typeFilter, loading, loadingMore, loadError, fileCount,
+    descending, textFilter, typeFilter, loading, loadingMore, converting, loadError, fileCount,
     folderCount, totalSize, totalItems, clipboard, externalHideFolders,
     // Computed
     folders, files, hasSelection, selectionCount, selectedFiles, parentPath,

@@ -221,5 +221,9 @@
     "fie_toBeUploaded": "za učitavanje",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Pregled za ovaj element izrezivanja nije dostupan",
+    "Save_as_WebP": "Spremi kao WebP",
+    "Save_as_JPG": "Spremi kao JPEG",
+    "Convert_Failed": "Pretvorba slike nije uspjela",
+    "Keep_Original": "Želite li zadržati izvornu sliku?",
     "tip_drag_upload": "Savjet: Datoteke možete jednostavno prenijeti povlačenjem u glavni prozor"
 }

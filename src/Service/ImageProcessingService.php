@@ -173,6 +173,38 @@ final class ImageProcessingService
         return ($currentUsage + $totalNeeded) < $memoryLimit;
     }
 
+    /**
+     * Convert an image to a different format.
+     */
+    public function convert(string $sourcePath, string $destPath, int $targetType, int $quality = 80): bool
+    {
+        $imageInfo = @getimagesize($sourcePath);
+        if ($imageInfo === false) {
+            return false;
+        }
+
+        $source = $this->createFromFile($sourcePath, $imageInfo[2]);
+        if ($source === null) {
+            return false;
+        }
+
+        // For JPEG target, flatten transparency to white background
+        if ($targetType === IMAGETYPE_JPEG) {
+            $width = imagesx($source);
+            $height = imagesy($source);
+            $flat = imagecreatetruecolor($width, $height);
+            if ($flat === false) {
+                return false;
+            }
+            $white = imagecolorallocate($flat, 255, 255, 255);
+            imagefill($flat, 0, 0, $white);
+            imagecopy($flat, $source, 0, 0, 0, 0, $width, $height);
+            $source = $flat;
+        }
+
+        return $this->saveImage($source, $destPath, $targetType, $quality);
+    }
+
     private function createFromFile(string $path, int $type): ?\GdImage
     {
         return match ($type) {

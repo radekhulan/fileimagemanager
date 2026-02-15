@@ -221,5 +221,9 @@
     "fie_toBeUploaded": "zum Hochladen",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Keine Vorschau für dieses Zuschnittelement verfügbar",
+    "Save_as_WebP": "Als WebP speichern",
+    "Save_as_JPG": "Als JPEG speichern",
+    "Convert_Failed": "Bildkonvertierung fehlgeschlagen",
+    "Keep_Original": "Möchten Sie das Originalbild behalten?",
     "tip_drag_upload": "Tipp: Sie können Dateien einfach per Drag & Drop in das Hauptfenster hochladen"
 }
