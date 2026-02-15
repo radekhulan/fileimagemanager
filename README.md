@@ -32,11 +32,13 @@ with the amazing assistance of [Claude Code](https://claude.ai/claude-code).
 
 ### Browsing & Navigation
 - **Three view modes** — Grid (thumbnails), List (detailed rows), and Columns
+- **Directory sidebar** — collapsible tree with lazy-loaded folders, auto-expands to current path
 - **Breadcrumb navigation** with one-click access to any parent folder
 - **Sort** by name, date, or size (ascending / descending)
 - **Real-time search** with instant filtering as you type
 - **Type filters** — show only images, videos, audio, documents, or archives
 - **Remembers last folder** across sessions
+- **Optimized for large directories** — pagination and progressive rendering for 1 000+ files
 
 ### File Operations
 - **Upload** files via drag & drop, file picker, or paste from URL
@@ -53,7 +55,8 @@ with the amazing assistance of [Claude Code](https://claude.ai/claude-code).
 - **Images** — full-size preview with click-to-zoom
 - **Video & Audio** — HTML5 player with playback controls
 - **Text / Code** — syntax-colored preview
-- **PDF & Office documents** — Google Docs Viewer integration
+- **PDF** — native browser PDF viewer (no external service)
+- **Office documents** — Google Docs Viewer integration
 
 ### Image Editor
 - Built-in **Filerobot Image Editor** for JPG, PNG, and WebP
@@ -89,6 +92,9 @@ with the amazing assistance of [Claude Code](https://claude.ai/claude-code).
 
 ### Dark Theme
 ![Dark Theme](media/source/Theme-Dark.webp)
+
+### Folder View
+![Folder View](media/source/FolderView.webp)
 
 ### Light Theme
 ![Light Theme](media/source/Theme-Light.webp)
@@ -300,11 +306,11 @@ All options are in `config/filemanager.php` with inline documentation.
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `googledoc_enabled` | `true` | Use Google Docs Viewer for office files |
-| `googledoc_file_exts` | `doc, docx, xls, xlsx, ppt, pptx, pdf, odt, odp, ods` | Extensions to preview via Google |
+| `googledoc_enabled` | `false` | Use Google Docs Viewer for office files |
+| `googledoc_file_exts` | `doc, docx, xls, xlsx, ppt, pptx, odt, odp, ods` | Extensions to preview via Google |
 
 > [!NOTE]
-> Google Docs Viewer requires the file to be **publicly accessible** from the internet. It will not work on localhost or intranet servers.
+> PDF files are previewed using the native browser PDF viewer (works offline). Google Docs Viewer is used only for office documents and requires the file to be **publicly accessible** from the internet.
 
 ---
 
@@ -666,11 +672,12 @@ All endpoints return JSON. Prefix: `/api/`
 ### Files & Folders
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/files` | List directory contents |
+| `GET` | `/api/files` | List directory contents (paginated) |
 | `GET` | `/api/files/info` | Get file info |
 | `GET` | `/api/files/download` | Download file (range requests supported) |
 | `GET` | `/api/files/preview` | Get preview data |
 | `GET` | `/api/files/content` | Get text file content |
+| `GET` | `/api/folders/tree` | Get recursive directory tree |
 | `POST` | `/api/folders/create` | Create folder |
 | `POST` | `/api/folders/rename` | Rename folder |
 | `POST` | `/api/folders/delete` | Delete folder |
@@ -710,8 +717,8 @@ All endpoints return JSON. Prefix: `/api/`
 │   ├── components/               #   Vue components
 │   │   ├── common/               #     ContextMenu, LoadingOverlay
 │   │   ├── dialogs/              #     Confirm, Prompt, Alert, Chmod, TextEditor, Language
-│   │   ├── file-list/            #     FileGrid, FileList, FileColumns, FileItem
-│   │   ├── layout/               #     AppHeader, Breadcrumb, SortBar, StatusBar
+│   │   ├── file-list/            #     FileGrid, FileList, FileColumns, FileItem, FileIconSprite
+│   │   ├── layout/               #     AppHeader, Breadcrumb, SortBar, StatusBar, DirectorySidebar
 │   │   ├── preview/              #     ImagePreview, MediaPlayer, TextPreview, ImageEditor
 │   │   └── upload/               #     UploadPanel, DropZone, UploadProgress, UrlUpload
 │   ├── composables/              #   useKeyboard, useDragDrop
