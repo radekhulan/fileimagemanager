@@ -19,7 +19,7 @@ const menuStyle = ref({ top: '0px', left: '0px' })
 const item = computed(() => ui.contextMenuItem)
 const config = computed(() => configStore.config)
 
-watch(() => ui.contextMenuVisible, async (visible) => {
+watch(() => [ui.contextMenuVisible, ui.contextMenuX, ui.contextMenuY], async ([visible]) => {
   if (visible) {
     await nextTick()
     adjustPosition()
