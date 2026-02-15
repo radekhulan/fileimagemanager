@@ -2,6 +2,7 @@ import { useFileStore } from '@/stores/fileStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useConfigStore } from '@/stores/configStore'
 import { useClipboardStore } from '@/stores/clipboardStore'
+import { useSidebarStore } from '@/stores/sidebarStore'
 import { operationsApi, foldersApi } from '@/api/files'
 import type { FileItem } from '@/types/files'
 
@@ -10,6 +11,7 @@ export function useFileOperations() {
   const ui = useUiStore()
   const configStore = useConfigStore()
   const clipboard = useClipboardStore()
+  const sidebarStore = useSidebarStore()
   const { t } = configStore
 
   async function createFolder() {
@@ -18,6 +20,7 @@ export function useFileOperations() {
     try {
       await foldersApi.create(fileStore.currentPath, name)
       await fileStore.refresh()
+      sidebarStore.refresh()
     } catch (err: any) {
       ui.alert(t('Error'), err?.response?.data?.error || t('Create_Folder_Failed'))
     }
@@ -41,10 +44,12 @@ export function useFileOperations() {
     try {
       if (item.isDir) {
         await foldersApi.rename(item.path, newName)
+        await fileStore.refresh()
+        sidebarStore.refresh()
       } else {
         await operationsApi.rename(item.path, newName + ext)
+        await fileStore.refresh()
       }
-      await fileStore.refresh()
     } catch (err: any) {
       ui.alert(t('Error'), err?.response?.data?.error || t('Rename_Failed'))
     }
@@ -63,6 +68,7 @@ export function useFileOperations() {
       }
       fileStore.selectedItems.delete(item.path)
       await fileStore.refresh()
+      if (item.isDir) sidebarStore.refresh()
     } catch (err: any) {
       ui.alert(t('Error'), err?.response?.data?.error || t('Delete_Failed'))
     }

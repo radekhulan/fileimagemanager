@@ -571,6 +571,55 @@ final class FileSystemService
         return $count;
     }
 
+    /**
+     * Get recursive directory tree for sidebar navigation.
+     *
+     * @return list<array{name: string, path: string, children: list<mixed>}>
+     */
+    public function getDirectoryTree(string $subdir = ''): array
+    {
+        $fullPath = $this->config->currentPath . $subdir;
+
+        $entries = @scandir($fullPath);
+        if ($entries === false) {
+            return [];
+        }
+
+        $tree = [];
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+
+            $entryPath = $fullPath . $entry;
+            if (!is_dir($entryPath)) {
+                continue;
+            }
+
+            if (in_array($entry, $this->config->hiddenFolders, true)) {
+                continue;
+            }
+
+            $relativePath = $subdir . $entry . '/';
+
+            try {
+                $this->security->validatePath($entryPath);
+            } catch (\Throwable) {
+                continue;
+            }
+
+            $tree[] = [
+                'name' => $entry,
+                'path' => $relativePath,
+                'children' => $this->getDirectoryTree($relativePath),
+            ];
+        }
+
+        usort($tree, fn(array $a, array $b) => strnatcasecmp($a['name'], $b['name']));
+
+        return $tree;
+    }
+
     private function buildFileItem(string $basePath, string $subdir, string $entry): FileItem
     {
         $fullPath = $basePath . $entry;

@@ -4,6 +4,7 @@ import { useConfigStore } from '@/stores/configStore'
 import { useFileStore } from '@/stores/fileStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useUploadStore } from '@/stores/uploadStore'
+import { useSidebarStore } from '@/stores/sidebarStore'
 import { useKeyboard } from '@/composables/useKeyboard'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import Breadcrumb from '@/components/layout/Breadcrumb.vue'
@@ -16,6 +17,7 @@ import UploadPanel from '@/components/upload/UploadPanel.vue'
 const ImageEditor = defineAsyncComponent(() => import('@/components/preview/ImageEditor.vue'))
 import PreviewOverlay from '@/components/preview/PreviewOverlay.vue'
 import ContextMenu from '@/components/common/ContextMenu.vue'
+import DirectorySidebar from '@/components/layout/DirectorySidebar.vue'
 import LoadingOverlay from '@/components/common/LoadingOverlay.vue'
 import ConfirmDialog from '@/components/dialogs/ConfirmDialog.vue'
 import PromptDialog from '@/components/dialogs/PromptDialog.vue'
@@ -29,6 +31,7 @@ const configStore = useConfigStore()
 const fileStore = useFileStore()
 const ui = useUiStore()
 const uploadStore = useUploadStore()
+const sidebarStore = useSidebarStore()
 
 // Register keyboard shortcuts
 useKeyboard()
@@ -57,6 +60,8 @@ onMounted(async () => {
   }
   const lastPath = fileStore.getLastPath()
   await fileStore.loadDirectory(lastPath)
+  // Load sidebar tree after initial content is visible (fire and forget)
+  sidebarStore.loadTree()
 })
 
 function onMainClick() {
@@ -124,35 +129,49 @@ function onGlobalDrop(e: DragEvent) {
     <!-- Sort bar (list/columns view) -->
     <SortBar v-if="configStore.config?.showSortingBar && ui.viewMode > 0" />
 
-    <!-- Main file area -->
-    <main class="relative flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3">
-      <LoadingOverlay :show="fileStore.loading" />
-      <component
-        v-if="!fileStore.loading"
-        :is="viewComponent"
-      />
-
-      <!-- Drop overlay -->
-      <Transition
-        enter-active-class="transition-opacity duration-150"
-        leave-active-class="transition-opacity duration-150"
-        enter-from-class="opacity-0"
-        leave-to-class="opacity-0"
+    <!-- Main file area with optional sidebar -->
+    <div class="flex flex-1 overflow-hidden">
+      <DirectorySidebar v-if="sidebarStore.visible" :tree="sidebarStore.tree" />
+      <!-- Sidebar toggle button -->
+      <button
+        v-if="sidebarStore.canShow"
+        class="hidden lg:flex items-center w-5 shrink-0 justify-center border-r border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 text-gray-400 dark:text-gray-500 hover:text-rfm-primary hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+        :title="sidebarStore.collapsed ? configStore.t('Folders') : configStore.t('Folders')"
+        @click="sidebarStore.toggle()"
       >
-        <div
-          v-if="isDraggingOver"
-          class="absolute inset-0 z-40 flex flex-col items-center justify-center
-                 bg-rfm-primary/10 dark:bg-rfm-primary/20
-                 border-2 border-dashed border-rfm-primary rounded-lg
-                 pointer-events-none"
+        <svg class="w-3.5 h-3.5 transition-transform" :class="{ 'rotate-180': sidebarStore.collapsed }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <main class="relative flex-1 overflow-y-auto overflow-x-hidden p-2 sm:p-3">
+        <LoadingOverlay :show="fileStore.loading" />
+        <component
+          v-if="!fileStore.loading"
+          :is="viewComponent"
+        />
+
+        <!-- Drop overlay -->
+        <Transition
+          enter-active-class="transition-opacity duration-150"
+          leave-active-class="transition-opacity duration-150"
+          enter-from-class="opacity-0"
+          leave-to-class="opacity-0"
         >
-          <svg class="w-16 h-16 text-rfm-primary mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-          </svg>
-          <p class="text-lg font-semibold text-rfm-primary">{{ configStore.t('Upload_drop_here') }}</p>
-        </div>
-      </Transition>
-    </main>
+          <div
+            v-if="isDraggingOver"
+            class="absolute inset-0 z-40 flex flex-col items-center justify-center
+                   bg-rfm-primary/10 dark:bg-rfm-primary/20
+                   border-2 border-dashed border-rfm-primary rounded-lg
+                   pointer-events-none"
+          >
+            <svg class="w-16 h-16 text-rfm-primary mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            <p class="text-lg font-semibold text-rfm-primary">{{ configStore.t('Upload_drop_here') }}</p>
+          </div>
+        </Transition>
+      </main>
+    </div>
 
     <!-- Status bar -->
     <StatusBar />

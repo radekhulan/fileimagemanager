@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, shallowRef, computed } from 'vue'
+import { ref, shallowRef, computed, watch } from 'vue'
 import type { FileItem, BreadcrumbItem, SortField, TypeFilter, ClipboardState } from '@/types/files'
 import { filesApi } from '@/api/files'
 import { configApi } from '@/api/config'
@@ -39,7 +39,11 @@ export const useFileStore = defineStore('files', () => {
   const folders = shallowRef<FileItem[]>([])
   const files = shallowRef<FileItem[]>([])
 
+  // External flag: when true, folders are hidden from the grid (set by sidebar store)
+  const externalHideFolders = ref(false)
+
   function shouldShowFolders(): boolean {
+    if (externalHideFolders.value) return false
     if (typeFilter.value === 'all') return true
     const configStore = useConfigStore()
     return !!configStore.forceTypeFilter
@@ -260,11 +264,12 @@ export const useFileStore = defineStore('files', () => {
     // State
     items, currentPath, breadcrumb, selectedItems, sortBy,
     descending, textFilter, typeFilter, loading, loadingMore, loadError, fileCount,
-    folderCount, totalSize, totalItems, clipboard,
+    folderCount, totalSize, totalItems, clipboard, externalHideFolders,
     // Computed
     folders, files, hasSelection, selectionCount, selectedFiles, parentPath,
     // Actions
     getLastPath, loadDirectory, navigate, goUp, toggleSelection, selectAll, deselectAll,
     changeSort, changeTypeFilter, setTextFilter, refresh, sortPreset, setSortPreset,
+    rebuildSplit,
   }
 })

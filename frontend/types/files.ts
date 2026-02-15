@@ -20,6 +20,12 @@ export type ViewMode = 0 | 1 | 2 // 0=grid, 1=list, 2=columns
 
 export type TypeFilter = 'all' | 'image' | 'video' | 'audio' | 'file' | 'archive'
 
+export interface TreeNode {
+  name: string
+  path: string
+  children: TreeNode[]
+}
+
 export interface BreadcrumbItem {
   name: string
   path: string

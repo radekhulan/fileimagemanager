@@ -4,6 +4,7 @@ import { useConfigStore } from '@/stores/configStore'
 import { useFileStore } from '@/stores/fileStore'
 import { useUiStore } from '@/stores/uiStore'
 import { useClipboardStore } from '@/stores/clipboardStore'
+import { useSidebarStore } from '@/stores/sidebarStore'
 import type { TypeFilter, ViewMode } from '@/types/files'
 import { foldersApi, operationsApi } from '@/api/files'
 
@@ -11,6 +12,7 @@ const configStore = useConfigStore()
 const fileStore = useFileStore()
 const ui = useUiStore()
 const clipboard = useClipboardStore()
+const sidebarStore = useSidebarStore()
 
 const { t } = configStore
 
@@ -296,6 +298,22 @@ const config = computed(() => configStore.config)
             <span class="hidden xl:inline">{{ t(filter.labelKey) }}</span>
           </button>
         </div>
+
+        <!-- "Files only" toggle — visible when sidebar is shown -->
+        <button
+          v-if="sidebarStore.visible"
+          class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-colors"
+          :class="sidebarStore.hideFoldersInGrid
+            ? 'bg-rfm-primary text-white'
+            : 'bg-gray-200 dark:bg-neutral-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-neutral-600'"
+          :title="t('Files_only')"
+          @click="sidebarStore.toggleHideFolders()"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+          </svg>
+          <span class="hidden xl:inline">{{ t('Files_only') }}</span>
+        </button>
       </div>
 
       <!-- Right section: Search, dark mode, language -->

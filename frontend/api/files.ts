@@ -1,5 +1,5 @@
 import apiClient from './client'
-import type { FileListResponse, PreviewData } from '@/types/files'
+import type { FileListResponse, PreviewData, TreeNode } from '@/types/files'
 
 export const filesApi = {
   async list(params: {
@@ -38,6 +38,11 @@ export const filesApi = {
 }
 
 export const foldersApi = {
+  async tree(): Promise<{ tree: TreeNode[] }> {
+    const { data } = await apiClient.get('/folders/tree')
+    return data
+  },
+
   async create(path: string, name: string) {
     const { data } = await apiClient.post('/folders/create', { path, name })
     return data

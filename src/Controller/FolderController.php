@@ -16,6 +16,13 @@ final class FolderController
         private readonly SecurityService $security,
     ) {}
 
+    public function tree(Request $request): JsonResponse
+    {
+        $tree = $this->fileSystem->getDirectoryTree();
+
+        return JsonResponse::success(['tree' => $tree]);
+    }
+
     public function create(Request $request): JsonResponse
     {
         if (!$this->config->createFolders) {

@@ -21,6 +21,7 @@ final class Router
         $this->get('/api/files/content', Controller\FileController::class, 'getContent');
 
         // Folder operations
+        $this->get('/api/folders/tree', Controller\FolderController::class, 'tree');
         $this->post('/api/folders/create', Controller\FolderController::class, 'create');
         $this->post('/api/folders/rename', Controller\FolderController::class, 'rename');
         $this->post('/api/folders/delete', Controller\FolderController::class, 'delete');
