@@ -225,5 +225,6 @@
     "Save_as_JPG": "Zapisz jako JPEG",
     "Convert_Failed": "Konwersja obrazu nie powiodła się",
     "Keep_Original": "Czy chcesz zachować oryginalny obraz?",
-    "tip_drag_upload": "Wskazówka: Pliki możesz łatwo przesłać przeciągając je do głównego okna"
+    "tip_drag_upload": "Wskazówka: Pliki możesz łatwo przesłać przeciągając je do głównego okna",
+    "tip_context_menu": "Wskazówka: Kliknij prawym przyciskiem myszy, aby otworzyć menu kontekstowe"
 }

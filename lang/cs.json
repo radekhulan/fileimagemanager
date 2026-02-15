@@ -225,5 +225,6 @@
     "Save_as_JPG": "Uložit jako JPEG",
     "Convert_Failed": "Převod obrázku selhal",
     "Keep_Original": "Chcete původní obrázek zachovat?",
-    "tip_drag_upload": "Tip: Soubory můžete snadno nahrát přetažením do hlavního okna"
+    "tip_drag_upload": "Tip: Soubory můžete snadno nahrát přetažením do hlavního okna",
+    "tip_context_menu": "Tip: Pro kontextovou nabídku stiskněte pravé tlačítko myši"
 }

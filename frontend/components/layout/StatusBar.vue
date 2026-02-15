@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useFileStore } from '@/stores/fileStore'
 import { useConfigStore } from '@/stores/configStore'
 import { formatFileSize } from '@/utils/filesize'
@@ -9,6 +9,9 @@ const configStore = useConfigStore()
 const { t } = configStore
 
 const config = computed(() => configStore.config)
+
+const tips = ['tip_drag_upload', 'tip_context_menu'] as const
+const currentTip = ref(tips[Math.floor(Math.random() * tips.length)])
 
 const formattedTotalSize = computed(() => formatFileSize(fileStore.totalSize))
 </script>
@@ -61,7 +64,7 @@ const formattedTotalSize = computed(() => formatFileSize(fileStore.totalSize))
 
     <!-- Right: tip about drag & drop (visible only on wide screens) -->
     <span class="hidden xl:inline text-gray-400 dark:text-gray-500 italic">
-      {{ t('tip_drag_upload') }}
+      {{ t(currentTip) }}
     </span>
   </footer>
 </template>

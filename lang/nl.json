@@ -225,5 +225,6 @@
     "Save_as_JPG": "Opslaan als JPEG",
     "Convert_Failed": "Beeldconversie mislukt",
     "Keep_Original": "Wilt u de originele afbeelding behouden?",
-    "tip_drag_upload": "Tip: U kunt eenvoudig bestanden uploaden door ze naar het hoofdvenster te slepen"
+    "tip_drag_upload": "Tip: U kunt eenvoudig bestanden uploaden door ze naar het hoofdvenster te slepen",
+    "tip_context_menu": "Tip: Klik met de rechtermuisknop om het contextmenu te openen"
 }

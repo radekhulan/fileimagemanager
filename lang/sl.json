@@ -225,5 +225,6 @@
     "Save_as_JPG": "Shrani kot JPEG",
     "Convert_Failed": "Pretvorba slike ni uspela",
     "Keep_Original": "Ali želite obdržati izvorno sliko?",
-    "tip_drag_upload": "Namig: Datoteke lahko preprosto naložite tako, da jih povlečete v glavno okno"
+    "tip_drag_upload": "Namig: Datoteke lahko preprosto naložite tako, da jih povlečete v glavno okno",
+    "tip_context_menu": "Namig: Z desnim klikom odprete kontekstni meni"
 }

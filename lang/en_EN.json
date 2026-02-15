@@ -225,5 +225,6 @@
     "Save_as_JPG": "Save as JPEG",
     "Convert_Failed": "Image conversion failed",
     "Keep_Original": "Do you want to keep the original image?",
-    "tip_drag_upload": "Tip: You can easily upload files by dragging them into the main window"
+    "tip_drag_upload": "Tip: You can easily upload files by dragging them into the main window",
+    "tip_context_menu": "Tip: Right-click to open the context menu"
 }

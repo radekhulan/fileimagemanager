@@ -225,5 +225,6 @@
     "Save_as_JPG": "Guardar como JPEG",
     "Convert_Failed": "Error al convertir imagen",
     "Keep_Original": "¿Desea conservar la imagen original?",
-    "tip_drag_upload": "Consejo: Puede subir archivos fácilmente arrastrándolos a la ventana principal"
+    "tip_drag_upload": "Consejo: Puede subir archivos fácilmente arrastrándolos a la ventana principal",
+    "tip_context_menu": "Consejo: Haga clic derecho para abrir el menú contextual"
 }

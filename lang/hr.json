@@ -225,5 +225,6 @@
     "Save_as_JPG": "Spremi kao JPEG",
     "Convert_Failed": "Pretvorba slike nije uspjela",
     "Keep_Original": "Želite li zadržati izvornu sliku?",
-    "tip_drag_upload": "Savjet: Datoteke možete jednostavno prenijeti povlačenjem u glavni prozor"
+    "tip_drag_upload": "Savjet: Datoteke možete jednostavno prenijeti povlačenjem u glavni prozor",
+    "tip_context_menu": "Savjet: Desnom tipkom miša otvorite kontekstni izbornik"
 }
