@@ -34,10 +34,10 @@ final class ConfigController
         // Generate CSRF token
         $csrfToken = $this->security->generateCsrfToken();
 
-        // Load language
-        $lang = $request->cookie('rfm_lang', $this->config->defaultLanguage);
-        if (!is_string($lang)) {
-            $lang = $this->config->defaultLanguage;
+        // Load language: cookie > browser Accept-Language > default
+        $lang = $request->cookie('rfm_lang');
+        if (!is_string($lang) || $lang === '') {
+            $lang = $this->detectBrowserLanguage() ?? $this->config->defaultLanguage;
         }
         $_SESSION['RFM']['language'] = basename($lang);
 
@@ -175,6 +175,70 @@ final class ConfigController
         }
 
         return JsonResponse::success(['filter' => $filter]);
+    }
+
+    /**
+     * Detect language from browser Accept-Language header.
+     * Matches against available lang files: first tries full locale (e.g. "en_EN"),
+     * then short code (e.g. "en").
+     */
+    private function detectBrowserLanguage(): ?string
+    {
+        $header = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
+        if ($header === '') {
+            return null;
+        }
+
+        // Build map of available languages from lang/ directory
+        $langDir = dirname(__DIR__, 2) . '/lang/';
+        $available = [];
+        foreach (glob($langDir . '*.json') as $file) {
+            $code = pathinfo($file, PATHINFO_FILENAME); // e.g. "en_EN", "cs", "pl"
+            $available[] = $code;
+        }
+
+        if ($available === []) {
+            return null;
+        }
+
+        // Parse Accept-Language into sorted list by quality
+        $parsed = [];
+        foreach (explode(',', $header) as $part) {
+            $part = trim($part);
+            if ($part === '') {
+                continue;
+            }
+            // e.g. "cs-CZ;q=0.9" or "en"
+            if (preg_match('/^([a-zA-Z]{1,8}(?:-[a-zA-Z0-9]{1,8})*)(?:;q=([0-9.]+))?$/', $part, $m)) {
+                $tag = $m[1];
+                $q = isset($m[2]) ? (float) $m[2] : 1.0;
+                $parsed[] = ['tag' => $tag, 'q' => $q];
+            }
+        }
+        usort($parsed, fn($a, $b) => $b['q'] <=> $a['q']);
+
+        // Try to match each browser language against available files
+        foreach ($parsed as $item) {
+            $tag = str_replace('-', '_', $item['tag']); // cs-CZ -> cs_CZ
+
+            // Exact match (e.g. "en_EN", "hu_HU")
+            foreach ($available as $code) {
+                if (strcasecmp($code, $tag) === 0) {
+                    return $code;
+                }
+            }
+
+            // Short code match (e.g. browser "cs" matches file "cs", or "pl-PL" matches "pl")
+            $short = strtolower(explode('_', $tag)[0]);
+            foreach ($available as $code) {
+                $codeShort = strtolower(explode('_', $code)[0]);
+                if ($codeShort === $short) {
+                    return $code;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
