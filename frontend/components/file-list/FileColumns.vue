@@ -57,6 +57,12 @@ function onGridContextMenu(event: MouseEvent) {
   const item = getItemFromEvent(event)
   if (!item) return
   event.preventDefault()
+  event.stopPropagation()
+  ui.showContextMenu(event.clientX, event.clientY, item)
+}
+
+function onItemContextMenu(item: FileItem, event: MouseEvent) {
+  event.stopPropagation()
   ui.showContextMenu(event.clientX, event.clientY, item)
 }
 
@@ -191,6 +197,17 @@ function onGoUp() {
             <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
           </svg>
         </button>
+
+        <!-- Kebab / more (touch only) -->
+        <button
+          class="rfm-kebab p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-500 dark:text-gray-400"
+          title="..."
+          @click="onItemContextMenu(folder, $event)"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -272,7 +289,7 @@ function onGoUp() {
         <!-- Download -->
         <button
           v-if="configStore.config?.downloadFiles"
-          class="p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-500 dark:text-gray-400"
+          class="rfm-hide-touch p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-500 dark:text-gray-400"
           :title="configStore.t('Download')"
           @click="onDownload(file)"
         >
@@ -296,7 +313,7 @@ function onGoUp() {
         <!-- Duplicate -->
         <button
           v-if="configStore.config?.duplicateFiles"
-          class="p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-500 dark:text-gray-400"
+          class="rfm-hide-touch p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-500 dark:text-gray-400"
           :title="configStore.t('Duplicate')"
           @click="ops.duplicateItem(file)"
         >
@@ -314,6 +331,17 @@ function onGoUp() {
         >
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+          </svg>
+        </button>
+
+        <!-- Kebab / more (touch only) -->
+        <button
+          class="rfm-kebab p-1 rounded hover:bg-gray-200 dark:hover:bg-neutral-700 text-gray-500 dark:text-gray-400"
+          title="..."
+          @click="onItemContextMenu(file, $event)"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
           </svg>
         </button>
       </div>

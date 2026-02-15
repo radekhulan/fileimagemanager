@@ -146,6 +146,12 @@ function onGridContextMenu(event: MouseEvent) {
   const item = getItemFromEvent(event)
   if (!item) return
   event.preventDefault()
+  event.stopPropagation()
+  ui.showContextMenu(event.clientX, event.clientY, item)
+}
+
+function onItemContextMenu(item: FileItemType, event: MouseEvent) {
+  event.stopPropagation()
   ui.showContextMenu(event.clientX, event.clientY, item)
 }
 
@@ -208,6 +214,7 @@ function onGoUp() {
         @navigate="onFolderNavigate"
         @rename="onFolderRename"
         @delete="onFolderDelete"
+        @contextmenu="onItemContextMenu"
       />
     </li>
 
@@ -235,6 +242,7 @@ function onGoUp() {
         @rename="onRename"
         @duplicate="onDuplicate"
         @delete="onDelete"
+        @contextmenu="onItemContextMenu"
       />
     </li>
 

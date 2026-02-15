@@ -96,6 +96,11 @@ html.dark {
   animation: rfm-spin 0.8s linear infinite;
 }
 
+/* Kebab "..." button: hidden by default (desktop has right-click) */
+.rfm-kebab {
+  display: none !important;
+}
+
 /* Touch devices (tablets, phones): always show action icons — no hover needed */
 @media (pointer: coarse) {
   .rfm-actions {
@@ -106,6 +111,16 @@ html.dark {
   /* Grid view cards: force single row of icons (visibility managed by JS tap-to-reveal) */
   .rfm-actions-grid {
     flex-wrap: nowrap !important;
+  }
+
+  /* Show kebab button on touch — opens full context menu */
+  .rfm-kebab {
+    display: flex !important;
+  }
+
+  /* Hide secondary actions on touch — available via kebab context menu */
+  .rfm-hide-touch {
+    display: none !important;
   }
 }
 

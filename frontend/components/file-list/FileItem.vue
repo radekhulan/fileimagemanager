@@ -25,6 +25,7 @@ const emit = defineEmits<{
   rename: [item: FileItem]
   duplicate: [item: FileItem]
   'delete': [item: FileItem]
+  contextmenu: [item: FileItem, event: MouseEvent]
 }>()
 
 const configStore = useConfigStore()
@@ -103,7 +104,7 @@ const nameWithoutExt = computed(() => {
         <!-- Download -->
         <button
           v-if="config?.downloadFiles"
-          class="rfm-action-btn"
+          class="rfm-action-btn rfm-hide-touch"
           :title="configStore.t('Download')"
           @click="emit('download', props.item)"
         >
@@ -127,7 +128,7 @@ const nameWithoutExt = computed(() => {
         <!-- Duplicate -->
         <button
           v-if="config?.duplicateFiles"
-          class="rfm-action-btn"
+          class="rfm-action-btn rfm-hide-touch"
           :title="configStore.t('Duplicate')"
           @click="emit('duplicate', props.item)"
         >
@@ -145,6 +146,17 @@ const nameWithoutExt = computed(() => {
         >
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+          </svg>
+        </button>
+
+        <!-- Kebab / more (touch only) -->
+        <button
+          class="rfm-action-btn rfm-kebab"
+          title="..."
+          @click="emit('contextmenu', props.item, $event)"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
           </svg>
         </button>
       </div>
