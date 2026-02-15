@@ -1,6 +1,5 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /filemanager/
 
     # Don't rewrite requests for existing files/directories
     RewriteCond %{REQUEST_FILENAME} !-f
