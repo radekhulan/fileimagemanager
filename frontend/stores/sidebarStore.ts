@@ -17,9 +17,20 @@ function setCookie(name: string, value: string, days: number = 365) {
   document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`
 }
 
+/** Find a node in the tree by its path. */
+function findNode(nodes: TreeNode[], path: string): TreeNode | null {
+  for (const node of nodes) {
+    if (node.path === path) return node
+    const found = findNode(node.children, path)
+    if (found) return found
+  }
+  return null
+}
+
 export const useSidebarStore = defineStore('sidebar', () => {
   const tree = ref<TreeNode[]>([])
   const loaded = ref(false)
+  const loadingPaths = ref(new Set<string>())
 
   // User preference from cookie (default: visible)
   const collapsed = ref(getCookie(COOKIE_NAME) === '0')
@@ -66,20 +77,60 @@ export const useSidebarStore = defineStore('sidebar', () => {
     fileStore.rebuildSplit()
   }, { immediate: true })
 
+  /** Stamp raw API nodes with client-side defaults. */
+  function initNodes(nodes: TreeNode[]): TreeNode[] {
+    return nodes.map(n => ({ ...n, children: [], loaded: false }))
+  }
+
   async function loadTree() {
     try {
       const response = await foldersApi.tree()
-      tree.value = response.tree
+      tree.value = initNodes(response.tree)
       loaded.value = true
     } catch {
       // Sidebar is non-critical — fail silently
     }
   }
 
+  async function loadChildren(path: string) {
+    if (loadingPaths.value.has(path)) return
+    loadingPaths.value.add(path)
+    try {
+      const response = await foldersApi.tree(path)
+      const node = findNode(tree.value, path)
+      if (node) {
+        node.children = initNodes(response.tree)
+        node.loaded = true
+      }
+    } catch {
+      // fail silently
+    } finally {
+      loadingPaths.value.delete(path)
+    }
+  }
+
+  /** Ensure all ancestors of a path are loaded (for auto-expand on navigation). */
+  async function ensurePathLoaded(targetPath: string) {
+    if (!targetPath) return
+    const parts = targetPath.replace(/\/$/, '').split('/')
+    let accumulated = ''
+    for (const part of parts) {
+      accumulated += part + '/'
+      const node = findNode(tree.value, accumulated)
+      if (node && !node.loaded && node.hasChildren) {
+        await loadChildren(accumulated)
+      }
+    }
+  }
+
+  function isLoading(path: string): boolean {
+    return loadingPaths.value.has(path)
+  }
+
   async function refresh() {
     try {
       const response = await foldersApi.tree()
-      tree.value = response.tree
+      tree.value = initNodes(response.tree)
     } catch {
       // fail silently
     }
@@ -98,6 +149,9 @@ export const useSidebarStore = defineStore('sidebar', () => {
     toggleHideFolders,
     effectiveHideFolders,
     loadTree,
+    loadChildren,
+    ensurePathLoaded,
+    isLoading,
     refresh,
   }
 })

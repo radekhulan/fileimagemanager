@@ -38,8 +38,8 @@ export const filesApi = {
 }
 
 export const foldersApi = {
-  async tree(): Promise<{ tree: TreeNode[] }> {
-    const { data } = await apiClient.get('/folders/tree')
+  async tree(path?: string): Promise<{ tree: TreeNode[] }> {
+    const { data } = await apiClient.get('/folders/tree', { params: path ? { path } : undefined })
     return data
   },
 

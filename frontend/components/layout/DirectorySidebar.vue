@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch, ref } from 'vue'
 import type { TreeNode } from '@/types/files'
 import { useFileStore } from '@/stores/fileStore'
 import { useConfigStore } from '@/stores/configStore'
+import { useSidebarStore } from '@/stores/sidebarStore'
 import SidebarTreeItem from './SidebarTreeItem.vue'
 
 const fileStore = useFileStore()
 const configStore = useConfigStore()
+const sidebar = useSidebarStore()
 const { t } = configStore
 
-// Set of paths that should be expanded (all ancestors of current path)
-const expandedPaths = computed(() => {
+// Paths manually expanded by clicking
+const userExpandedPaths = ref(new Set<string>())
+
+// Paths auto-expanded from current navigation
+const autoExpandedPaths = computed(() => {
   const paths = new Set<string>()
   const current = fileStore.currentPath
   if (!current) return paths
@@ -23,15 +28,28 @@ const expandedPaths = computed(() => {
   return paths
 })
 
+// Auto-load ancestors when navigating to a deep path
+watch(() => fileStore.currentPath, (path) => {
+  if (path && sidebar.loaded) {
+    sidebar.ensurePathLoaded(path)
+  }
+})
+
 function isActive(path: string): boolean {
   return fileStore.currentPath === path
 }
 
 function isExpanded(path: string): boolean {
-  return expandedPaths.value.has(path)
+  return autoExpandedPaths.value.has(path) || userExpandedPaths.value.has(path)
 }
 
 function navigate(path: string) {
+  // Toggle manual expand if clicking on an already-active or already-expanded folder
+  if (userExpandedPaths.value.has(path)) {
+    userExpandedPaths.value.delete(path)
+  } else {
+    userExpandedPaths.value.add(path)
+  }
   fileStore.navigate(path)
 }
 

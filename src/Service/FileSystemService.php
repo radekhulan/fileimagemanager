@@ -572,9 +572,9 @@ final class FileSystemService
     }
 
     /**
-     * Get recursive directory tree for sidebar navigation.
+     * Get one level of directory tree for sidebar navigation (lazy-loading).
      *
-     * @return list<array{name: string, path: string, children: list<mixed>}>
+     * @return list<array{name: string, path: string, hasChildren: bool}>
      */
     public function getDirectoryTree(string $subdir = ''): array
     {
@@ -611,13 +611,36 @@ final class FileSystemService
             $tree[] = [
                 'name' => $entry,
                 'path' => $relativePath,
-                'children' => $this->getDirectoryTree($relativePath),
+                'hasChildren' => $this->hasSubdirectories($entryPath),
             ];
         }
 
         usort($tree, fn(array $a, array $b) => strnatcasecmp($a['name'], $b['name']));
 
         return $tree;
+    }
+
+    /**
+     * Check if a directory contains at least one visible subdirectory.
+     */
+    private function hasSubdirectories(string $dirPath): bool
+    {
+        $entries = @scandir($dirPath);
+        if ($entries === false) {
+            return false;
+        }
+
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+            if (is_dir($dirPath . DIRECTORY_SEPARATOR . $entry)
+                && !in_array($entry, $this->config->hiddenFolders, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function buildFileItem(string $basePath, string $subdir, string $entry): FileItem

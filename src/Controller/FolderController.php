@@ -18,7 +18,14 @@ final class FolderController
 
     public function tree(Request $request): JsonResponse
     {
-        $tree = $this->fileSystem->getDirectoryTree();
+        $path = $request->get('path', '');
+
+        if (is_string($path) && $path !== '') {
+            $fullPath = $this->config->currentPath . $path;
+            $this->security->validatePath($fullPath);
+        }
+
+        $tree = $this->fileSystem->getDirectoryTree(is_string($path) ? $path : '');
 
         return JsonResponse::success(['tree' => $tree]);
     }

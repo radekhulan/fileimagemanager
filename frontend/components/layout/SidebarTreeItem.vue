@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TreeNode } from '@/types/files'
+import { useSidebarStore } from '@/stores/sidebarStore'
 
 const props = defineProps<{
   node: TreeNode
@@ -12,9 +13,17 @@ const emit = defineEmits<{
   navigate: [path: string]
 }>()
 
+const sidebar = useSidebarStore()
+
 function onClick() {
+  // Lazy-load children on first expand
+  if (!props.node.loaded && props.node.hasChildren) {
+    sidebar.loadChildren(props.node.path)
+  }
   emit('navigate', props.node.path)
 }
+
+const hasExpandArrow = (node: TreeNode) => node.hasChildren || node.children.length > 0
 </script>
 
 <template>
@@ -28,7 +37,13 @@ function onClick() {
       :title="node.name"
       @click="onClick"
     >
-      <svg v-if="node.children.length > 0" class="w-3 h-3 shrink-0 transition-transform" :class="{ 'rotate-90': isExpanded(node.path) }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Loading spinner -->
+      <svg v-if="sidebar.isLoading(node.path)" class="w-3 h-3 shrink-0 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
+        <path d="M12 2a10 10 0 0 1 10 10" />
+      </svg>
+      <!-- Expand arrow -->
+      <svg v-else-if="hasExpandArrow(node)" class="w-3 h-3 shrink-0 transition-transform" :class="{ 'rotate-90': isExpanded(node.path) }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="9 18 15 12 9 6" />
       </svg>
       <span v-else class="w-3 shrink-0" />

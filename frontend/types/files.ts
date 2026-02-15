@@ -23,7 +23,9 @@ export type TypeFilter = 'all' | 'image' | 'video' | 'audio' | 'file' | 'archive
 export interface TreeNode {
   name: string
   path: string
+  hasChildren: boolean
   children: TreeNode[]
+  loaded?: boolean
 }
 
 export interface BreadcrumbItem {
