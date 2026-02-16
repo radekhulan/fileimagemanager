@@ -134,9 +134,9 @@ function injectDarkOverrides() {
     html.dark [class*="ColorPicker-root"] {
       background-color: #2b2b3e !important;
     }
-    html.dark [class*="SfxModal-Wrapper"]:has([class*="SfxColorPicker-root"]),
-    html.dark [class*="SfxModal-Wrapper"]:has([class*="SfxColorPicker-root"]) > [class*="SfxModal-Overlay"],
-    html.dark [class*="SfxModal-root"]:has([class*="SfxColorPicker-root"]) {
+    html.dark [class*="SfxModal-Wrapper"],
+    html.dark [class*="SfxModal-Overlay"],
+    html.dark [class*="SfxModal-root"] {
       background-color: rgba(0, 0, 0, 0.35) !important;
     }
   `
@@ -416,11 +416,11 @@ html.dark [class*="SfxColorInput"] {
   color: #e4e4ef !important;
 }
 
-/* Color picker modal: semi-transparent backdrop so the image
-   behind it stays visible (matches light-mode behaviour) */
-html.dark [class*="SfxModal-Wrapper"]:has([class*="SfxColorPicker-root"]),
-html.dark [class*="SfxModal-Wrapper"]:has([class*="SfxColorPicker-root"]) > [class*="SfxModal-Overlay"],
-html.dark [class*="SfxModal-root"]:has([class*="SfxColorPicker-root"]) {
+/* Modal backdrop: semi-transparent so the image behind stays visible
+   (matches light-mode behaviour) */
+html.dark [class*="SfxModal-Wrapper"],
+html.dark [class*="SfxModal-Overlay"],
+html.dark [class*="SfxModal-root"] {
   background-color: rgba(0, 0, 0, 0.35) !important;
 }
 
