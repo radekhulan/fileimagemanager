@@ -189,10 +189,9 @@ function onGoUp() {
     @dblclick="onGridDblClick"
   >
     <!-- Back button -->
-    <BackButton
-      v-if="fileStore.currentPath !== ''"
-      @click="onGoUp"
-    />
+    <li v-if="fileStore.currentPath !== ''" class="cv-auto">
+      <BackButton @click="onGoUp" />
+    </li>
 
     <!-- Folders first -->
     <li

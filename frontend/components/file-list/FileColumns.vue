@@ -128,7 +128,8 @@ function onGoUp() {
 </script>
 
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-px bg-gray-200 dark:bg-neutral-700 rounded-lg overflow-hidden"
+  <div class="columns-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-700
+              [--grid-line:var(--color-gray-200)] dark:[--grid-line:var(--color-neutral-700)]"
        @click="onGridClick" @contextmenu="onGridContextMenu" @dblclick="onGridDblClick">
     <!-- Back button -->
     <div
@@ -137,11 +138,12 @@ function onGoUp() {
              hover:bg-gray-50 dark:hover:bg-neutral-800/50 cursor-pointer transition-[background-color]"
       @click="onGoUp"
     >
-      <svg class="w-9 h-9 flex-shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 48 48" fill="currentColor">
-        <path d="M6 10c0-1.1.9-2 2-2h10l4 4h18c1.1 0 2 .9 2 2v24c0 1.1-.9 2-2 2H8c-1.1 0-2-.9-2-2V10z" opacity="0.85" />
-        <path d="M26 22H16m0 0l5 5m-5-5l5-5" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+      <svg class="w-9 h-9 flex-shrink-0 text-gray-400 dark:text-gray-500" viewBox="0 0 48 40" fill="none" preserveAspectRatio="xMidYMid meet">
+        <path d="M2 10c0-1.1.9-2 2-2h12l4 4h22c1.1 0 2 .9 2 2v22c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V10z" fill="currentColor" opacity="0.5" />
+        <path d="M0 16c0-1.1.9-2 2-2h44c1.1 0 2 .9 2 2v20c0 1.1-.9 2-2 2H2c-1.1 0-2-.9-2-2V16z" fill="currentColor" opacity="0.8" />
+        <path d="M30 25.5H19.5l4.3-4.3a1.2 1.2 0 10-1.7-1.7l-6.4 6.4a1.2 1.2 0 000 1.7l6.4 6.4a1.2 1.2 0 001.7-1.7L19.5 28H30a1.25 1.25 0 100-2.5z" fill="white" opacity="0.9" />
       </svg>
-      <span class="text-sm text-gray-600 dark:text-gray-400 font-medium">..</span>
+      <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">..</span>
     </div>
 
     <!-- Folders -->
@@ -172,8 +174,10 @@ function onGoUp() {
         {{ folder.name }}
       </span>
 
-      <!-- Action buttons -->
-      <div class="rfm-actions flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" @click.stop>
+      <!-- Action buttons (absolute so layout is consistent) -->
+      <div class="rfm-actions absolute right-0 top-0 bottom-0 flex items-center gap-0.5 px-2
+                  opacity-0 group-hover:opacity-100 transition-opacity
+                  bg-gradient-to-l from-white from-80% dark:from-neutral-900" @click.stop>
         <!-- Rename -->
         <button
           v-if="configStore.config?.renameFolders"
@@ -255,12 +259,14 @@ function onGoUp() {
       </span>
 
       <!-- Size -->
-      <span class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0 w-14 text-right">
+      <span class="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0 w-20 text-right">
         {{ formatFileSize(file.size) }}
       </span>
 
-      <!-- Action buttons -->
-      <div class="rfm-actions flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" @click.stop>
+      <!-- Action buttons (absolute so they don't shift the size column) -->
+      <div class="rfm-actions absolute right-0 top-0 bottom-0 flex items-center gap-0.5 px-2
+                  opacity-0 group-hover:opacity-100 transition-opacity
+                  bg-gradient-to-l from-white from-80% dark:from-neutral-900" @click.stop>
         <!-- Preview -->
         <button
           v-if="file.category === 'image'"
@@ -381,5 +387,12 @@ function onGoUp() {
 .cv-auto {
   content-visibility: auto;
   contain-intrinsic-size: auto 100% auto 52px;
+}
+.columns-grid > * {
+  box-shadow:
+    0.5px 0 0 0 var(--grid-line),
+    -0.5px 0 0 0 var(--grid-line),
+    0 0.5px 0 0 var(--grid-line),
+    0 -0.5px 0 0 var(--grid-line);
 }
 </style>

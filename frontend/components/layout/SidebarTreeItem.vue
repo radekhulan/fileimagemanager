@@ -11,6 +11,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   navigate: [path: string]
+  contextmenu: [event: MouseEvent, node: TreeNode]
 }>()
 
 const sidebar = useSidebarStore()
@@ -21,6 +22,11 @@ function onClick() {
     sidebar.loadChildren(props.node.path)
   }
   emit('navigate', props.node.path)
+}
+
+function onContextMenu(e: MouseEvent) {
+  e.preventDefault()
+  emit('contextmenu', e, props.node)
 }
 
 const hasExpandArrow = (node: TreeNode) => node.hasChildren || node.children.length > 0
@@ -36,6 +42,7 @@ const hasExpandArrow = (node: TreeNode) => node.hasChildren || node.children.len
       :style="{ paddingLeft: (depth * 12 + 12) + 'px' }"
       :title="node.name"
       @click="onClick"
+      @contextmenu="onContextMenu"
     >
       <!-- Loading spinner -->
       <svg v-if="sidebar.isLoading(node.path)" class="w-3.5 h-3.5 shrink-0 animate-spin text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -61,6 +68,7 @@ const hasExpandArrow = (node: TreeNode) => node.hasChildren || node.children.len
         :is-active="isActive"
         :is-expanded="isExpanded"
         @navigate="$emit('navigate', $event)"
+        @contextmenu="(e: MouseEvent, n: TreeNode) => $emit('contextmenu', e, n)"
       />
     </template>
   </div>

@@ -198,11 +198,12 @@ function getDimension(item: FileItem): string {
         @click="onGoUp"
       >
         <div class="flex items-center gap-2 min-w-0">
-          <svg class="w-9 h-9 flex-shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 48 48" fill="currentColor">
-            <path d="M6 10c0-1.1.9-2 2-2h10l4 4h18c1.1 0 2 .9 2 2v24c0 1.1-.9 2-2 2H8c-1.1 0-2-.9-2-2V10z" opacity="0.85" />
-            <path d="M26 22H16m0 0l5 5m-5-5l5-5" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <svg class="w-9 h-9 flex-shrink-0 text-gray-400 dark:text-gray-500" viewBox="0 0 48 40" fill="none" preserveAspectRatio="xMidYMid meet">
+            <path d="M2 10c0-1.1.9-2 2-2h12l4 4h22c1.1 0 2 .9 2 2v22c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V10z" fill="currentColor" opacity="0.5" />
+            <path d="M0 16c0-1.1.9-2 2-2h44c1.1 0 2 .9 2 2v20c0 1.1-.9 2-2 2H2c-1.1 0-2-.9-2-2V16z" fill="currentColor" opacity="0.8" />
+            <path d="M30 25.5H19.5l4.3-4.3a1.2 1.2 0 10-1.7-1.7l-6.4 6.4a1.2 1.2 0 000 1.7l6.4 6.4a1.2 1.2 0 001.7-1.7L19.5 28H30a1.25 1.25 0 100-2.5z" fill="white" opacity="0.9" />
           </svg>
-          <span class="text-sm font-medium text-gray-600 dark:text-gray-400">..</span>
+          <span class="text-sm font-medium text-gray-500 dark:text-gray-400">..</span>
         </div>
         <span class="w-24 hidden sm:block"></span>
         <span class="w-20 hidden sm:block"></span>

@@ -5,6 +5,7 @@ import { useFileStore } from '@/stores/fileStore'
 import { useConfigStore } from '@/stores/configStore'
 import { useSidebarStore } from '@/stores/sidebarStore'
 import SidebarTreeItem from './SidebarTreeItem.vue'
+import SidebarContextMenu from './SidebarContextMenu.vue'
 
 const fileStore = useFileStore()
 const configStore = useConfigStore()
@@ -53,6 +54,12 @@ function navigate(path: string) {
   fileStore.navigate(path)
 }
 
+const sidebarMenuRef = ref<InstanceType<typeof SidebarContextMenu>>()
+
+function onTreeContextMenu(e: MouseEvent, node: TreeNode) {
+  sidebarMenuRef.value?.show({ x: e.clientX, y: e.clientY }, node)
+}
+
 defineProps<{
   tree: TreeNode[]
 }>()
@@ -86,6 +93,9 @@ defineProps<{
       :is-active="isActive"
       :is-expanded="isExpanded"
       @navigate="navigate"
+      @contextmenu="onTreeContextMenu"
     />
+
+    <SidebarContextMenu ref="sidebarMenuRef" />
   </aside>
 </template>

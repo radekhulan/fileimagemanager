@@ -178,7 +178,7 @@ const nameWithoutExt = computed(() => {
       >
         {{ nameWithoutExt }}
       </p>
-      <p class="mt-0.5 text-[11px] text-gray-400 dark:text-gray-500 truncate leading-tight">
+      <p class="mt-0.5 text-[10px] text-gray-400 dark:text-gray-500 truncate leading-tight">
         {{ formatFileSize(props.item.size) }}
         <template v-if="props.item.width && props.item.height">
           &middot; {{ props.item.width }}&times;{{ props.item.height }}

@@ -5,7 +5,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <li
+  <div
     class="flex flex-col rounded-lg border border-dashed border-gray-300 dark:border-neutral-600
            bg-gray-50 dark:bg-neutral-800/50 overflow-hidden cursor-pointer
            hover:border-gray-400 dark:hover:border-neutral-500 hover:bg-gray-100 dark:hover:bg-neutral-800
@@ -13,7 +13,7 @@ const emit = defineEmits<{
     @click="emit('click')"
   >
     <!-- Icon area -->
-    <div class="aspect-[4/3] flex items-center justify-center p-3.5">
+    <div class="relative aspect-[4/3] flex items-center justify-center overflow-hidden p-3.5">
       <svg
         class="w-full h-full text-gray-400 dark:text-gray-500"
         viewBox="0 0 48 40"
@@ -41,9 +41,10 @@ const emit = defineEmits<{
       </svg>
     </div>
 
-    <!-- Label -->
-    <div class="px-2.5 py-2">
-      <p class="text-xs font-medium text-gray-500 dark:text-gray-400 leading-tight">..</p>
+    <!-- Spacer — must match FolderItem / FileItem info section exactly -->
+    <div class="px-2 py-1.5 min-w-0 invisible" aria-hidden="true">
+      <p class="text-xs font-medium truncate leading-tight">X</p>
+      <p class="mt-0.5 text-[10px] font-medium uppercase tracking-wide leading-tight">X</p>
     </div>
-  </li>
+  </div>
 </template>
