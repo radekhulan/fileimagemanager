@@ -64,22 +64,22 @@ final class ImageControllerTest extends TestCase
     }
 
     #[Test]
-    public function saveEditedReturnsErrorWhenImageDataEmpty(): void
+    public function saveEditedReturnsErrorWhenImageDataEmptyAndFileNotFound(): void
     {
-        $config = self::createConfig(imageEditorActive: true);
+        $config = self::createConfig(imageEditorActive: true, currentPath: sys_get_temp_dir() . '/');
         $thumbnails = $this->createMock(ThumbnailService::class);
         $security = new SecurityService($config);
         $imageProcessor = new ImageProcessingService($config);
         $controller = new ImageController($config, $thumbnails, $security, $imageProcessor);
 
         $request = self::createRequest('POST', '/api/image/save', post: [
-            'path' => 'photo.jpg',
+            'path' => 'nonexistent.jpg',
             'image_data' => '',
         ]);
         $response = $controller->saveEdited($request);
 
         self::assertFalse($response->getData()['success']);
-        self::assertStringContainsString('data required', mb_strtolower($response->getData()['error']));
+        self::assertStringContainsString('not found', mb_strtolower($response->getData()['error']));
     }
 
     #[Test]

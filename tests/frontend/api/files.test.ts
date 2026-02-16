@@ -168,6 +168,6 @@ describe('imageApi', () => {
   it('saveEdited calls POST /image/save', async () => {
     mockPost.mockResolvedValue({ data: { success: true } })
     await imageApi.saveEdited('photo.jpg', 'base64data', 'photo.jpg')
-    expect(mockPost).toHaveBeenCalledWith('/image/save', { path: 'photo.jpg', image_data: 'base64data', name: 'photo.jpg' })
+    expect(mockPost).toHaveBeenCalledWith('/image/save', { path: 'photo.jpg', image_data: 'base64data', new_name: 'photo.jpg', quality: 92 })
   })
 })
