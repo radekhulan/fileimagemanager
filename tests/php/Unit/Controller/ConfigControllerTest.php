@@ -40,7 +40,9 @@ final class ConfigControllerTest extends TestCase
         $request = self::createRequest('GET', '/api/session/init');
         $response = $this->controller->initSession($request);
 
-        self::assertSame('FILEimagemanager', $_SESSION['RFM']['verify']);
+        // Verify flag is now a random hex token (32 hex chars = 16 bytes)
+        self::assertNotEmpty($_SESSION['RFM']['verify']);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{32}$/', $_SESSION['RFM']['verify']);
     }
 
     #[Test]

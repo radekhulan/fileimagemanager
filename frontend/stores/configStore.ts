@@ -8,7 +8,6 @@ export const useConfigStore = defineStore('config', () => {
   const config = ref<AppConfig | null>(null)
   const translations = ref<Record<string, string>>({})
   const language = ref('en_EN')
-  const csrfToken = ref('')
   const initialized = ref(false)
   const isPopup = ref(false)
   const callback = ref<string | null>(null)
@@ -51,7 +50,6 @@ export const useConfigStore = defineStore('config', () => {
     config.value = response.config
     translations.value = response.translations
     language.value = response.language
-    csrfToken.value = response.csrfToken
 
     setCsrfToken(response.csrfToken)
     initialized.value = true
@@ -77,7 +75,7 @@ export const useConfigStore = defineStore('config', () => {
   }
 
   return {
-    config, translations, language, csrfToken, initialized, isReady,
+    config, translations, language, initialized, isReady,
     isPopup, callback, fieldId, isCrossDomain, editorType, forceTypeFilter,
     isEditorMode, isPopupMode, isDark, editorParams,
     initialize, t, changeLanguage, getFileUrl,

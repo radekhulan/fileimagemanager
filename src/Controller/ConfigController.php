@@ -28,8 +28,8 @@ final class ConfigController
             session_regenerate_id(true);
         }
 
-        // Set session verification
-        $_SESSION['RFM']['verify'] = 'FILEimagemanager';
+        // Set session verification with a cryptographically random token
+        $_SESSION['RFM']['verify'] = bin2hex(random_bytes(16));
 
         // Generate CSRF token
         $csrfToken = $this->security->generateCsrfToken();

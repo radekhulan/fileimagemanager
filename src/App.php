@@ -126,7 +126,7 @@ final class App
         $instance = match ($class) {
             SecurityService::class => new SecurityService($this->config),
             MimeTypeService::class => new MimeTypeService(),
-            ImageProcessingService::class => new ImageProcessingService(),
+            ImageProcessingService::class => new ImageProcessingService($this->config),
             ThumbnailService::class => new ThumbnailService($this->config, $this->make(ImageProcessingService::class)),
             FileSystemService::class => new FileSystemService(
                 $this->config,

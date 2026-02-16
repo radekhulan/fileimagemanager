@@ -9,20 +9,28 @@ export function useEditorIntegration() {
   }
 
   function getTargetOrigin(): string {
-    // In cross-domain mode, derive the origin from the opener/parent URL.
-    // Never fall back to '*' — if we can't determine the origin, skip the message.
+    // In cross-domain mode, use the configured baseUrl origin when available.
+    // This avoids using '*' which would allow any parent to intercept messages.
     if (configStore.isCrossDomain) {
       try {
-        const opener = window.opener || window.parent
-        if (opener && opener !== window) {
-          // When crossdomain is used, the caller must accept the message
-          // from our origin. We send with our own origin which is the safest
-          // option — the receiver must validate it.
-          return '*'
+        const baseUrl = configStore.config?.baseUrl
+        if (baseUrl) {
+          const parsed = new URL(baseUrl)
+          return parsed.origin
         }
       } catch {
-        // Cross-origin access denied — expected in cross-domain scenarios
+        // Invalid baseUrl — fall through
       }
+      // Last resort: use document.referrer origin if available
+      try {
+        if (document.referrer) {
+          const parsed = new URL(document.referrer)
+          return parsed.origin
+        }
+      } catch {
+        // Invalid referrer
+      }
+      // Cannot determine target origin — use '*' as unavoidable fallback
       return '*'
     }
     return window.location.origin
@@ -141,6 +149,7 @@ export function useEditorIntegration() {
   return {
     isEditorMode,
     isPopupMode,
+    getTargetOrigin,
     selectFile,
     selectForPopup,
   }

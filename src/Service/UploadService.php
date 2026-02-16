@@ -172,8 +172,9 @@ class UploadService
             throw new UploadException("File exceeds maximum upload size of {$this->config->maxSizeUpload}MB");
         }
 
-        // Move to target
+        // Move to target (ensureUniqueName creates a placeholder atomically)
         $destPath = $targetPath . $this->ensureUniqueName($targetPath, $fileName);
+        @unlink($destPath); // Remove placeholder before rename/copy
 
         if (!@rename($tempFile, $destPath)) {
             if (!@copy($tempFile, $destPath)) {
@@ -226,6 +227,9 @@ class UploadService
                 $nameWithoutExt = pathinfo($fileName, PATHINFO_FILENAME);
                 $fileName = $nameWithoutExt . '.' . $newExt;
                 $ext = $newExt;
+                // Re-validate after MIME-based rename to prevent bypass
+                $this->security->validateExtension($ext);
+                $this->security->validateFilenameExtensions($fileName);
             }
         }
 
@@ -235,9 +239,12 @@ class UploadService
             throw new UploadException("File exceeds maximum upload size of {$this->config->maxSizeUpload}MB");
         }
 
-        // Ensure unique filename
+        // Ensure unique filename (creates a placeholder file atomically)
         $fileName = $this->ensureUniqueName($targetPath, $fileName);
         $destPath = $targetPath . $fileName;
+
+        // Remove placeholder created by ensureUniqueName before move_uploaded_file
+        @unlink($destPath);
 
         // Move uploaded file
         if (!move_uploaded_file($file['tmp_name'], $destPath)) {
@@ -304,9 +311,10 @@ class UploadService
                 $dir = dirname($destPath);
                 $newDestPath = $dir . '/' . $baseName . '.' . $targetExt;
 
-                // Ensure unique name
+                // Ensure unique name (creates placeholder atomically)
                 $newFileName = $this->ensureUniqueName($dir . '/', $baseName . '.' . $targetExt);
                 $newDestPath = $dir . '/' . $newFileName;
+                @unlink($newDestPath); // Remove placeholder before convert
 
                 if ($this->imageProcessor->convert($destPath, $newDestPath, $targetType, $convQuality)) {
                     @chmod($newDestPath, $this->config->filePermission);
@@ -380,22 +388,35 @@ class UploadService
         return [$destPath, $relativePath];
     }
 
+    /**
+     * Find a unique filename in the target directory.
+     * Uses atomic fopen() with 'x' mode to prevent TOCTOU race conditions.
+     */
     private function ensureUniqueName(string $dir, string $fileName): string
     {
-        if (!is_file($dir . $fileName)) {
+        // Try the original name first using atomic create
+        $handle = @fopen($dir . $fileName, 'x');
+        if ($handle !== false) {
+            fclose($handle);
             return $fileName;
         }
 
         $name = pathinfo($fileName, PATHINFO_FILENAME);
         $ext = pathinfo($fileName, PATHINFO_EXTENSION);
         $counter = 1;
+        $maxAttempts = 1000;
 
         do {
             $newName = $name . '_' . $counter . ($ext !== '' ? '.' . $ext : '');
+            $handle = @fopen($dir . $newName, 'x');
+            if ($handle !== false) {
+                fclose($handle);
+                return $newName;
+            }
             $counter++;
-        } while (is_file($dir . $newName));
+        } while ($counter <= $maxAttempts);
 
-        return $newName;
+        throw new UploadException('Could not generate a unique filename');
     }
 
     /**

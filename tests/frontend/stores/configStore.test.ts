@@ -61,8 +61,8 @@ describe('configStore', () => {
     expect(store.config).toEqual(mockResponse.config)
     expect(store.translations).toEqual(mockResponse.translations)
     expect(store.language).toBe('en_EN')
-    expect(store.csrfToken).toBe('token123')
     expect(store.initialized).toBe(true)
+    // CSRF token is now stored privately in api/client module, not in the store
     expect(setCsrfToken).toHaveBeenCalledWith('token123')
   })
 

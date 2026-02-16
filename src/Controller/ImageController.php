@@ -105,6 +105,12 @@ final class ImageController
             return JsonResponse::error('Image data required');
         }
 
+        // Limit base64 input size (20 MB base64 ≈ ~15 MB decoded image)
+        $maxBase64Size = 20 * 1024 * 1024;
+        if (strlen($imageData) > $maxBase64Size) {
+            return JsonResponse::error('Image data too large (max 15 MB)');
+        }
+
         $fullPath = $this->config->currentPath . $path;
         $this->security->validatePath($fullPath);
 

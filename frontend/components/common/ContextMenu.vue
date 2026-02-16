@@ -4,6 +4,7 @@ import { useUiStore } from '@/stores/uiStore'
 import { useFileStore } from '@/stores/fileStore'
 import { useConfigStore } from '@/stores/configStore'
 import { useClipboardStore } from '@/stores/clipboardStore'
+import { useEditorIntegration } from '@/composables/useEditorIntegration'
 import { filesApi, operationsApi, imageApi } from '@/api/files'
 import { isEditableImage } from '@/utils/extensions'
 
@@ -11,6 +12,7 @@ const ui = useUiStore()
 const fileStore = useFileStore()
 const configStore = useConfigStore()
 const clipboard = useClipboardStore()
+const { getTargetOrigin } = useEditorIntegration()
 const { t } = configStore
 
 const menuRef = ref<HTMLElement>()
@@ -68,11 +70,8 @@ async function onSelect() {
   if (configStore.isEditorMode) {
     // Send file URL back to editor
     const url = configStore.getFileUrl(item.value.path)
-    if (configStore.editorParams.crossdomain) {
-      window.parent.postMessage({ sender: 'fileimagemanager', url }, '*')
-    } else {
-      window.parent.postMessage({ sender: 'fileimagemanager', url }, window.location.origin)
-    }
+    const origin = getTargetOrigin()
+    window.parent.postMessage({ sender: 'fileimagemanager', url }, origin)
   }
   close()
 }
@@ -82,11 +81,8 @@ function onSelectThumbnail() {
   // Build absolute thumbnail URL from the relative thumbnailUrl
   const baseUrl = configStore.config?.baseUrl ?? ''
   const url = baseUrl + item.value.thumbnailUrl
-  if (configStore.editorParams.crossdomain) {
-    window.parent.postMessage({ sender: 'fileimagemanager', url }, '*')
-  } else {
-    window.parent.postMessage({ sender: 'fileimagemanager', url }, window.location.origin)
-  }
+  const origin = getTargetOrigin()
+  window.parent.postMessage({ sender: 'fileimagemanager', url }, origin)
   close()
 }
 

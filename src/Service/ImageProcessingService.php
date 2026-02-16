@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RFM\Service;
 
+use RFM\Config\AppConfig;
 use RFM\Enum\ImageResizeMode;
 
 /**
@@ -12,6 +13,39 @@ use RFM\Enum\ImageResizeMode;
  */
 final class ImageProcessingService
 {
+    public function __construct(
+        private readonly AppConfig $config,
+    ) {}
+    /** Maximum allowed image dimension (width or height) in pixels. */
+    private const MAX_IMAGE_DIMENSION = 10000;
+
+    /** Maximum file size in bytes before attempting GD operations (50 MB). */
+    private const MAX_FILE_SIZE_FOR_GD = 50 * 1024 * 1024;
+
+    /**
+     * Validate image dimensions and file size before GD processing.
+     * Prevents image bomb / memory exhaustion attacks.
+     */
+    private function validateImageSafety(string $imagePath): bool
+    {
+        $fileSize = @filesize($imagePath);
+        if ($fileSize === false || $fileSize > self::MAX_FILE_SIZE_FOR_GD) {
+            return false;
+        }
+
+        $imageInfo = @getimagesize($imagePath);
+        if ($imageInfo === false) {
+            return false;
+        }
+
+        [$width, $height] = $imageInfo;
+        if ($width > self::MAX_IMAGE_DIMENSION || $height > self::MAX_IMAGE_DIMENSION) {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Resize an image and save to destination.
      */
@@ -23,6 +57,10 @@ final class ImageProcessingService
         ImageResizeMode $mode = ImageResizeMode::Auto,
         int $quality = 80,
     ): bool {
+        if (!$this->validateImageSafety($sourcePath)) {
+            return false;
+        }
+
         $imageInfo = @getimagesize($sourcePath);
         if ($imageInfo === false) {
             return false;
@@ -75,6 +113,10 @@ final class ImageProcessingService
         string $position = 'br',
         int $padding = 10,
     ): bool {
+        if (!$this->validateImageSafety($imagePath) || !$this->validateImageSafety($watermarkPath)) {
+            return false;
+        }
+
         $imageInfo = @getimagesize($imagePath);
         $wmInfo = @getimagesize($watermarkPath);
 
@@ -112,6 +154,10 @@ final class ImageProcessingService
     public function autoOrient(string $imagePath): bool
     {
         if (!function_exists('exif_read_data')) {
+            return false;
+        }
+
+        if (!$this->validateImageSafety($imagePath)) {
             return false;
         }
 
@@ -178,6 +224,10 @@ final class ImageProcessingService
      */
     public function convert(string $sourcePath, string $destPath, int $targetType, int $quality = 80): bool
     {
+        if (!$this->validateImageSafety($sourcePath)) {
+            return false;
+        }
+
         $imageInfo = @getimagesize($sourcePath);
         if ($imageInfo === false) {
             return false;
@@ -228,7 +278,7 @@ final class ImageProcessingService
         // Ensure directory exists
         $dir = dirname($path);
         if (!is_dir($dir)) {
-            @mkdir($dir, 0755, true);
+            @mkdir($dir, $this->config->folderPermission, true);
         }
 
         return match ($type) {
