@@ -131,6 +131,14 @@ function injectDarkOverrides() {
       background-color: #242438 !important;
       color: #e4e4ef !important;
     }
+    html.dark [class*="ColorPicker-root"] {
+      background-color: #2b2b3e !important;
+    }
+    html.dark [class*="SfxModal-Wrapper"]:has([class*="SfxColorPicker-root"]),
+    html.dark [class*="SfxModal-Wrapper"]:has([class*="SfxColorPicker-root"]) > [class*="SfxModal-Overlay"],
+    html.dark [class*="SfxModal-root"]:has([class*="SfxColorPicker-root"]) {
+      background-color: rgba(0, 0, 0, 0.35) !important;
+    }
   `
   document.head.appendChild(style)
 }
@@ -394,11 +402,26 @@ html.dark [class*="StyledOptions"] {
 }
 
 /* ── Color picker ───────────────────────────────────────── */
-html.dark [class*="SfxColorPicker"],
+/* Only style the outer wrapper — internals (saturation panel,
+   gradients, hue bar, color swatches) must keep their own
+   styled-component backgrounds untouched. */
+html.dark [class*="ColorPicker-root"] {
+  background-color: #2b2b3e !important;
+  color: #e4e4ef !important;
+}
+
 html.dark [class*="StyledPickerWrapper"],
 html.dark [class*="SfxColorInput"] {
   background-color: #2b2b3e !important;
   color: #e4e4ef !important;
+}
+
+/* Color picker modal: semi-transparent backdrop so the image
+   behind it stays visible (matches light-mode behaviour) */
+html.dark [class*="SfxModal-Wrapper"]:has([class*="SfxColorPicker-root"]),
+html.dark [class*="SfxModal-Wrapper"]:has([class*="SfxColorPicker-root"]) > [class*="SfxModal-Overlay"],
+html.dark [class*="SfxModal-root"]:has([class*="SfxColorPicker-root"]) {
+  background-color: rgba(0, 0, 0, 0.35) !important;
 }
 
 /* ── Tooltip ────────────────────────────────────────────── */
@@ -427,7 +450,7 @@ html.dark [class*="SfxSelectGroup"] {
   color: #e4e4ef !important;
 }
 
-/* ── Global catch-all: any FIE element text ────────────── */
+/* ── Global catch-all: any FIE element text ── */
 html.dark [data-testid^="FIE-"] {
   color: #e4e4ef;
 }
