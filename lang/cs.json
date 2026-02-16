@@ -225,6 +225,8 @@
     "Save_as_WebP": "Uložit jako WebP",
     "Save_as_JPG": "Uložit jako JPEG",
     "Save_as_PNG": "Uložit jako PNG",
+    "Rotate_Left": "Otočit doleva",
+    "Rotate_Right": "Otočit doprava",
     "Convert_Failed": "Převod obrázku selhal",
     "Keep_Original": "Chcete původní obrázek zachovat?",
     "tip_drag_upload": "Tip: Soubory můžete snadno nahrát přetažením do hlavního okna",

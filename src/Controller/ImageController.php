@@ -97,6 +97,95 @@ final class ImageController
     }
 
     /**
+     * Rotate an image by 90° left or right (lossless via GD).
+     */
+    public function rotate(Request $request): JsonResponse
+    {
+        if (!$this->config->imageEditorActive) {
+            return JsonResponse::error('Image editor disabled', 403);
+        }
+
+        $path = $request->post('path', '');
+        $direction = $request->post('direction', '');
+
+        if (!is_string($path) || $path === '') {
+            return JsonResponse::error('Image path required');
+        }
+        if (!in_array($direction, ['left', 'right'], true)) {
+            return JsonResponse::error('Direction must be "left" or "right"');
+        }
+
+        $fullPath = $this->config->currentPath . $path;
+        $this->security->validatePath($fullPath);
+
+        if (!is_file($fullPath)) {
+            return JsonResponse::error('File not found', 404);
+        }
+
+        $ext = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+            return JsonResponse::error('Only JPG, PNG, and WebP images can be rotated');
+        }
+
+        $source = $this->imageProcessor->loadImage($fullPath);
+        if ($source === false) {
+            return JsonResponse::error('Failed to load image');
+        }
+
+        // GD imagerotate() uses counter-clockwise degrees
+        // "right" (clockwise 90°) = GD -90° = 270°
+        // "left" (counter-clockwise 90°) = GD 90°
+        $gdAngle = $direction === 'right' ? 270 : 90;
+        $bgColor = imagecolorallocatealpha($source, 0, 0, 0, 127);
+        $rotated = imagerotate($source, $gdAngle, $bgColor);
+        imagedestroy($source);
+
+        if ($rotated === false) {
+            return JsonResponse::error('Rotation failed');
+        }
+
+        $imageType = match ($ext) {
+            'webp' => IMAGETYPE_WEBP,
+            'png' => IMAGETYPE_PNG,
+            default => IMAGETYPE_JPEG,
+        };
+
+        if ($imageType === IMAGETYPE_PNG || $imageType === IMAGETYPE_WEBP) {
+            imagealphablending($rotated, false);
+            imagesavealpha($rotated, true);
+        }
+
+        $quality = match ($imageType) {
+            IMAGETYPE_WEBP => $this->config->imageQualityWebp,
+            IMAGETYPE_PNG => 100,
+            default => $this->config->imageQualityJpeg,
+        };
+
+        $saved = match ($imageType) {
+            IMAGETYPE_WEBP => imagewebp($rotated, $fullPath, $quality),
+            IMAGETYPE_PNG => imagepng($rotated, $fullPath, (int) round(9 - ($quality / 100 * 9))),
+            default => imagejpeg($rotated, $fullPath, $quality),
+        };
+        imagedestroy($rotated);
+
+        if (!$saved) {
+            return JsonResponse::error('Failed to save rotated image');
+        }
+
+        @chmod($fullPath, $this->config->filePermission);
+
+        // Regenerate thumbnail
+        $this->thumbnails->deleteThumbnail($path);
+        $thumbPath = $this->config->thumbsBasePath . $path;
+        $this->thumbnails->createThumbnail($fullPath, $thumbPath);
+
+        return JsonResponse::success([
+            'path' => $path,
+            'size' => filesize($fullPath),
+        ]);
+    }
+
+    /**
      * Save an edited image from the Filerobot Image Editor.
      * Receives base64-encoded image data.
      */
@@ -153,6 +242,11 @@ final class ImageController
         $rotation = (int) $request->post('rotation', 0);
         $flipX = filter_var($request->post('flip_x', false), FILTER_VALIDATE_BOOLEAN);
         $flipY = filter_var($request->post('flip_y', false), FILTER_VALIDATE_BOOLEAN);
+
+        // Only allow cardinal rotations (lossless, no memory expansion)
+        if ($rotation !== 0 && !in_array($rotation, [90, 180, 270, -90, -180, -270], true)) {
+            $rotation = 0;
+        }
 
         if (!is_string($imageData) || $imageData === '') {
             // No canvas data — handle server-side (lossless geometric transforms + format conversion).
@@ -229,7 +323,7 @@ final class ImageController
             // Canvas data provided — edits were made, re-encode via GD
             $maxBase64Size = 40 * 1024 * 1024;
             if (strlen($imageData) > $maxBase64Size) {
-                return JsonResponse::error('Image data too large (max 30 MB)');
+                return JsonResponse::error('Image data too large (max 40 MB)');
             }
 
             $dataPrefix = 'data:image/';
@@ -245,6 +339,13 @@ final class ImageController
             $imageInfo = @getimagesizefromstring($decodedData);
             if ($imageInfo === false) {
                 return JsonResponse::error('Decoded data is not a valid image');
+            }
+
+            // Prevent memory exhaustion from huge canvas dimensions
+            [$canvasW, $canvasH] = $imageInfo;
+            $maxDim = 16384; // 16K pixels — generous but bounded
+            if ($canvasW > $maxDim || $canvasH > $maxDim || $canvasW <= 0 || $canvasH <= 0) {
+                return JsonResponse::error('Image dimensions too large');
             }
 
             $gdImage = @imagecreatefromstring($decodedData);

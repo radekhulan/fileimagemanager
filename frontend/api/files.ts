@@ -143,4 +143,9 @@ export const imageApi = {
     const { data } = await apiClient.post('/image/convert', { path, format, keep_original: keepOriginal })
     return data
   },
+
+  async rotate(path: string, direction: 'left' | 'right') {
+    const { data } = await apiClient.post('/image/rotate', { path, direction })
+    return data
+  },
 }

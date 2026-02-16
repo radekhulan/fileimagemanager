@@ -199,6 +199,20 @@ async function onConvert(format: 'webp' | 'jpg' | 'png') {
   }
 }
 
+async function onRotate(direction: 'left' | 'right') {
+  if (!item.value) return
+  close()
+  fileStore.converting = true
+  try {
+    await imageApi.rotate(item.value.path, direction)
+    await fileStore.refresh()
+  } catch (err: any) {
+    await ui.alert(t('Error'), err?.response?.data?.error || t('Error'))
+  } finally {
+    fileStore.converting = false
+  }
+}
+
 function onEditImage() {
   if (!item.value) return
   ui.openImageEditor(item.value.path, configStore.getFileUrl(item.value.path))
@@ -329,6 +343,26 @@ async function onExtract() {
         >
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M10 12l2 2 4-4" /></svg>
           {{ t('Save_as_PNG') }}
+        </button>
+
+        <!-- Rotate left -->
+        <button
+          v-if="config?.imageEditorActive && !item.isDir && isConvertibleImage(item.extension)"
+          class="context-menu-item"
+          @click="onRotate('left')"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 2v6h6M2.66 8A9 9 0 1 1 3 12" /></svg>
+          {{ t('Rotate_Left') }}
+        </button>
+
+        <!-- Rotate right -->
+        <button
+          v-if="config?.imageEditorActive && !item.isDir && isConvertibleImage(item.extension)"
+          class="context-menu-item"
+          @click="onRotate('right')"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.5 2v6h-6M21.34 8A9 9 0 1 0 21 12" /></svg>
+          {{ t('Rotate_Right') }}
         </button>
 
         <!-- Edit text -->

@@ -225,6 +225,8 @@
     "Save_as_WebP": "Mentés WebP-ként",
     "Save_as_JPG": "Mentés JPEG-ként",
     "Save_as_PNG": "Mentés PNG-ként",
+    "Rotate_Left": "Forgatás balra",
+    "Rotate_Right": "Forgatás jobbra",
     "Convert_Failed": "Képkonverzió sikertelen",
     "Keep_Original": "Szeretné megtartani az eredeti képet?",
     "tip_drag_upload": "Tipp: A fájlokat egyszerűen feltöltheti a főablakba húzással",

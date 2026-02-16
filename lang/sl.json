@@ -225,6 +225,8 @@
     "Save_as_WebP": "Shrani kot WebP",
     "Save_as_JPG": "Shrani kot JPEG",
     "Save_as_PNG": "Shrani kot PNG",
+    "Rotate_Left": "Zavrti levo",
+    "Rotate_Right": "Zavrti desno",
     "Convert_Failed": "Pretvorba slike ni uspela",
     "Keep_Original": "Ali želite obdržati izvorno sliko?",
     "tip_drag_upload": "Namig: Datoteke lahko preprosto naložite tako, da jih povlečete v glavno okno",

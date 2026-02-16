@@ -225,6 +225,8 @@
     "Save_as_WebP": "Als WebP speichern",
     "Save_as_JPG": "Als JPEG speichern",
     "Save_as_PNG": "Als PNG speichern",
+    "Rotate_Left": "Links drehen",
+    "Rotate_Right": "Rechts drehen",
     "Convert_Failed": "Bildkonvertierung fehlgeschlagen",
     "Keep_Original": "Möchten Sie das Originalbild behalten?",
     "tip_drag_upload": "Tipp: Sie können Dateien einfach per Drag & Drop in das Hauptfenster hochladen",
