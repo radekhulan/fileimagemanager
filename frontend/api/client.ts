@@ -85,12 +85,19 @@ export function uploadFiles(
   path: string,
   onProgress?: (percent: number) => void,
   signal?: AbortSignal,
+  options?: { format?: string; maxSize?: string },
 ): Promise<any> {
   const formData = new FormData()
   formData.append('path', path)
   files.forEach((file) => {
     formData.append('files[]', file)
   })
+  if (options?.format) {
+    formData.append('format', options.format)
+  }
+  if (options?.maxSize) {
+    formData.append('max_size', options.maxSize)
+  }
 
   return apiClient.post('/upload', formData, {
     headers: {

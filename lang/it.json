@@ -226,5 +226,9 @@
     "Convert_Failed": "Conversione immagine fallita",
     "Keep_Original": "Vuoi mantenere l'immagine originale?",
     "tip_drag_upload": "Suggerimento: puoi caricare facilmente i file trascinandoli nella finestra principale",
-    "tip_context_menu": "Suggerimento: fai clic destro per aprire il menu contestuale"
+    "tip_context_menu": "Suggerimento: fai clic destro per aprire il menu contestuale",
+    "Select_Thumbnail": "Seleziona miniatura",
+    "Upload_Format": "Formato file",
+    "Upload_Max_Size": "Dimensione massima",
+    "Upload_No_Change": "Non modificare"
 }

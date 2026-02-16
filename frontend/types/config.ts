@@ -44,6 +44,8 @@ export interface AppConfig {
   googledocEnabled: boolean
   googledocFileExts: string[]
   defaultView: number
+  defaultImageFormat: '' | 'jpeg' | 'webp'
+  uploadResizeOptions: string[]
 }
 
 export interface SessionInitResponse {

@@ -30,6 +30,20 @@ export interface UploadItem {
 export const useUploadStore = defineStore('upload', () => {
   const queue = ref<UploadItem[]>([])
   const isUploading = ref(false)
+  const formatInitialized = ref(false)
+  const uploadFormat = ref('')
+  const uploadMaxSize = ref('')
+
+  function ensureFormatDefault() {
+    if (!formatInitialized.value) {
+      formatInitialized.value = true
+      const configStore = useConfigStore()
+      const defaultFmt = configStore.config?.defaultImageFormat ?? ''
+      if (defaultFmt) {
+        uploadFormat.value = defaultFmt
+      }
+    }
+  }
 
   const hasItems = computed(() => queue.value.length > 0)
   const completedCount = computed(() => queue.value.filter(i => i.status === 'done').length)
@@ -41,6 +55,7 @@ export const useUploadStore = defineStore('upload', () => {
   })
 
   function addFiles(files: FileList | File[]) {
+    ensureFormatDefault()
     const newItems: UploadItem[] = Array.from(files).map((file) => ({
       id: generateId(),
       file,
@@ -65,6 +80,10 @@ export const useUploadStore = defineStore('upload', () => {
     const fileStore = useFileStore()
     const pendingItems = queue.value.filter(i => i.status === 'pending')
 
+    const options: { format?: string; maxSize?: string } = {}
+    if (uploadFormat.value) options.format = uploadFormat.value
+    if (uploadMaxSize.value) options.maxSize = uploadMaxSize.value
+
     for (const item of pendingItems) {
       item.status = 'uploading'
       try {
@@ -72,6 +91,8 @@ export const useUploadStore = defineStore('upload', () => {
           [item.file],
           targetPath,
           (percent) => { item.progress = percent },
+          undefined,
+          Object.keys(options).length ? options : undefined,
         )
         item.status = 'done'
         item.progress = 100
@@ -107,7 +128,8 @@ export const useUploadStore = defineStore('upload', () => {
   }
 
   return {
-    queue, isUploading, hasItems, completedCount, errorCount, totalProgress,
-    addFiles, startUpload, uploadFromUrl, removeItem, clearCompleted, clearAll,
+    queue, isUploading, uploadFormat, uploadMaxSize,
+    hasItems, completedCount, errorCount, totalProgress,
+    ensureFormatDefault, addFiles, startUpload, uploadFromUrl, removeItem, clearCompleted, clearAll,
   }
 })

@@ -202,6 +202,12 @@ final class ImageProcessingService
             $source = $flat;
         }
 
+        // For WebP target, preserve alpha channel from source
+        if ($targetType === IMAGETYPE_WEBP) {
+            imagealphablending($source, false);
+            imagesavealpha($source, true);
+        }
+
         return $this->saveImage($source, $destPath, $targetType, $quality);
     }
 

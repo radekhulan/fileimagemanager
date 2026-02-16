@@ -77,6 +77,19 @@ async function onSelect() {
   close()
 }
 
+function onSelectThumbnail() {
+  if (!item.value?.thumbnailUrl) return
+  // Build absolute thumbnail URL from the relative thumbnailUrl
+  const baseUrl = configStore.config?.baseUrl ?? ''
+  const url = baseUrl + item.value.thumbnailUrl
+  if (configStore.editorParams.crossdomain) {
+    window.parent.postMessage({ sender: 'fileimagemanager', url }, '*')
+  } else {
+    window.parent.postMessage({ sender: 'fileimagemanager', url }, window.location.origin)
+  }
+  close()
+}
+
 async function onPreview() {
   if (!item.value) return
   const cat = item.value.category
@@ -246,6 +259,18 @@ async function onExtract() {
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
           {{ t('Select') }}
         </button>
+
+        <!-- Select thumbnail (editor mode) -->
+        <button
+          v-if="configStore.isEditorMode && !item.isDir && item.thumbnailUrl"
+          class="context-menu-item"
+          @click="onSelectThumbnail"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="M21 15l-5-5L5 21" /></svg>
+          {{ t('Select_Thumbnail') }}
+        </button>
+
+        <div v-if="configStore.isEditorMode && !item.isDir" class="my-1 border-t border-gray-100 dark:border-neutral-700" />
 
         <!-- Preview -->
         <button

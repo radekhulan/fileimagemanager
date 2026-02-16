@@ -226,5 +226,9 @@
     "Convert_Failed": "Bildkonvertierung fehlgeschlagen",
     "Keep_Original": "Möchten Sie das Originalbild behalten?",
     "tip_drag_upload": "Tipp: Sie können Dateien einfach per Drag & Drop in das Hauptfenster hochladen",
-    "tip_context_menu": "Tipp: Klicken Sie mit der rechten Maustaste, um das Kontextmenü zu öffnen"
+    "tip_context_menu": "Tipp: Klicken Sie mit der rechten Maustaste, um das Kontextmenü zu öffnen",
+    "Select_Thumbnail": "Vorschau auswählen",
+    "Upload_Format": "Dateiformat",
+    "Upload_Max_Size": "Maximale Größe",
+    "Upload_No_Change": "Nicht ändern"
 }

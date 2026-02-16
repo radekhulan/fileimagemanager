@@ -26,12 +26,23 @@ final class UploadController
             $targetDir = '';
         }
 
+        $format = $request->post('format', '');
+        $maxSize = $request->post('max_size', '');
+
         $files = $request->files();
         if (empty($files)) {
             return JsonResponse::error('No files uploaded');
         }
 
-        $results = $this->uploadService->handleUpload($targetDir, $files);
+        $uploadOptions = [];
+        if (is_string($format) && in_array($format, ['jpeg', 'webp'], true)) {
+            $uploadOptions['format'] = $format;
+        }
+        if (is_string($maxSize) && preg_match('/^(\d+)x(\d+)$/', $maxSize)) {
+            $uploadOptions['max_size'] = $maxSize;
+        }
+
+        $results = $this->uploadService->handleUpload($targetDir, $files, $uploadOptions);
 
         return JsonResponse::success(['files' => $results]);
     }

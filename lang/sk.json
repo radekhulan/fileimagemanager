@@ -226,5 +226,9 @@
     "Convert_Failed": "Konverzia obrázka zlyhala",
     "Keep_Original": "Chcete pôvodný obrázok zachovať?",
     "tip_drag_upload": "Tip: Súbory môžete jednoducho nahrať pretiahnutím do hlavného okna",
-    "tip_context_menu": "Tip: Kliknite pravým tlačidlom myši pre otvorenie kontextovej ponuky"
+    "tip_context_menu": "Tip: Kliknite pravým tlačidlom myši pre otvorenie kontextovej ponuky",
+    "Select_Thumbnail": "Vybrať náhľad",
+    "Upload_Format": "Formát súboru",
+    "Upload_Max_Size": "Maximálna veľkosť",
+    "Upload_No_Change": "Nemeniť"
 }

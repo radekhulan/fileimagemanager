@@ -61,7 +61,8 @@ final class ImageController
         $newFullPath = $this->config->currentPath . $newRelPath;
 
         // Convert
-        if (!$this->imageProcessor->convert($fullPath, $newFullPath, $targetType, 80)) {
+        $quality = $format === 'webp' ? $this->config->imageQualityWebp : $this->config->imageQualityJpeg;
+        if (!$this->imageProcessor->convert($fullPath, $newFullPath, $targetType, $quality)) {
             return JsonResponse::error('Image conversion failed');
         }
 

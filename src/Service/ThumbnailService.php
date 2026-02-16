@@ -66,7 +66,8 @@ class ThumbnailService
             return false;
         }
 
-        return $this->imageProcessor->resize($sourcePath, $destPath, $width, $height, $mode, 80);
+        $quality = $this->getQualityForFile($sourcePath);
+        return $this->imageProcessor->resize($sourcePath, $destPath, $width, $height, $mode, $quality);
     }
 
     /**
@@ -106,7 +107,8 @@ class ThumbnailService
             $destPath = rtrim($destDir, '/\\') . '/' . $newName;
             $mode = ImageResizeMode::fromLegacy($option);
 
-            $this->imageProcessor->resize($sourcePath, $destPath, $width, $height ?: null, $mode, 80);
+            $quality = $this->getQualityForFile($sourcePath);
+            $this->imageProcessor->resize($sourcePath, $destPath, $width, $height ?: null, $mode, $quality);
         }
     }
 
@@ -145,8 +147,15 @@ class ThumbnailService
             $destPath = rtrim($destDir, '/') . '/' . $newName;
             $mode = ImageResizeMode::fromLegacy($option);
 
-            $this->imageProcessor->resize($sourcePath, $destPath, $width, $height ?: null, $mode, 80);
+            $quality = $this->getQualityForFile($sourcePath);
+            $this->imageProcessor->resize($sourcePath, $destPath, $width, $height ?: null, $mode, $quality);
         }
+    }
+
+    private function getQualityForFile(string $path): int
+    {
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        return $this->config->getQualityForExtension($ext);
     }
 
     /**

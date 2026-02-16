@@ -21,9 +21,10 @@ class UploadService
     /**
      * Handle uploaded files.
      *
+     * @param array{format?: string, max_size?: string} $uploadOptions
      * @return array{name: string, path: string, size: int, type: string}[]
      */
-    public function handleUpload(string $targetDir, array $files): array
+    public function handleUpload(string $targetDir, array $files, array $uploadOptions = []): array
     {
         $results = [];
         $targetPath = $this->config->currentPath . $targetDir;
@@ -47,7 +48,7 @@ class UploadService
         $normalizedFiles = $this->normalizeFiles($files);
 
         foreach ($normalizedFiles as $file) {
-            $results[] = $this->processUploadedFile($file, $targetPath, $targetDir);
+            $results[] = $this->processUploadedFile($file, $targetPath, $targetDir, $uploadOptions);
         }
 
         return $results;
@@ -188,10 +189,10 @@ class UploadService
         $relativePath = $targetDir . $finalName;
 
         // Post-process image
-        $this->postProcessImage($destPath, $relativePath, $targetDir, $targetPath);
+        [$destPath, $relativePath] = $this->postProcessImage($destPath, $relativePath, $targetDir, $targetPath);
 
         return [
-            'name' => $finalName,
+            'name' => basename($destPath),
             'path' => $relativePath,
             'size' => (int) filesize($destPath),
             'type' => $this->mimeService->detect($destPath),
@@ -199,9 +200,10 @@ class UploadService
     }
 
     /**
+     * @param array{format?: string, max_size?: string} $uploadOptions
      * @return array{name: string, path: string, size: int, type: string}
      */
-    private function processUploadedFile(array $file, string $targetPath, string $targetDir): array
+    private function processUploadedFile(array $file, string $targetPath, string $targetDir, array $uploadOptions = []): array
     {
         if ($file['error'] !== UPLOAD_ERR_OK) {
             throw new UploadException($this->getUploadErrorMessage($file['error']));
@@ -246,27 +248,79 @@ class UploadService
 
         $relativePath = $targetDir . $fileName;
 
-        // Post-process image
-        $this->postProcessImage($destPath, $relativePath, $targetDir, $targetPath);
+        // Post-process image (may change destPath/relativePath if format conversion happens)
+        [$destPath, $relativePath] = $this->postProcessImage($destPath, $relativePath, $targetDir, $targetPath, $uploadOptions);
 
         return [
-            'name' => $fileName,
+            'name' => basename($destPath),
             'path' => $relativePath,
             'size' => (int) filesize($destPath),
             'type' => $this->mimeService->detect($destPath),
         ];
     }
 
-    private function postProcessImage(string $destPath, string $relativePath, string $targetDir, string $targetPath): void
+    /**
+     * @param array{format?: string, max_size?: string} $uploadOptions
+     * @return array{string, string} [destPath, relativePath]
+     */
+    private function postProcessImage(string $destPath, string $relativePath, string $targetDir, string $targetPath, array $uploadOptions = []): array
     {
         $ext = mb_strtolower(pathinfo($destPath, PATHINFO_EXTENSION));
 
         if (!$this->security->isImageExtension($ext)) {
-            return;
+            return [$destPath, $relativePath];
         }
 
         // Auto-orient from EXIF
         $this->imageProcessor->autoOrient($destPath);
+
+        $quality = $this->config->getQualityForExtension($ext);
+
+        // Apply upload max_size option (resize to fit within dimensions)
+        if (!empty($uploadOptions['max_size']) && preg_match('/^(\d+)x(\d+)$/', $uploadOptions['max_size'], $m)) {
+            $limitW = (int) $m[1];
+            $limitH = (int) $m[2];
+            $imgSize = @getimagesize($destPath);
+            if ($imgSize !== false) {
+                [$w, $h] = $imgSize;
+                if ($w > $limitW || $h > $limitH) {
+                    $this->imageProcessor->resize($destPath, $destPath, $limitW, $limitH, ImageResizeMode::Auto, $quality);
+                }
+            }
+        }
+
+        // Apply upload format conversion option
+        if (!empty($uploadOptions['format'])) {
+            $targetFormat = $uploadOptions['format'];
+            $targetType = $targetFormat === 'webp' ? IMAGETYPE_WEBP : IMAGETYPE_JPEG;
+            $targetExt = $targetFormat === 'webp' ? 'webp' : 'jpg';
+
+            if ($targetExt !== $ext) {
+                $convQuality = $targetFormat === 'webp'
+                    ? $this->config->imageQualityWebp
+                    : $this->config->imageQualityJpeg;
+
+                $baseName = pathinfo($destPath, PATHINFO_FILENAME);
+                $dir = dirname($destPath);
+                $newDestPath = $dir . '/' . $baseName . '.' . $targetExt;
+
+                // Ensure unique name
+                $newFileName = $this->ensureUniqueName($dir . '/', $baseName . '.' . $targetExt);
+                $newDestPath = $dir . '/' . $newFileName;
+
+                if ($this->imageProcessor->convert($destPath, $newDestPath, $targetType, $convQuality)) {
+                    @chmod($newDestPath, $this->config->filePermission);
+                    // Remove original
+                    if ($newDestPath !== $destPath) {
+                        @unlink($destPath);
+                    }
+                    $destPath = $newDestPath;
+                    $relativePath = $targetDir . $newFileName;
+                    $ext = $targetExt;
+                    $quality = $convQuality;
+                }
+            }
+        }
 
         // Apply max dimensions
         if ($this->config->imageMaxWidth > 0 || $this->config->imageMaxHeight > 0) {
@@ -278,7 +332,7 @@ class UploadService
 
                 if ($w > $maxW || $h > $maxH) {
                     $mode = ImageResizeMode::fromLegacy($this->config->imageMaxMode);
-                    $this->imageProcessor->resize($destPath, $destPath, $maxW, $maxH, $mode);
+                    $this->imageProcessor->resize($destPath, $destPath, $maxW, $maxH, $mode, $quality);
                 }
             }
         }
@@ -297,7 +351,7 @@ class UploadService
                 }
 
                 $mode = ImageResizeMode::fromLegacy($this->config->imageResizingMode);
-                $this->imageProcessor->resize($destPath, $destPath, $resW, $resH ?: null, $mode);
+                $this->imageProcessor->resize($destPath, $destPath, $resW, $resH ?: null, $mode, $quality);
             }
         }
 
@@ -322,6 +376,8 @@ class UploadService
 
         // Generate relative thumbnails
         $this->thumbnails->generateRelativeThumbnails($destPath, $targetPath);
+
+        return [$destPath, $relativePath];
     }
 
     private function ensureUniqueName(string $dir, string $fileName): string

@@ -226,5 +226,9 @@
     "Convert_Failed": "Image conversion failed",
     "Keep_Original": "Do you want to keep the original image?",
     "tip_drag_upload": "Tip: You can easily upload files by dragging them into the main window",
-    "tip_context_menu": "Tip: Right-click to open the context menu"
+    "tip_context_menu": "Tip: Right-click to open the context menu",
+    "Select_Thumbnail": "Select thumbnail",
+    "Upload_Format": "File format",
+    "Upload_Max_Size": "Max size",
+    "Upload_No_Change": "Don't change"
 }

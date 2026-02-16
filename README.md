@@ -289,6 +289,10 @@ All options are in `config/filemanager.php` with inline documentation.
 | `image_resizing_width` | `0` | Resize width |
 | `image_resizing_height` | `0` | Resize height |
 | `image_resizing_mode` | `auto` | `auto`, `exact`, `portrait`, `landscape`, `crop` |
+| `image_quality_jpeg` | `90` | JPEG quality (0–100) for saves, conversions, and thumbnails |
+| `image_quality_webp` | `90` | WebP quality (0–100) for saves, conversions, and thumbnails |
+| `default_image_format` | `''` | Default format in the upload dialog: `''` (don't change), `'jpeg'`, or `'webp'` |
+| `upload_resize_options` | `['1000x1000', '1600x1600', '2400x2400']` | Preset "max size" choices in the upload dialog. Each entry is `WxH` — the image is resized to fit (aspect ratio preserved). Empty array hides the dropdown. |
 | `image_watermark` | `false` | Path to watermark image or `false` |
 | `image_editor_active` | `true` | Enable Filerobot image editor |
 

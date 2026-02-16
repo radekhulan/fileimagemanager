@@ -168,6 +168,26 @@ $config = [
 
     /*
     |--------------------------------------------------------------------------
+    | Image quality & upload processing
+    |--------------------------------------------------------------------------
+    |
+    | image_quality_jpeg       - JPEG quality (0-100) used when saving/converting images.
+    | image_quality_webp       - WebP quality (0-100) used when saving/converting images.
+    | default_image_format     - Pre-selected format in the upload dialog:
+    |                            '' (don't change), 'jpeg', or 'webp'.
+    | upload_resize_options    - Preset "max size" options shown in the upload dialog.
+    |                            Each entry is "WxH" — the uploaded image will be
+    |                            resized to fit within those dimensions (aspect ratio
+    |                            preserved). Leave empty to hide the dropdown.
+    |
+    */
+    'image_quality_jpeg' => 90,
+    'image_quality_webp' => 90,
+    'default_image_format' => '',
+    'upload_resize_options' => ['1200x1200', '1600x1600', '2400x2400'],
+
+    /*
+    |--------------------------------------------------------------------------
     | Watermark
     |--------------------------------------------------------------------------
     |

@@ -22,6 +22,7 @@ final readonly class AppConfig
      * @param string[] $cadExts
      * @param string[] $googledocFileExts
      * @param string[] $accessKeys
+     * @param string[] $uploadResizeOptions
      * @param string[] $fixedPathFromFilemanager
      * @param string[] $fixedImageCreationNameToPrepend
      * @param string[] $fixedImageCreationToAppend
@@ -84,6 +85,12 @@ final readonly class AppConfig
         public int $imageResizingHeight,
         public string $imageResizingMode,
         public bool $imageResizingOverride,
+
+        // Image quality
+        public int $imageQualityJpeg,
+        public int $imageQualityWebp,
+        public string $defaultImageFormat,
+        public array $uploadResizeOptions,
 
         // Watermark
         public string|false $imageWatermark,
@@ -225,6 +232,12 @@ final readonly class AppConfig
             imageResizingMode: (string) ($config['image_resizing_mode'] ?? 'auto'),
             imageResizingOverride: (bool) ($config['image_resizing_override'] ?? false),
 
+            imageQualityJpeg: max(0, min(100, (int) ($config['image_quality_jpeg'] ?? 90))),
+            imageQualityWebp: max(0, min(100, (int) ($config['image_quality_webp'] ?? 90))),
+            defaultImageFormat: in_array($config['default_image_format'] ?? '', ['jpeg', 'webp'], true)
+                ? $config['default_image_format'] : '',
+            uploadResizeOptions: $config['upload_resize_options'] ?? [],
+
             imageWatermark: isset($config['image_watermark']) && $config['image_watermark'] !== false
                 ? (string) $config['image_watermark'] : false,
             imageWatermarkPosition: (string) ($config['image_watermark_position'] ?? 'br'),
@@ -357,6 +370,8 @@ final readonly class AppConfig
             'googledocEnabled' => $this->googledocEnabled,
             'googledocFileExts' => $this->googledocFileExts,
             'defaultView' => $this->defaultView,
+            'defaultImageFormat' => $this->defaultImageFormat,
+            'uploadResizeOptions' => $this->uploadResizeOptions,
         ];
     }
 
@@ -373,6 +388,18 @@ final readonly class AppConfig
             'ext_file' => $this->extFile,
             'ext_misc' => $this->extMisc,
         ];
+    }
+
+    /**
+     * Get the configured quality for a file based on its extension.
+     */
+    public function getQualityForExtension(string $ext): int
+    {
+        return match (strtolower($ext)) {
+            'webp' => $this->imageQualityWebp,
+            'jpg', 'jpeg' => $this->imageQualityJpeg,
+            default => $this->imageQualityJpeg,
+        };
     }
 
     private static function detectBaseUrl(): string

@@ -17,6 +17,10 @@ const { t } = configStore
 const activeTab = ref<'file' | 'url'>('file')
 const fileInput = ref<HTMLInputElement>()
 
+const resizeOptions = computed(() => configStore.config?.uploadResizeOptions ?? [])
+
+uploadStore.ensureFormatDefault()
+
 function onFilesSelected(e: Event) {
   const input = e.target as HTMLInputElement
   if (input.files) {
@@ -98,6 +102,33 @@ const canUpload = computed(() =>
           <div v-if="activeTab === 'file'">
             <DropZone @drop="onFilesDrop" />
 
+            <!-- Upload options -->
+            <div class="mt-3 flex gap-4">
+              <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <span class="whitespace-nowrap">{{ t('Upload_Format') }}</span>
+                <select
+                  v-model="uploadStore.uploadFormat"
+                  class="rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                >
+                  <option value="">{{ t('Upload_No_Change') }}</option>
+                  <option value="jpeg">JPEG</option>
+                  <option value="webp">WebP</option>
+                </select>
+              </label>
+              <label v-if="resizeOptions.length" class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <span class="whitespace-nowrap">{{ t('Upload_Max_Size') }}</span>
+                <select
+                  v-model="uploadStore.uploadMaxSize"
+                  class="rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100"
+                >
+                  <option value="">{{ t('Upload_No_Change') }}</option>
+                  <option v-for="opt in resizeOptions" :key="opt" :value="opt">
+                    {{ opt.replace('x', ' \u00d7 ') }}
+                  </option>
+                </select>
+              </label>
+            </div>
+
             <div class="mt-3 flex gap-2">
               <input
                 ref="fileInput"
@@ -108,7 +139,7 @@ const canUpload = computed(() =>
               />
               <button
                 @click="fileInput?.click()"
-                class="px-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600 text-gray-700 dark:text-gray-300 transition-colors"
+                class="px-4 py-2 text-sm rounded-lg bg-rfm-primary hover:bg-rfm-primary-hover text-white transition-colors"
               >
                 {{ t('Upload_add_files') }}
               </button>
