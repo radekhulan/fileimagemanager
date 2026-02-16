@@ -122,12 +122,24 @@ export const operationsApi = {
 }
 
 export const imageApi = {
-  async saveEdited(path: string, imageData: string, name: string) {
-    const { data } = await apiClient.post('/image/save', { path, image_data: imageData, name })
+  async saveEdited(
+    path: string,
+    imageData: string,
+    newName: string,
+    quality: number = 92,
+    geometric?: { rotation: number; flipX: boolean; flipY: boolean } | null,
+  ) {
+    const payload: Record<string, any> = { path, image_data: imageData, new_name: newName, quality }
+    if (geometric) {
+      payload.rotation = geometric.rotation
+      payload.flip_x = geometric.flipX
+      payload.flip_y = geometric.flipY
+    }
+    const { data } = await apiClient.post('/image/save', payload)
     return data
   },
 
-  async convert(path: string, format: 'webp' | 'jpg', keepOriginal: boolean = false) {
+  async convert(path: string, format: 'webp' | 'jpg' | 'png', keepOriginal: boolean = false) {
     const { data } = await apiClient.post('/image/convert', { path, format, keep_original: keepOriginal })
     return data
   },

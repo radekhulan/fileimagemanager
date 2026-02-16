@@ -222,6 +222,23 @@ final class ImageProcessingService
     /**
      * Convert an image to a different format.
      */
+    /**
+     * Load an image file into a GD resource. Returns false on failure.
+     */
+    public function loadImage(string $path): \GdImage|false
+    {
+        if (!$this->validateImageSafety($path)) {
+            return false;
+        }
+
+        $imageInfo = @getimagesize($path);
+        if ($imageInfo === false) {
+            return false;
+        }
+
+        return $this->createFromFile($path, $imageInfo[2]) ?? false;
+    }
+
     public function convert(string $sourcePath, string $destPath, int $targetType, int $quality = 80): bool
     {
         if (!$this->validateImageSafety($sourcePath)) {
@@ -252,8 +269,8 @@ final class ImageProcessingService
             $source = $flat;
         }
 
-        // For WebP target, preserve alpha channel from source
-        if ($targetType === IMAGETYPE_WEBP) {
+        // For WebP/PNG target, preserve alpha channel from source
+        if ($targetType === IMAGETYPE_WEBP || $targetType === IMAGETYPE_PNG) {
             imagealphablending($source, false);
             imagesavealpha($source, true);
         }

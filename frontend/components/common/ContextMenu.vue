@@ -176,10 +176,11 @@ function isConvertibleImage(ext: string): boolean {
   return ['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp'].includes(ext.toLowerCase())
 }
 
-async function onConvert(format: 'webp' | 'jpg') {
+async function onConvert(format: 'webp' | 'jpg' | 'png') {
   if (!item.value) return
+  const formatLabels: Record<string, string> = { webp: 'Save_as_WebP', jpg: 'Save_as_JPG', png: 'Save_as_PNG' }
   const result = await ui.confirm3(
-    format === 'webp' ? t('Save_as_WebP') : t('Save_as_JPG'),
+    t(formatLabels[format] || formatLabels.png),
     t('Keep_Original'),
   )
   if (result === 'cancel') {
@@ -318,6 +319,16 @@ async function onExtract() {
         >
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M10 12l2 2 4-4" /></svg>
           {{ t('Save_as_JPG') }}
+        </button>
+
+        <!-- Save as PNG -->
+        <button
+          v-if="config?.imageEditorActive && !item.isDir && isConvertibleImage(item.extension) && item.extension !== 'png'"
+          class="context-menu-item"
+          @click="onConvert('png')"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M10 12l2 2 4-4" /></svg>
+          {{ t('Save_as_PNG') }}
         </button>
 
         <!-- Edit text -->

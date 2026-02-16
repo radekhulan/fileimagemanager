@@ -55,10 +55,19 @@ function initEditor(imageUrl: string) {
 
   const typography = { fontFamily: 'Inter, system-ui, -apple-system, sans-serif' }
 
+  // Pre-select correct format/name based on the original file
+  const originalName = imageEditorState.value?.path?.split('/').pop() || 'image.png'
+  const originalExt = originalName.split('.').pop()?.toLowerCase() || 'png'
+  const extToType: Record<string, 'png' | 'jpeg' | 'webp'> = {
+    png: 'png', jpg: 'jpeg', jpeg: 'jpeg', webp: 'webp',
+  }
+  const defaultType = extToType[originalExt] || 'png'
+  const defaultName = originalName.replace(/\.[^.]+$/, '')
+
   const config: Record<string, any> = {
     source: imageUrl,
-    onSave: async (editedImageObject: any) => {
-      await saveImage(editedImageObject)
+    onSave: async (editedImageObject: any, designState: any) => {
+      await saveImage(editedImageObject, designState)
     },
     onClose: () => {
       onClose()
@@ -70,7 +79,10 @@ function initEditor(imageUrl: string) {
     Rotate: { angle: 90, componentType: 'slider' },
     tabsIds: [TABS.ADJUST, TABS.ANNOTATE, TABS.FILTERS, TABS.FINETUNE, TABS.RESIZE],
     defaultTabId: TABS.ADJUST,
-    defaultToolId: TOOLS.CROP,
+    defaultSavedImageName: defaultName,
+    defaultSavedImageType: defaultType,
+    defaultSavedImageQuality: 0.92,
+    forceToPngInEllipticalCrop: false,
     savingPixelRatio: 1,
     previewPixelRatio: window.devicePixelRatio || 1,
     // In dark mode, first render with default palette so translations
@@ -155,24 +167,69 @@ function destroyEditor() {
   removeDarkOverrides()
 }
 
-async function saveImage(editedImageObject: any) {
+/**
+ * Check if the user made edits that REQUIRE the canvas pipeline.
+ * Pure geometric ops (flip, cardinal rotation) can be done losslessly server-side via GD,
+ * so we only return true for edits that need the Filerobot canvas (filters, finetunes, etc.).
+ */
+function hasCanvasEdits(ds: any): boolean {
+  if (!ds) return true // assume edited if no state available
+  // Non-cardinal rotation (not 0, 90, 180, 270) needs canvas
+  const rot = ds.adjustments?.rotation || 0
+  if (rot !== 0 && rot % 90 !== 0) return true
+  // Crop (if ratio or custom crop is set — noEffect means full image)
+  const crop = ds.adjustments?.crop
+  if (crop && !crop.noEffect && (crop.x || crop.y)) return true
+  // Filter
+  if (ds.filter) return true
+  // Finetunes
+  if (ds.finetunes && ds.finetunes.length > 0) return true
+  // Annotations (text, shapes, etc.)
+  if (ds.annotations && Object.keys(ds.annotations).length > 0) return true
+  // Resize (custom size set by user)
+  if (ds.resize && (ds.resize.width || ds.resize.height)) return true
+  return false
+}
+
+/** Check if there are any geometric-only edits (flip, cardinal rotation) */
+function getGeometricEdits(ds: any): { rotation: number; flipX: boolean; flipY: boolean } | null {
+  if (!ds) return null
+  const rotation = ds.adjustments?.rotation || 0
+  const flipX = !!ds.adjustments?.isFlippedX
+  const flipY = !!ds.adjustments?.isFlippedY
+  if (rotation === 0 && !flipX && !flipY) return null
+  return { rotation, flipX, flipY }
+}
+
+async function saveImage(editedImageObject: any, designState?: any) {
   if (!imageEditorState.value?.path) return
   saving.value = true
   try {
-    // Convert to base64
-    const canvas = editedImageObject.imageCanvas || editedImageObject.canvas
-    let base64Data: string
+    const newName = editedImageObject.fullName
+      || `${editedImageObject.name || 'image'}.${editedImageObject.extension || 'png'}`
+    const quality = typeof editedImageObject.quality === 'number'
+      ? Math.round(editedImageObject.quality * 100)
+      : 92
 
-    if (canvas) {
-      base64Data = canvas.toDataURL('image/png')
-    } else if (editedImageObject.imageBase64) {
-      base64Data = editedImageObject.imageBase64
+    if (!hasCanvasEdits(designState)) {
+      // No canvas-requiring edits — handle server-side (lossless).
+      // This covers: no edits at all, or pure geometric (flip + cardinal rotation).
+      const geo = getGeometricEdits(designState)
+      await imageApi.saveEdited(imageEditorState.value.path, '', newName, quality, geo)
     } else {
-      throw new Error('No image data available')
+      // Complex edits — send canvas data as lossless PNG for server re-encoding
+      const canvas = editedImageObject.imageCanvas || editedImageObject.canvas
+      let base64Data: string
+      if (canvas) {
+        base64Data = canvas.toDataURL('image/png')
+      } else if (editedImageObject.imageBase64) {
+        base64Data = editedImageObject.imageBase64
+      } else {
+        throw new Error('No image data available')
+      }
+      await imageApi.saveEdited(imageEditorState.value.path, base64Data, newName, quality)
     }
 
-    const name = imageEditorState.value.path.split('/').pop() || 'image.png'
-    await imageApi.saveEdited(imageEditorState.value.path, base64Data, name)
     await fileStore.refresh()
     onClose()
   } catch (err: any) {

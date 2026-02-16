@@ -1,0 +1,17 @@
+diff --git a/node_modules/konva/lib/Util.js b/node_modules/konva/lib/Util.js
+index 2d48880..d2b78d8 100644
+--- a/node_modules/konva/lib/Util.js
++++ b/node_modules/konva/lib/Util.js
+@@ -48,6 +48,12 @@ class Transform {
+     rotate(rad) {
+         var c = Math.cos(rad);
+         var s = Math.sin(rad);
++        if (Math.abs(c) < 1e-10) c = 0;
++        if (Math.abs(s) < 1e-10) s = 0;
++        if (Math.abs(c - 1) < 1e-10) c = 1;
++        if (Math.abs(c + 1) < 1e-10) c = -1;
++        if (Math.abs(s - 1) < 1e-10) s = 1;
++        if (Math.abs(s + 1) < 1e-10) s = -1;
+         var m11 = this.m[0] * c + this.m[2] * s;
+         var m12 = this.m[1] * c + this.m[3] * s;
+         var m21 = this.m[0] * -s + this.m[2] * c;
