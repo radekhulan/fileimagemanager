@@ -7,7 +7,7 @@ namespace RFM\Service;
 use RFM\Config\AppConfig;
 use RFM\DTO\{FileItem, BreadcrumbItem};
 use RFM\Enum\{FileCategory, SortField};
-use RFM\Exception\{FileNotFoundException, PathTraversalException};
+use RFM\Exception\{FileNotFoundException, ForbiddenException, PathTraversalException};
 
 class FileSystemService
 {
@@ -246,6 +246,11 @@ class FileSystemService
     public function createFolder(string $parentDir, string $name): string
     {
         $name = $this->security->sanitizeFilename($name, isFolder: true);
+
+        if (in_array($name, $this->config->hiddenFolders, true)) {
+            throw new ForbiddenException("Folder name '{$name}' is not allowed");
+        }
+
         $fullPath = $this->config->currentPath . $parentDir . $name;
 
         $this->security->validatePath($fullPath);
@@ -322,6 +327,11 @@ class FileSystemService
         }
 
         $newName = $this->security->sanitizeFilename($newName, isFolder: true);
+
+        if (in_array($newName, $this->config->hiddenFolders, true)) {
+            throw new ForbiddenException("Folder name '{$newName}' is not allowed");
+        }
+
         $parent = dirname($relativeDir);
         $newRelativeDir = ($parent !== '.' ? $parent . '/' : '') . $newName;
         $newFullPath = $this->config->currentPath . $newRelativeDir;
