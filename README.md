@@ -1,4 +1,4 @@
-# File Image Manager (PHP 8.5, Vue 3, TypeScript, TinyMCE)
+# File & Image Manager (PHP 8.5, Vue 3, TypeScript, TinyMCE)
 
 Modern, responsive web file manager built with **Vue 3 + TypeScript** frontend and **PHP 8.5** backend. Supports light/dark themes, drag & drop uploads, image editing (Filerobot), and integration with TinyMCE 8 / CKEditor 5. Includes a ready-to-use TinyMCE plugin. No database required.
 
@@ -129,7 +129,7 @@ chmod 755 media/source media/thumbs
 
 ## Docker
 
-Run File Image Manager in a Docker container with PHP 8.4-FPM + Nginx. No need to install PHP, Composer, or Node.js on your machine.
+Run File & Image Manager in a Docker container with PHP 8.4-FPM + Nginx. No need to install PHP, Composer, or Node.js on your machine.
 
 ### Quick Start
 
