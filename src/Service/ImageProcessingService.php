@@ -6,39 +6,66 @@ namespace RFM\Service;
 
 use RFM\Config\AppConfig;
 use RFM\Enum\ImageResizeMode;
+use RFM\ImageDriver\ImageDriverInterface;
 
 /**
- * GD-based image processing service.
- * Replaces php_image_magician.php with a modern, typed implementation.
+ * Image processing service using pluggable driver (Imagick or GD).
  */
 final class ImageProcessingService
 {
     public function __construct(
         private readonly AppConfig $config,
+        private readonly ImageDriverInterface $driver,
     ) {}
+
     /** Maximum allowed image dimension (width or height) in pixels. */
     private const MAX_IMAGE_DIMENSION = 10000;
 
-    /** Maximum file size in bytes before attempting GD operations (50 MB). */
-    private const MAX_FILE_SIZE_FOR_GD = 50 * 1024 * 1024;
+    /** Maximum file size in bytes before attempting image operations (50 MB). */
+    private const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
     /**
-     * Validate image dimensions and file size before GD processing.
+     * Map file extension to IMAGETYPE_* constant.
+     */
+    public static function imageTypeFromExtension(string $ext): int
+    {
+        return match (mb_strtolower($ext)) {
+            'jpg', 'jpeg' => IMAGETYPE_JPEG,
+            'png'         => IMAGETYPE_PNG,
+            'gif'         => IMAGETYPE_GIF,
+            'webp'        => IMAGETYPE_WEBP,
+            'bmp'         => IMAGETYPE_BMP,
+            default       => 0,
+        };
+    }
+
+    /**
+     * Get image dimensions and type via the driver.
+     *
+     * @return array{int, int, int}|false  [width, height, IMAGETYPE_*]
+     */
+    public function getImageInfo(string $path): array|false
+    {
+        return $this->driver->getImageInfo($path);
+    }
+
+    /**
+     * Validate image dimensions and file size before processing.
      * Prevents image bomb / memory exhaustion attacks.
      */
     private function validateImageSafety(string $imagePath): bool
     {
         $fileSize = @filesize($imagePath);
-        if ($fileSize === false || $fileSize > self::MAX_FILE_SIZE_FOR_GD) {
+        if ($fileSize === false || $fileSize > self::MAX_FILE_SIZE) {
             return false;
         }
 
-        $imageInfo = @getimagesize($imagePath);
-        if ($imageInfo === false) {
+        $info = $this->driver->getImageInfo($imagePath);
+        if ($info === false) {
             return false;
         }
 
-        [$width, $height] = $imageInfo;
+        [$width, $height] = $info;
         if ($width > self::MAX_IMAGE_DIMENSION || $height > self::MAX_IMAGE_DIMENSION) {
             return false;
         }
@@ -61,14 +88,16 @@ final class ImageProcessingService
             return false;
         }
 
-        $imageInfo = @getimagesize($sourcePath);
-        if ($imageInfo === false) {
+        $info = $this->driver->getImageInfo($sourcePath);
+        if ($info === false) {
             return false;
         }
 
-        [$origWidth, $origHeight, $type] = $imageInfo;
-        $source = $this->createFromFile($sourcePath, $type);
-        if ($source === null) {
+        [$origWidth, $origHeight, $type] = $info;
+
+        try {
+            $source = $this->driver->loadFile($sourcePath);
+        } catch (\RuntimeException) {
             return false;
         }
 
@@ -81,25 +110,19 @@ final class ImageProcessingService
             $origWidth, $origHeight, $newWidth, $newHeight, $mode,
         );
 
-        // Create target image
-        $target = imagecreatetruecolor($targetWidth, $targetHeight);
-        if ($target === false) {
-            return false;
+        $target = $this->driver->resize($source, $targetWidth, $targetHeight, $srcX, $srcY, $srcW, $srcH);
+        if ($target !== $source) {
+            $this->driver->destroy($source);
         }
 
-        // Preserve transparency for PNG/GIF/WebP
-        if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_GIF || $type === IMAGETYPE_WEBP) {
-            imagealphablending($target, false);
-            imagesavealpha($target, true);
-            $transparent = imagecolorallocatealpha($target, 0, 0, 0, 127);
-            imagefill($target, 0, 0, $transparent);
+        // Handle alpha for output format
+        $prepared = $this->prepareForSave($target, $type);
+
+        $result = $this->saveWithPermission($prepared, $destPath, $type, $quality);
+        if ($prepared !== $target) {
+            $this->driver->destroy($target);
         }
-
-        // Resample
-        imagecopyresampled($target, $source, 0, 0, $srcX, $srcY, $targetWidth, $targetHeight, $srcW, $srcH);
-
-        // Save
-        $result = $this->saveImage($target, $destPath, $type, $quality);
+        $this->driver->destroy($prepared);
 
         return $result;
     }
@@ -117,33 +140,31 @@ final class ImageProcessingService
             return false;
         }
 
-        $imageInfo = @getimagesize($imagePath);
-        $wmInfo = @getimagesize($watermarkPath);
-
-        if ($imageInfo === false || $wmInfo === false) {
+        $imgInfo = $this->driver->getImageInfo($imagePath);
+        $wmInfo = $this->driver->getImageInfo($watermarkPath);
+        if ($imgInfo === false || $wmInfo === false) {
             return false;
         }
 
-        [$imgW, $imgH, $imgType] = $imageInfo;
-        [$wmW, $wmH, $wmType] = $wmInfo;
+        [$imgW, $imgH, $imgType] = $imgInfo;
+        [$wmW, $wmH] = $wmInfo;
 
-        $image = $this->createFromFile($imagePath, $imgType);
-        $watermark = $this->createFromFile($watermarkPath, $wmType);
-
-        if ($image === null || $watermark === null) {
+        try {
+            $image = $this->driver->loadFile($imagePath);
+            $watermark = $this->driver->loadFile($watermarkPath);
+        } catch (\RuntimeException) {
             return false;
         }
 
-        // Calculate watermark position
         [$destX, $destY] = $this->calculateWatermarkPosition(
             $imgW, $imgH, $wmW, $wmH, $position, $padding,
         );
 
-        // Merge watermark
-        imagecopy($image, $watermark, $destX, $destY, 0, 0, $wmW, $wmH);
+        $image = $this->driver->composite($image, $watermark, $destX, $destY);
+        $this->driver->destroy($watermark);
 
-        // Save back
-        $result = $this->saveImage($image, $imagePath, $imgType, 90);
+        $result = $this->saveWithPermission($image, $imagePath, $imgType, 90);
+        $this->driver->destroy($image);
 
         return $result;
     }
@@ -153,41 +174,44 @@ final class ImageProcessingService
      */
     public function autoOrient(string $imagePath): bool
     {
-        if (!function_exists('exif_read_data')) {
-            return false;
-        }
-
         if (!$this->validateImageSafety($imagePath)) {
             return false;
         }
 
-        $exif = @exif_read_data($imagePath);
-        if ($exif === false || !isset($exif['Orientation'])) {
+        $orientation = $this->driver->getOrientation($imagePath);
+        if ($orientation <= 1 || $orientation > 8) {
             return false;
         }
 
-        $imageInfo = @getimagesize($imagePath);
-        if ($imageInfo === false) {
+        $info = $this->driver->getImageInfo($imagePath);
+        if ($info === false) {
             return false;
         }
 
-        $image = $this->createFromFile($imagePath, $imageInfo[2]);
-        if ($image === null) {
+        try {
+            $image = $this->driver->loadFile($imagePath);
+        } catch (\RuntimeException) {
             return false;
         }
 
-        $rotated = match ((int) $exif['Orientation']) {
-            3 => imagerotate($image, 180, 0),
-            6 => imagerotate($image, -90, 0),
-            8 => imagerotate($image, 90, 0),
-            default => false,
+        $rotated = match ($orientation) {
+            3 => $this->driver->rotate($image, 180),
+            6 => $this->driver->rotate($image, 90),
+            8 => $this->driver->rotate($image, 270),
+            default => null,
         };
 
-        if ($rotated === false) {
+        if ($rotated === null) {
+            $this->driver->destroy($image);
             return false;
         }
 
-        $result = $this->saveImage($rotated, $imagePath, $imageInfo[2], 90);
+        if ($rotated !== $image) {
+            $this->driver->destroy($image);
+        }
+
+        $result = $this->saveWithPermission($rotated, $imagePath, $info[2], 90);
+        $this->driver->destroy($rotated);
 
         return $result;
     }
@@ -197,21 +221,16 @@ final class ImageProcessingService
      */
     public function checkMemory(string $imagePath, int $targetWidth, int $targetHeight): bool
     {
-        $imageInfo = @getimagesize($imagePath);
-        if ($imageInfo === false) {
+        $info = $this->driver->getImageInfo($imagePath);
+        if ($info === false) {
             return false;
         }
 
-        [$width, $height] = $imageInfo;
-        $channels = $imageInfo['channels'] ?? 4;
-        $bits = $imageInfo['bits'] ?? 8;
-
-        // Memory needed for source image
-        $sourceMemory = $width * $height * $channels * ($bits / 8);
-        // Memory needed for target image
-        $targetMemory = $targetWidth * $targetHeight * 4 * ($bits / 8);
-
-        $totalNeeded = ($sourceMemory + $targetMemory) * 1.8; // Safety margin
+        [$width, $height] = $info;
+        // Assume 4 channels, 8 bits
+        $sourceMemory = $width * $height * 4;
+        $targetMemory = $targetWidth * $targetHeight * 4;
+        $totalNeeded = ($sourceMemory + $targetMemory) * 1.8;
 
         $memoryLimit = $this->getMemoryLimit();
         $currentUsage = memory_get_usage(true);
@@ -222,90 +241,179 @@ final class ImageProcessingService
     /**
      * Convert an image to a different format.
      */
-    /**
-     * Load an image file into a GD resource. Returns false on failure.
-     */
-    public function loadImage(string $path): \GdImage|false
-    {
-        if (!$this->validateImageSafety($path)) {
-            return false;
-        }
-
-        $imageInfo = @getimagesize($path);
-        if ($imageInfo === false) {
-            return false;
-        }
-
-        return $this->createFromFile($path, $imageInfo[2]) ?? false;
-    }
-
     public function convert(string $sourcePath, string $destPath, int $targetType, int $quality = 80): bool
     {
         if (!$this->validateImageSafety($sourcePath)) {
             return false;
         }
 
-        $imageInfo = @getimagesize($sourcePath);
-        if ($imageInfo === false) {
+        try {
+            $source = $this->driver->loadFile($sourcePath);
+        } catch (\RuntimeException) {
             return false;
         }
 
-        $source = $this->createFromFile($sourcePath, $imageInfo[2]);
-        if ($source === null) {
+        $prepared = $this->prepareForSave($source, $targetType);
+        $result = $this->saveWithPermission($prepared, $destPath, $targetType, $quality);
+        if ($prepared !== $source) {
+            $this->driver->destroy($source);
+        }
+        $this->driver->destroy($prepared);
+
+        return $result;
+    }
+
+    /**
+     * Load an image file via the driver. Returns the native image object or false on failure.
+     */
+    public function loadImage(string $path): object|false
+    {
+        if (!$this->validateImageSafety($path)) {
             return false;
         }
 
-        // For JPEG target, flatten transparency to white background
-        if ($targetType === IMAGETYPE_JPEG) {
-            $width = imagesx($source);
-            $height = imagesy($source);
-            $flat = imagecreatetruecolor($width, $height);
-            if ($flat === false) {
-                return false;
+        try {
+            return $this->driver->loadFile($path);
+        } catch (\RuntimeException) {
+            return false;
+        }
+    }
+
+    /**
+     * Rotate a file in-place by clockwise degrees (90, 180, 270).
+     */
+    public function rotateFile(string $path, int $clockwiseDegrees, int $quality): bool
+    {
+        if (!$this->validateImageSafety($path)) {
+            return false;
+        }
+
+        $ext = mb_strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $imageType = self::imageTypeFromExtension($ext);
+        if ($imageType === 0) {
+            return false;
+        }
+
+        try {
+            $image = $this->driver->loadFile($path);
+        } catch (\RuntimeException) {
+            return false;
+        }
+
+        $rotated = $this->driver->rotate($image, $clockwiseDegrees);
+        if ($rotated !== $image) {
+            $this->driver->destroy($image);
+        }
+
+        $prepared = $this->prepareForSave($rotated, $imageType);
+        $result = $this->saveWithPermission($prepared, $path, $imageType, $quality);
+        if ($prepared !== $rotated) {
+            $this->driver->destroy($rotated);
+        }
+        $this->driver->destroy($prepared);
+
+        return $result;
+    }
+
+    /**
+     * Apply server-side geometric transforms (rotation + flip) and save.
+     */
+    public function applyGeometricTransforms(
+        string $srcPath,
+        string $destPath,
+        int $targetType,
+        int $quality,
+        int $rotation,
+        bool $flipX,
+        bool $flipY,
+    ): bool {
+        if (!$this->validateImageSafety($srcPath)) {
+            return false;
+        }
+
+        try {
+            $image = $this->driver->loadFile($srcPath);
+        } catch (\RuntimeException) {
+            return false;
+        }
+
+        if ($rotation !== 0) {
+            $rotated = $this->driver->rotate($image, $rotation);
+            if ($rotated !== $image) {
+                $this->driver->destroy($image);
             }
-            $white = imagecolorallocate($flat, 255, 255, 255);
-            imagefill($flat, 0, 0, $white);
-            imagecopy($flat, $source, 0, 0, 0, 0, $width, $height);
-            $source = $flat;
+            $image = $rotated;
         }
 
-        // For WebP/PNG target, preserve alpha channel from source
-        if ($targetType === IMAGETYPE_WEBP || $targetType === IMAGETYPE_PNG) {
-            imagealphablending($source, false);
-            imagesavealpha($source, true);
+        if ($flipX) {
+            $image = $this->driver->flipHorizontal($image);
+        }
+        if ($flipY) {
+            $image = $this->driver->flipVertical($image);
         }
 
-        return $this->saveImage($source, $destPath, $targetType, $quality);
+        $prepared = $this->prepareForSave($image, $targetType);
+        $result = $this->saveWithPermission($prepared, $destPath, $targetType, $quality);
+        if ($prepared !== $image) {
+            $this->driver->destroy($image);
+        }
+        $this->driver->destroy($prepared);
+
+        return $result;
     }
 
-    private function createFromFile(string $path, int $type): ?\GdImage
-    {
-        return match ($type) {
-            IMAGETYPE_JPEG => @imagecreatefromjpeg($path) ?: null,
-            IMAGETYPE_PNG => @imagecreatefrompng($path) ?: null,
-            IMAGETYPE_GIF => @imagecreatefromgif($path) ?: null,
-            IMAGETYPE_WEBP => @imagecreatefromwebp($path) ?: null,
-            IMAGETYPE_BMP => @imagecreatefrombmp($path) ?: null,
-            default => null,
-        };
+    /**
+     * Save an image from raw binary data (decoded base64) to a file.
+     */
+    public function saveFromString(
+        string $imageData,
+        string $destPath,
+        int $targetType,
+        int $quality,
+    ): bool {
+        try {
+            $image = $this->driver->loadString($imageData);
+        } catch (\RuntimeException) {
+            return false;
+        }
+
+        $prepared = $this->prepareForSave($image, $targetType);
+        $result = $this->saveWithPermission($prepared, $destPath, $targetType, $quality);
+        if ($prepared !== $image) {
+            $this->driver->destroy($image);
+        }
+        $this->driver->destroy($prepared);
+
+        return $result;
     }
 
-    private function saveImage(\GdImage $image, string $path, int $type, int $quality): bool
+    /**
+     * Prepare image for saving: flatten alpha for JPEG, preserve for PNG/WebP.
+     */
+    private function prepareForSave(object $image, int $targetType): object
     {
-        // Ensure directory exists
+        if ($targetType === IMAGETYPE_JPEG) {
+            return $this->driver->flattenAlpha($image);
+        }
+
+        if ($targetType === IMAGETYPE_PNG || $targetType === IMAGETYPE_WEBP) {
+            return $this->driver->preserveAlpha($image);
+        }
+
+        return $image;
+    }
+
+    /**
+     * Save via driver, ensuring directory exists with configured permission.
+     */
+    private function saveWithPermission(object $image, string $path, int $imageType, int $quality): bool
+    {
         $dir = dirname($path);
         if (!is_dir($dir)) {
             @mkdir($dir, $this->config->folderPermission, true);
         }
 
-        return match ($type) {
-            IMAGETYPE_JPEG => imagejpeg($image, $path, $quality),
-            IMAGETYPE_PNG => imagepng($image, $path, (int) round(9 - ($quality / 100 * 9))),
-            IMAGETYPE_GIF => imagegif($image, $path),
-            IMAGETYPE_WEBP => imagewebp($image, $path, $quality),
-            IMAGETYPE_BMP => imagebmp($image, $path),
-            default => false,
-        };
+        return $this->driver->save($image, $path, $imageType, $quality);
     }
 
     /**
@@ -341,15 +449,12 @@ final class ImageProcessingService
     private function calculateAuto(int $origW, int $origH, int $newW, int $newH): array
     {
         if ($origH < $origW) {
-            // Landscape
             $targetW = $newW;
             $targetH = (int) round($origH * ($newW / $origW));
         } elseif ($origH > $origW) {
-            // Portrait
             $targetW = (int) round($origW * ($newH / $origH));
             $targetH = $newH;
         } else {
-            // Square - use smaller dimension
             $size = min($newW, $newH);
             $targetW = $size;
             $targetH = $size;
@@ -387,7 +492,6 @@ final class ImageProcessingService
     private function calculateWatermarkPosition(
         int $imgW, int $imgH, int $wmW, int $wmH, string $position, int $padding,
     ): array {
-        // Check for coordinate format (e.g., "50x100")
         if (preg_match('/^(\d+)x(\d+)$/', $position, $matches)) {
             return [(int) $matches[1], (int) $matches[2]];
         }

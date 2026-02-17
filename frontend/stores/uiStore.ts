@@ -13,6 +13,7 @@ export const useUiStore = defineStore('ui', () => {
   // Panels
   const showUploadPanel = ref(false)
   const showLanguageDialog = ref(false)
+  const showAboutDialog = ref(false)
 
   // Dialogs
   const confirmDialog = ref<{
@@ -237,7 +238,7 @@ export const useUiStore = defineStore('ui', () => {
     // View
     viewMode, isDark,
     // Panels
-    showUploadPanel, showLanguageDialog,
+    showUploadPanel, showLanguageDialog, showAboutDialog,
     // Dialogs
     confirmDialog, promptDialog, alertDialog, confirm3Dialog,
     // Image editor

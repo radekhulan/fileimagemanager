@@ -287,7 +287,7 @@ class UploadService
         if (!empty($uploadOptions['max_size']) && preg_match('/^(\d+)x(\d+)$/', $uploadOptions['max_size'], $m)) {
             $limitW = (int) $m[1];
             $limitH = (int) $m[2];
-            $imgSize = @getimagesize($destPath);
+            $imgSize = $this->imageProcessor->getImageInfo($destPath);
             if ($imgSize !== false) {
                 [$w, $h] = $imgSize;
                 if ($w > $limitW || $h > $limitH) {
@@ -299,7 +299,10 @@ class UploadService
         // Apply upload format conversion option
         if (!empty($uploadOptions['format'])) {
             $targetFormat = $uploadOptions['format'];
-            $targetType = $targetFormat === 'webp' ? IMAGETYPE_WEBP : IMAGETYPE_JPEG;
+            $targetType = ImageProcessingService::imageTypeFromExtension($targetFormat);
+            if ($targetType === 0) {
+                $targetType = IMAGETYPE_JPEG;
+            }
             $targetExt = $targetFormat === 'webp' ? 'webp' : 'jpg';
 
             if ($targetExt !== $ext) {
@@ -332,7 +335,7 @@ class UploadService
 
         // Apply max dimensions
         if ($this->config->imageMaxWidth > 0 || $this->config->imageMaxHeight > 0) {
-            $imgSize = @getimagesize($destPath);
+            $imgSize = $this->imageProcessor->getImageInfo($destPath);
             if ($imgSize !== false) {
                 [$w, $h] = $imgSize;
                 $maxW = $this->config->imageMaxWidth ?: PHP_INT_MAX;

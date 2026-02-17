@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { resolve } from 'path'
-import { realpathSync } from 'fs'
+import { realpathSync, readFileSync } from 'fs'
 
 // On Windows, directory junctions (e.g. C:\work\project → C:\real\project)
 // cause Vite's internal realpath calls to produce paths that don't match
@@ -13,8 +13,12 @@ if (process.cwd() !== realCwd) {
 }
 
 const cwd = process.cwd()
+const pkg = JSON.parse(readFileSync(resolve(cwd, 'package.json'), 'utf-8'))
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [vue(), tailwindcss()],
   root: resolve(cwd, 'frontend'),
   base: './',

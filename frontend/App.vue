@@ -26,6 +26,7 @@ import AlertDialog from '@/components/dialogs/AlertDialog.vue'
 import TextEditorDialog from '@/components/dialogs/TextEditorDialog.vue'
 import ChmodDialog from '@/components/dialogs/ChmodDialog.vue'
 import LanguageDialog from '@/components/dialogs/LanguageDialog.vue'
+import AboutDialog from '@/components/dialogs/AboutDialog.vue'
 import FileIconSprite from '@/components/file-list/FileIconSprite.vue'
 
 const configStore = useConfigStore()
@@ -209,6 +210,7 @@ function onGlobalDrop(e: DragEvent) {
       @close="ui.chmodTarget = null"
     />
     <LanguageDialog v-if="ui.showLanguageDialog" />
+    <AboutDialog v-if="ui.showAboutDialog" />
   </div>
 
   <!-- Loading state before init -->

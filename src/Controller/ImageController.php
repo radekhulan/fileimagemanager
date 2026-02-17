@@ -51,11 +51,7 @@ final class ImageController
             return JsonResponse::error('File is not a supported image format');
         }
 
-        $targetType = match ($format) {
-            'webp' => IMAGETYPE_WEBP,
-            'png' => IMAGETYPE_PNG,
-            default => IMAGETYPE_JPEG,
-        };
+        $targetType = ImageProcessingService::imageTypeFromExtension($format);
         $targetExt = match ($format) {
             'webp' => 'webp',
             'png' => 'png',
@@ -97,7 +93,7 @@ final class ImageController
     }
 
     /**
-     * Rotate an image by 90° left or right (lossless via GD).
+     * Rotate an image by 90° left or right (lossless via driver).
      */
     public function rotate(Request $request): JsonResponse
     {
@@ -127,48 +123,15 @@ final class ImageController
             return JsonResponse::error('Only JPG, PNG, and WebP images can be rotated');
         }
 
-        $source = $this->imageProcessor->loadImage($fullPath);
-        if ($source === false) {
-            return JsonResponse::error('Failed to load image');
-        }
-
-        // GD imagerotate() uses counter-clockwise degrees
-        // "right" (clockwise 90°) = GD -90° = 270°
-        // "left" (counter-clockwise 90°) = GD 90°
-        $gdAngle = $direction === 'right' ? 270 : 90;
-        $bgColor = imagecolorallocatealpha($source, 0, 0, 0, 127);
-        $rotated = imagerotate($source, $gdAngle, $bgColor);
-        imagedestroy($source);
-
-        if ($rotated === false) {
-            return JsonResponse::error('Rotation failed');
-        }
-
-        $imageType = match ($ext) {
-            'webp' => IMAGETYPE_WEBP,
-            'png' => IMAGETYPE_PNG,
-            default => IMAGETYPE_JPEG,
-        };
-
-        if ($imageType === IMAGETYPE_PNG || $imageType === IMAGETYPE_WEBP) {
-            imagealphablending($rotated, false);
-            imagesavealpha($rotated, true);
-        }
-
-        $quality = match ($imageType) {
-            IMAGETYPE_WEBP => $this->config->imageQualityWebp,
-            IMAGETYPE_PNG => 100,
+        // "right" (clockwise 90°), "left" (counter-clockwise 90° = clockwise 270°)
+        $clockwiseDegrees = $direction === 'right' ? 90 : 270;
+        $quality = match ($ext) {
+            'webp' => $this->config->imageQualityWebp,
+            'png' => 100,
             default => $this->config->imageQualityJpeg,
         };
 
-        $saved = match ($imageType) {
-            IMAGETYPE_WEBP => imagewebp($rotated, $fullPath, $quality),
-            IMAGETYPE_PNG => imagepng($rotated, $fullPath, (int) round(9 - ($quality / 100 * 9))),
-            default => imagejpeg($rotated, $fullPath, $quality),
-        };
-        imagedestroy($rotated);
-
-        if (!$saved) {
+        if (!$this->imageProcessor->rotateFile($fullPath, $clockwiseDegrees, $quality)) {
             return JsonResponse::error('Failed to save rotated image');
         }
 
@@ -233,11 +196,7 @@ final class ImageController
         $this->security->validatePath($targetFullPath);
 
         $targetExt = mb_strtolower(pathinfo($targetPath, PATHINFO_EXTENSION));
-        $targetType = match ($targetExt) {
-            'webp' => IMAGETYPE_WEBP,
-            'png' => IMAGETYPE_PNG,
-            default => IMAGETYPE_JPEG,
-        };
+        $targetType = ImageProcessingService::imageTypeFromExtension($targetExt);
 
         $rotation = (int) $request->post('rotation', 0);
         $flipX = filter_var($request->post('flip_x', false), FILTER_VALIDATE_BOOLEAN);
@@ -258,69 +217,24 @@ final class ImageController
             $hasFormatChange = ($targetPath !== $path);
 
             if (!$hasGeometric && !$hasFormatChange) {
-                // Nothing to do
                 return JsonResponse::success([
                     'path' => $path,
                     'size' => filesize($fullPath),
                 ]);
             }
 
-            // Load original image with GD
-            $source = $this->imageProcessor->loadImage($fullPath);
-            if ($source === false) {
-                return JsonResponse::error('Failed to load original image');
+            // Normalize negative rotations to positive clockwise
+            if ($rotation < 0) {
+                $rotation = 360 + $rotation;
             }
 
-            // Apply geometric transforms (lossless — no interpolation for 90° multiples)
-            if ($rotation !== 0) {
-                // GD rotates counter-clockwise, Filerobot uses clockwise
-                $gdAngle = -$rotation;
-                $bgColor = imagecolorallocatealpha($source, 0, 0, 0, 127);
-                $rotated = imagerotate($source, $gdAngle, $bgColor);
-                if ($rotated !== false) {
-                    imagedestroy($source);
-                    $source = $rotated;
-                }
-            }
-
-            if ($flipX) {
-                imageflip($source, IMG_FLIP_HORIZONTAL);
-            }
-            if ($flipY) {
-                imageflip($source, IMG_FLIP_VERTICAL);
-            }
-
-            // Save to target format
-            if ($targetType === IMAGETYPE_PNG || $targetType === IMAGETYPE_WEBP) {
-                imagealphablending($source, false);
-                imagesavealpha($source, true);
-            }
-
-            if ($targetType === IMAGETYPE_JPEG) {
-                $w = imagesx($source);
-                $h = imagesy($source);
-                $flat = imagecreatetruecolor($w, $h);
-                if ($flat !== false) {
-                    $white = imagecolorallocate($flat, 255, 255, 255);
-                    imagefill($flat, 0, 0, $white);
-                    imagecopy($flat, $source, 0, 0, 0, 0, $w, $h);
-                    imagedestroy($source);
-                    $source = $flat;
-                }
-            }
-
-            $saved = match ($targetType) {
-                IMAGETYPE_WEBP => imagewebp($source, $targetFullPath, $quality),
-                IMAGETYPE_PNG => imagepng($source, $targetFullPath, (int) round(9 - ($quality / 100 * 9))),
-                default => imagejpeg($source, $targetFullPath, $quality),
-            };
-            imagedestroy($source);
-
-            if (!$saved) {
+            if (!$this->imageProcessor->applyGeometricTransforms(
+                $fullPath, $targetFullPath, $targetType, $quality, $rotation, $flipX, $flipY,
+            )) {
                 return JsonResponse::error('Failed to save image');
             }
         } else {
-            // Canvas data provided — edits were made, re-encode via GD
+            // Canvas data provided — edits were made, re-encode via driver
             $maxBase64Size = 40 * 1024 * 1024;
             if (strlen($imageData) > $maxBase64Size) {
                 return JsonResponse::error('Image data too large (max 40 MB)');
@@ -348,37 +262,7 @@ final class ImageController
                 return JsonResponse::error('Image dimensions too large');
             }
 
-            $gdImage = @imagecreatefromstring($decodedData);
-            if ($gdImage === false) {
-                return JsonResponse::error('Failed to process image data');
-            }
-
-            if ($targetType === IMAGETYPE_PNG || $targetType === IMAGETYPE_WEBP) {
-                imagealphablending($gdImage, false);
-                imagesavealpha($gdImage, true);
-            }
-
-            if ($targetType === IMAGETYPE_JPEG) {
-                $width = imagesx($gdImage);
-                $height = imagesy($gdImage);
-                $flat = imagecreatetruecolor($width, $height);
-                if ($flat !== false) {
-                    $white = imagecolorallocate($flat, 255, 255, 255);
-                    imagefill($flat, 0, 0, $white);
-                    imagecopy($flat, $gdImage, 0, 0, 0, 0, $width, $height);
-                    imagedestroy($gdImage);
-                    $gdImage = $flat;
-                }
-            }
-
-            $saved = match ($targetType) {
-                IMAGETYPE_WEBP => imagewebp($gdImage, $targetFullPath, $quality),
-                IMAGETYPE_PNG => imagepng($gdImage, $targetFullPath, (int) round(9 - ($quality / 100 * 9))),
-                default => imagejpeg($gdImage, $targetFullPath, $quality),
-            };
-            imagedestroy($gdImage);
-
-            if (!$saved) {
+            if (!$this->imageProcessor->saveFromString($decodedData, $targetFullPath, $targetType, $quality)) {
                 return JsonResponse::error('Failed to save image');
             }
         }

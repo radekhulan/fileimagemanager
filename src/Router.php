@@ -52,6 +52,7 @@ final class Router
         // Config & session
         $this->get('/api/session/init', Controller\ConfigController::class, 'initSession');
         $this->get('/api/config', Controller\ConfigController::class, 'getConfig');
+        $this->get('/api/about', Controller\ConfigController::class, 'getAboutInfo');
         $this->get('/api/languages', Controller\ConfigController::class, 'getLanguages');
         $this->get('/api/translations', Controller\ConfigController::class, 'getTranslations');
         $this->post('/api/config/language', Controller\ConfigController::class, 'changeLanguage');

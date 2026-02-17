@@ -7,6 +7,7 @@ namespace RFM;
 use RFM\Config\{AppConfig, ConfigLoader};
 use RFM\Http\{Request, JsonResponse};
 use RFM\Middleware\{AuthMiddleware, CsrfMiddleware};
+use RFM\ImageDriver\{ImageDriverInterface, ImageDriverFactory};
 use RFM\Service\{
     FileSystemService,
     ThumbnailService,
@@ -126,7 +127,11 @@ final class App
         $instance = match ($class) {
             SecurityService::class => new SecurityService($this->config),
             MimeTypeService::class => new MimeTypeService(),
-            ImageProcessingService::class => new ImageProcessingService($this->config),
+            ImageDriverInterface::class => ImageDriverFactory::create(),
+            ImageProcessingService::class => new ImageProcessingService(
+                $this->config,
+                $this->make(ImageDriverInterface::class),
+            ),
             ThumbnailService::class => new ThumbnailService($this->config, $this->make(ImageProcessingService::class)),
             FileSystemService::class => new FileSystemService(
                 $this->config,

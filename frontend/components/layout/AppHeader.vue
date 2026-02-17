@@ -402,6 +402,19 @@ const config = computed(() => configStore.config)
           </svg>
         </button>
 
+        <!-- About -->
+        <button
+          class="rounded-full p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+          title="About"
+          @click="ui.showAboutDialog = true"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+        </button>
+
         <!-- Close window (TinyMCE / popup mode) -->
         <button
           v-if="configStore.isEditorMode && config?.removeHeader"

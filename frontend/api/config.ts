@@ -39,6 +39,17 @@ export const configApi = {
     return data
   },
 
+  async getAboutInfo(): Promise<{
+    imageDriver: string
+    phpVersion: string
+    maxUploadSize: string
+    serverSoftware: string
+    imagickVersion?: string
+  }> {
+    const { data } = await apiClient.get('/about')
+    return data
+  },
+
   async changeFilter(filter: string) {
     const { data } = await apiClient.post('/config/filter', { filter })
     return data

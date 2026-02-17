@@ -178,6 +178,56 @@ final class ConfigController
     }
 
     /**
+     * Return server info for the About dialog.
+     */
+    public function getAboutInfo(Request $request): JsonResponse
+    {
+        $driver = \RFM\ImageDriver\ImageDriverFactory::create();
+        $driverName = $driver->name();
+
+        $info = [
+            'imageDriver' => $driverName,
+            'phpVersion' => PHP_VERSION,
+            'maxUploadSize' => $this->getMaxUploadSize(),
+            'serverSoftware' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
+        ];
+
+        if ($driverName === 'imagick' && extension_loaded('imagick')) {
+            $im = new \Imagick();
+            $info['imagickVersion'] = $im->getVersion()['versionString'] ?? '';
+        }
+
+        return new JsonResponse($info);
+    }
+
+    /**
+     * Get effective max upload size from PHP config.
+     */
+    private function getMaxUploadSize(): string
+    {
+        $upload = $this->parseSize(ini_get('upload_max_filesize') ?: '2M');
+        $post = $this->parseSize(ini_get('post_max_size') ?: '8M');
+        $bytes = min($upload, $post);
+
+        if ($bytes >= 1024 * 1024 * 1024) {
+            return round($bytes / (1024 * 1024 * 1024), 1) . ' GB';
+        }
+        return round($bytes / (1024 * 1024), 1) . ' MB';
+    }
+
+    private function parseSize(string $size): int
+    {
+        $value = (int) $size;
+        $unit = strtolower(substr(trim($size), -1));
+        return match ($unit) {
+            'g' => $value * 1024 * 1024 * 1024,
+            'm' => $value * 1024 * 1024,
+            'k' => $value * 1024,
+            default => $value,
+        };
+    }
+
+    /**
      * Detect language from browser Accept-Language header.
      * Matches against available lang files: first tries full locale (e.g. "en_EN"),
      * then short code (e.g. "en").
