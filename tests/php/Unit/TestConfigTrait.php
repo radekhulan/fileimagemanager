@@ -131,6 +131,7 @@ trait TestConfigTrait
             rememberTextFilter: $rememberTextFilter,
             imageEditorActive: $imageEditorActive,
             imageEditorPosition: 'bottom',
+            svgPreview: true,
             darkMode: true,
             removeHeader: true,
             useAccessKeys: $useAccessKeys,

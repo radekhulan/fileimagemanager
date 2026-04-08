@@ -317,7 +317,7 @@ $config = [
     | ext_misc  - Archives and other files.
     |
     */
-    'ext_img' => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'webp'],
+    'ext_img' => ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'webp', 'svg'],
     'ext_file' => ['doc', 'docx', 'xls', 'xlsx', 'pdf', 'txt', 'log', 'xml', 'css', 'csv', 'json'],
     'ext_video' => ['mov', 'mpeg', 'm4v', 'mp4', 'avi', 'mpg', 'wma', 'flv', 'webm'],
     'ext_music' => ['mp3', 'mpga', 'm4a', 'ac3', 'aiff', 'mid', 'ogg', 'wav'],
@@ -343,7 +343,7 @@ $config = [
         'jsp', 'jspx', 'cfm', 'cfc', 'shtml',
         'htaccess', 'htpasswd', 'ini', 'config', 'env',
         'rb', 'erb', 'go', 'rs', 'java', 'class', 'war', 'jar',
-        'html', 'htm', 'xhtml', 'svg',
+        'html', 'htm', 'xhtml'
     ],
 
     /*
@@ -386,6 +386,18 @@ $config = [
     */
     'image_editor_active' => true,
     'image_editor_position' => 'bottom',
+
+    /*
+    |--------------------------------------------------------------------------
+    | SVG preview
+    |--------------------------------------------------------------------------
+    |
+    | svg_preview - Show inline thumbnails and image previews for SVG files.
+    |               SVGs are rendered via <img> tags, which browsers sandbox
+    |               (no script execution), so this is safe even for untrusted files.
+    |
+    */
+    'svg_preview' => true,
 
     /*
     |--------------------------------------------------------------------------

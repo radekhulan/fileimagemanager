@@ -149,6 +149,9 @@ final readonly class AppConfig
         public bool $imageEditorActive,
         public string $imageEditorPosition,
 
+        // SVG preview
+        public bool $svgPreview,
+
         // Dark mode
         public bool $darkMode,
 
@@ -290,6 +293,7 @@ final readonly class AppConfig
             imageEditorActive: (bool) ($config['tui_active'] ?? $config['image_editor_active'] ?? true),
             imageEditorPosition: (string) ($config['tui_position'] ?? $config['image_editor_position'] ?? 'bottom'),
 
+            svgPreview: (bool) ($config['svg_preview'] ?? true),
             darkMode: (bool) ($config['dark_mode'] ?? true),
             removeHeader: (bool) ($config['remove_header'] ?? true),
 
@@ -351,6 +355,7 @@ final readonly class AppConfig
             'showFilterButtons' => $this->showFilterButtons,
             'showLanguageSelection' => $this->showLanguageSelection,
             'imageEditorActive' => $this->imageEditorActive,
+            'svgPreview' => $this->svgPreview,
             'darkMode' => $this->darkMode,
             'removeHeader' => $this->removeHeader,
             'maxSizeUpload' => $this->maxSizeUpload,

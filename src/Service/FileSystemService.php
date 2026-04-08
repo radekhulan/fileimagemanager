@@ -680,7 +680,11 @@ class FileSystemService
         $width = null;
         $height = null;
 
-        if ($category === FileCategory::Image) {
+        if ($ext === 'svg' && $this->config->svgPreview) {
+            // SVG: use source file directly — browsers render it natively via <img> (sandboxed, no script execution)
+            $thumbUrl = $this->config->uploadDir . $subdir . $entry;
+            $category = FileCategory::Image;
+        } elseif ($category === FileCategory::Image) {
             $thumbUrl = $this->thumbnails->getThumbnailUrl($subdir . $entry);
             $dims = $this->getImageDimensionsFast($fullPath);
             if ($dims !== null) {

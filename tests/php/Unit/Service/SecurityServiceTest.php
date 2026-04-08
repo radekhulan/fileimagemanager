@@ -446,6 +446,7 @@ final class SecurityServiceTest extends TestCase
             rememberTextFilter: false,
             imageEditorActive: true,
             imageEditorPosition: 'bottom',
+            svgPreview: true,
             darkMode: true,
             removeHeader: true,
             useAccessKeys: $useAccessKeys,

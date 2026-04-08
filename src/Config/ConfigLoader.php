@@ -213,6 +213,7 @@ final class ConfigLoader
             'remember_text_filter' => $config->rememberTextFilter,
             'image_editor_active' => $config->imageEditorActive,
             'image_editor_position' => $config->imageEditorPosition,
+            'svg_preview' => $config->svgPreview,
             'dark_mode' => $config->darkMode,
             'remove_header' => $config->removeHeader,
             'use_access_keys' => $config->useAccessKeys,
