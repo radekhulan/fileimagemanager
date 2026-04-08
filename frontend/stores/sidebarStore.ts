@@ -137,6 +137,11 @@ export const useSidebarStore = defineStore('sidebar', () => {
     }
   }
 
+  function isLoaded(path: string): boolean {
+    const node = findNode(tree.value, path)
+    return node ? !!node.loaded : false
+  }
+
   return {
     tree,
     loaded,
@@ -153,6 +158,7 @@ export const useSidebarStore = defineStore('sidebar', () => {
     loadChildren,
     ensurePathLoaded,
     isLoading,
+    isLoaded,
     refresh,
   }
 })

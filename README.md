@@ -773,7 +773,7 @@ The script runs the full frontend build, installs production-only Composer depen
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Vue 3.5, TypeScript, Vite 7, Tailwind CSS 4, Pinia 2.3 |
+| Frontend | Vue 3.5, TypeScript, Vite 8, Tailwind CSS 4, Pinia 3.0 |
 | Image Editor | Filerobot Image Editor 5.0 |
 | Backend | PHP 8.4+, GD library |
 | Storage | Filesystem only (no database) |

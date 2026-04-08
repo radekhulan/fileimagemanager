@@ -17,3 +17,8 @@ declare module 'filerobot-image-editor' {
   export const TABS: Record<string, string>
   export const TOOLS: Record<string, string>
 }
+
+declare module 'react-filerobot-image-editor/lib/utils/translator' {
+  export function updateTranslations(translations?: Record<string, string>, language?: string): void
+  export function translate(key: string): string
+}

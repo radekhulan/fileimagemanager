@@ -1,17 +1,21 @@
 diff --git a/node_modules/konva/lib/Util.js b/node_modules/konva/lib/Util.js
-index 2d48880..d2b78d8 100644
+index 78facf8..19df605 100644
 --- a/node_modules/konva/lib/Util.js
 +++ b/node_modules/konva/lib/Util.js
-@@ -48,6 +48,12 @@ class Transform {
+@@ -62,8 +62,14 @@ export class Transform {
+         return this;
+     }
      rotate(rad) {
-         var c = Math.cos(rad);
-         var s = Math.sin(rad);
+-        const c = Math.cos(rad);
+-        const s = Math.sin(rad);
++        let c = Math.cos(rad);
++        let s = Math.sin(rad);
 +        if (Math.abs(c) < 1e-10) c = 0;
 +        if (Math.abs(s) < 1e-10) s = 0;
 +        if (Math.abs(c - 1) < 1e-10) c = 1;
 +        if (Math.abs(c + 1) < 1e-10) c = -1;
 +        if (Math.abs(s - 1) < 1e-10) s = 1;
 +        if (Math.abs(s + 1) < 1e-10) s = -1;
-         var m11 = this.m[0] * c + this.m[2] * s;
-         var m12 = this.m[1] * c + this.m[3] * s;
-         var m21 = this.m[0] * -s + this.m[2] * c;
+         const m11 = this.m[0] * c + this.m[2] * s;
+         const m12 = this.m[1] * c + this.m[3] * s;
+         const m21 = this.m[0] * -s + this.m[2] * c;

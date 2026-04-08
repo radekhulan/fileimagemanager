@@ -12,8 +12,10 @@ const configStore = useConfigStore()
 const sidebar = useSidebarStore()
 const { t } = configStore
 
-// Paths manually expanded by clicking
+// Paths manually expanded/collapsed by clicking
 const userExpandedPaths = ref(new Set<string>())
+const userCollapsedPaths = ref(new Set<string>())
+let navigatingFromSidebar = false
 
 // Paths auto-expanded from current navigation
 const autoExpandedPaths = computed(() => {
@@ -34,6 +36,11 @@ watch(() => fileStore.currentPath, (path) => {
   if (path && sidebar.loaded) {
     sidebar.ensurePathLoaded(path)
   }
+  if (!navigatingFromSidebar) {
+    // External navigation (breadcrumb, address bar): clear manual collapse state
+    userCollapsedPaths.value.clear()
+  }
+  navigatingFromSidebar = false
 })
 
 function isActive(path: string): boolean {
@@ -41,16 +48,21 @@ function isActive(path: string): boolean {
 }
 
 function isExpanded(path: string): boolean {
+  if (userCollapsedPaths.value.has(path)) return false
   return autoExpandedPaths.value.has(path) || userExpandedPaths.value.has(path)
 }
 
 function navigate(path: string) {
-  // Toggle manual expand if clicking on an already-active or already-expanded folder
-  if (userExpandedPaths.value.has(path)) {
+  if (isExpanded(path) && sidebar.isLoaded(path)) {
+    // Collapse: clicking on an expanded folder whose children are visible
     userExpandedPaths.value.delete(path)
+    userCollapsedPaths.value.add(path)
   } else {
+    // Expand: clicking on a collapsed folder or one whose children aren't loaded yet
+    userCollapsedPaths.value.delete(path)
     userExpandedPaths.value.add(path)
   }
+  navigatingFromSidebar = true
   fileStore.navigate(path)
 }
 

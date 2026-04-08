@@ -10,6 +10,7 @@ import { lightPalette, darkPalette, getEditorLocale } from '@/utils/editorConfig
 import React from 'react'
 import ReactDOM from 'react-dom'
 import FilerobotImageEditor from 'filerobot-image-editor'
+import { updateTranslations } from 'react-filerobot-image-editor/lib/utils/translator'
 
 // Expose React globally for filerobot-image-editor internals
 ;(window as any).React = React
@@ -97,16 +98,21 @@ function initEditor(imageUrl: string) {
     useBackendTranslations: false,
   }
 
+  // Pre-populate the FIE translation singleton BEFORE React renders.
+  // FIE's useEffect calls updateTranslations AFTER render, but toolbar
+  // components call translate() DURING render, reading stale English defaults.
+  updateTranslations(locale.translations, locale.language)
+
   editorInstance = new FilerobotImageEditor(containerRef.value, config)
   editorInstance.render()
 
   if (ui.isDark) {
-    // Apply dark palette AFTER translations are established in React context.
-    // Also re-send translations to ensure they survive the theme re-render.
+    // Apply dark palette AFTER React has mounted (styled-components need
+    // the initial render to establish the theme context).
     requestAnimationFrame(() => {
+      if (!editorInstance) return
       editorInstance.render({
         theme: { palette: darkPalette, typography },
-        translations: locale.translations,
       })
       injectDarkOverrides()
     })
