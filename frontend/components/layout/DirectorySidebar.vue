@@ -53,12 +53,12 @@ function isExpanded(path: string): boolean {
 }
 
 function navigate(path: string) {
-  if (isExpanded(path) && sidebar.isLoaded(path)) {
-    // Collapse: clicking on an expanded folder whose children are visible
+  if (fileStore.currentPath === path && isExpanded(path) && sidebar.isLoaded(path)) {
+    // Collapse only when re-clicking the already-current folder
     userExpandedPaths.value.delete(path)
     userCollapsedPaths.value.add(path)
   } else {
-    // Expand: clicking on a collapsed folder or one whose children aren't loaded yet
+    // Navigating to a different folder: ensure it stays expanded
     userCollapsedPaths.value.delete(path)
     userExpandedPaths.value.add(path)
   }
