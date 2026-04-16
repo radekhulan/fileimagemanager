@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, ref } from 'vue'
+import { computed, watch, ref, onMounted, nextTick } from 'vue'
 import type { TreeNode } from '@/types/files'
 import { useFileStore } from '@/stores/fileStore'
 import { useConfigStore } from '@/stores/configStore'
@@ -17,6 +17,8 @@ const userExpandedPaths = ref(new Set<string>())
 const userCollapsedPaths = ref(new Set<string>())
 let navigatingFromSidebar = false
 
+const sidebarRef = ref<HTMLElement | null>(null)
+
 // Paths auto-expanded from current navigation
 const autoExpandedPaths = computed(() => {
   const paths = new Set<string>()
@@ -31,16 +33,34 @@ const autoExpandedPaths = computed(() => {
   return paths
 })
 
+async function scrollActiveIntoView() {
+  const path = fileStore.currentPath
+  const container = sidebarRef.value
+  if (!path || !container) return
+  await nextTick()
+  const escaped = (window.CSS?.escape ?? ((s: string) => s.replace(/(["\\])/g, '\\$1')))(path)
+  const el = container.querySelector<HTMLElement>(`[data-path="${escaped}"]`)
+  el?.scrollIntoView({ block: 'nearest' })
+}
+
 // Auto-load ancestors when navigating to a deep path
-watch(() => fileStore.currentPath, (path) => {
+watch(() => fileStore.currentPath, async (path) => {
   if (path && sidebar.loaded) {
-    sidebar.ensurePathLoaded(path)
+    await sidebar.ensurePathLoaded(path)
   }
   if (!navigatingFromSidebar) {
     // External navigation (breadcrumb, address bar): clear manual collapse state
     userCollapsedPaths.value.clear()
   }
   navigatingFromSidebar = false
+  await scrollActiveIntoView()
+})
+
+onMounted(async () => {
+  if (fileStore.currentPath && sidebar.loaded) {
+    await sidebar.ensurePathLoaded(fileStore.currentPath)
+  }
+  await scrollActiveIntoView()
 })
 
 function isActive(path: string): boolean {
@@ -79,6 +99,7 @@ defineProps<{
 
 <template>
   <aside
+    ref="sidebarRef"
     class="hidden lg:flex flex-col w-56 shrink-0 border-r border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 overflow-y-auto overflow-x-hidden"
   >
     <!-- Home root item -->

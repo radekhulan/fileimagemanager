@@ -41,6 +41,7 @@ const hasExpandArrow = (node: TreeNode) => node.hasChildren || node.children.len
         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-neutral-700'"
       :style="{ paddingLeft: (depth * 12 + 12) + 'px' }"
       :title="node.name"
+      :data-path="node.path"
       @click="onClick"
       @contextmenu="onContextMenu"
     >
