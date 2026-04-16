@@ -2,7 +2,7 @@
 import { useFileStore } from '@/stores/fileStore'
 import { useConfigStore } from '@/stores/configStore'
 import { useUiStore } from '@/stores/uiStore'
-import type { FileItem } from '@/types/files'
+import type { FileItem, SortField } from '@/types/files'
 import { formatFileSize, formatDate } from '@/utils/filesize'
 import { getIconColor, getIconType, isEditableImage } from '@/utils/extensions'
 import { useEditorIntegration } from '@/composables/useEditorIntegration'
@@ -169,6 +169,14 @@ function getDimension(item: FileItem): string {
   }
   return ''
 }
+
+function onSort(field: SortField) {
+  fileStore.changeSort(field)
+}
+
+function isCurrentSort(field: SortField): boolean {
+  return fileStore.sortBy === field
+}
 </script>
 
 <template>
@@ -177,14 +185,58 @@ function getDimension(item: FileItem): string {
     <div
       class="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-x-4 px-3 py-2
              text-xs font-semibold text-gray-500 dark:text-gray-400
-             border-b border-gray-200 dark:border-gray-700 uppercase tracking-wide
+             border-b border-gray-200 dark:border-gray-700 tracking-wide
              hidden sm:grid"
     >
-      <span>{{ configStore.t('Name') }}</span>
-      <span class="w-24 text-right">{{ configStore.t('Date') }}</span>
-      <span class="w-20 text-right">{{ configStore.t('Size') }}</span>
+      <button
+        type="button"
+        class="inline-flex items-center gap-1 text-left transition-colors hover:text-gray-700 dark:hover:text-gray-200"
+        :class="{ 'text-rfm-primary hover:text-rfm-primary': isCurrentSort('name') }"
+        @click="onSort('name')"
+      >
+        {{ configStore.t('Name') }}
+        <svg v-if="isCurrentSort('name')" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline v-if="!fileStore.descending" points="18 15 12 9 6 15" />
+          <polyline v-else points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="w-24 inline-flex items-center justify-end gap-1 transition-colors hover:text-gray-700 dark:hover:text-gray-200"
+        :class="{ 'text-rfm-primary hover:text-rfm-primary': isCurrentSort('date') }"
+        @click="onSort('date')"
+      >
+        {{ configStore.t('Date') }}
+        <svg v-if="isCurrentSort('date')" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline v-if="!fileStore.descending" points="18 15 12 9 6 15" />
+          <polyline v-else points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        class="w-20 inline-flex items-center justify-end gap-1 transition-colors hover:text-gray-700 dark:hover:text-gray-200"
+        :class="{ 'text-rfm-primary hover:text-rfm-primary': isCurrentSort('size') }"
+        @click="onSort('size')"
+      >
+        {{ configStore.t('Size') }}
+        <svg v-if="isCurrentSort('size')" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline v-if="!fileStore.descending" points="18 15 12 9 6 15" />
+          <polyline v-else points="6 9 12 15 18 9" />
+        </svg>
+      </button>
       <span class="w-20 text-right">{{ configStore.t('Dimension') }}</span>
-      <span class="w-14 text-center">{{ configStore.t('Type') }}</span>
+      <button
+        type="button"
+        class="w-14 inline-flex items-center justify-center gap-1 transition-colors hover:text-gray-700 dark:hover:text-gray-200"
+        :class="{ 'text-rfm-primary hover:text-rfm-primary': isCurrentSort('extension') }"
+        @click="onSort('extension')"
+      >
+        {{ configStore.t('Type') }}
+        <svg v-if="isCurrentSort('extension')" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline v-if="!fileStore.descending" points="18 15 12 9 6 15" />
+          <polyline v-else points="6 9 12 15 18 9" />
+        </svg>
+      </button>
       <span class="w-28 text-center">{{ configStore.t('Actions') }}</span>
     </div>
 

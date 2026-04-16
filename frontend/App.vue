@@ -8,7 +8,6 @@ import { useSidebarStore } from '@/stores/sidebarStore'
 import { useKeyboard } from '@/composables/useKeyboard'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import Breadcrumb from '@/components/layout/Breadcrumb.vue'
-import SortBar from '@/components/layout/SortBar.vue'
 import StatusBar from '@/components/layout/StatusBar.vue'
 import FileGrid from '@/components/file-list/FileGrid.vue'
 import FileList from '@/components/file-list/FileList.vue'
@@ -127,9 +126,6 @@ function onGlobalDrop(e: DragEvent) {
 
     <!-- Breadcrumb navigation -->
     <Breadcrumb />
-
-    <!-- Sort bar (list/columns view) -->
-    <SortBar v-if="configStore.config?.showSortingBar && ui.viewMode > 0" />
 
     <!-- Main file area with optional sidebar -->
     <div class="flex flex-1 overflow-hidden">

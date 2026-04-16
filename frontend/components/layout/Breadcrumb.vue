@@ -103,7 +103,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside, true))
       <!-- Sort button + dropdown -->
       <div ref="sortRef" class="relative">
         <button
-          class="rounded p-1 text-gray-500 dark:text-gray-400 hover:text-rfm-primary hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
+          class="inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-rfm-primary hover:bg-gray-200 dark:hover:bg-neutral-700 transition-colors"
           :title="t('Sort')"
           @click="toggleSort"
         >
@@ -114,6 +114,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside, true))
             <path d="M3 17l3 3 3-3" />
             <path d="M6 18V4" />
           </svg>
+          <span>{{ t('Sort') }}</span>
         </button>
 
         <div
