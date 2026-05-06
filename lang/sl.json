@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "za nalaganje",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Predogled za ta element obrezovanja ni na voljo",
+    "fie_invalidTextContent": "Neveljavna vsebina besedila",
+    "fie_baselineShift": "Premik osnovne črte",
     "Save_as_WebP": "Shrani kot WebP",
     "Save_as_JPG": "Shrani kot JPEG",
     "Save_as_PNG": "Shrani kot PNG",

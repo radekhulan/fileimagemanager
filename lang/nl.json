@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "om te uploaden",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Geen voorbeeld beschikbaar voor dit bijsnijdelement",
+    "fie_invalidTextContent": "Ongeldige tekstinhoud",
+    "fie_baselineShift": "Basislijnverschuiving",
     "Save_as_WebP": "Opslaan als WebP",
     "Save_as_JPG": "Opslaan als JPEG",
     "Save_as_PNG": "Opslaan als PNG",

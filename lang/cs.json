@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "k nahrání",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Náhled pro tuto oblast ořezu není k dispozici",
+    "fie_invalidTextContent": "Neplatný text",
+    "fie_baselineShift": "Posun účaří",
     "Save_as_WebP": "Uložit jako WebP",
     "Save_as_JPG": "Uložit jako JPEG",
     "Save_as_PNG": "Uložit jako PNG",

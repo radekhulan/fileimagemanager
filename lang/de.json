@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "zum Hochladen",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Keine Vorschau für dieses Zuschnittelement verfügbar",
+    "fie_invalidTextContent": "Ungültiger Textinhalt",
+    "fie_baselineShift": "Grundlinienverschiebung",
     "Save_as_WebP": "Als WebP speichern",
     "Save_as_JPG": "Als JPEG speichern",
     "Save_as_PNG": "Als PNG speichern",

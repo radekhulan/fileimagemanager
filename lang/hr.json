@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "za učitavanje",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Pregled za ovaj element izrezivanja nije dostupan",
+    "fie_invalidTextContent": "Nevažeći tekst",
+    "fie_baselineShift": "Pomak osnovice",
     "Save_as_WebP": "Spremi kao WebP",
     "Save_as_JPG": "Spremi kao JPEG",
     "Save_as_PNG": "Spremi kao PNG",

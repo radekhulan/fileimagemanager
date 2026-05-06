@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "feltöltendő",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Ehhez a vágási elemhez nem érhető el előnézet",
+    "fie_invalidTextContent": "Érvénytelen szövegtartalom",
+    "fie_baselineShift": "Alapvonal eltolás",
     "Save_as_WebP": "Mentés WebP-ként",
     "Save_as_JPG": "Mentés JPEG-ként",
     "Save_as_PNG": "Mentés PNG-ként",

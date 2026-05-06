@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "da caricare",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Nessuna anteprima disponibile per questo ritaglio",
+    "fie_invalidTextContent": "Contenuto di testo non valido",
+    "fie_baselineShift": "Spostamento linea di base",
     "Save_as_WebP": "Salva come WebP",
     "Save_as_JPG": "Salva come JPEG",
     "Save_as_PNG": "Salva come PNG",

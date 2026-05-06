@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "na nahranie",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Náhľad pre túto oblasť orezu nie je k dispozícii",
+    "fie_invalidTextContent": "Neplatný text",
+    "fie_baselineShift": "Posun účiaria",
     "Save_as_WebP": "Uložiť ako WebP",
     "Save_as_JPG": "Uložiť ako JPEG",
     "Save_as_PNG": "Uložiť ako PNG",

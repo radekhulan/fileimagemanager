@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "to be uploaded",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "No preview available for this crop item",
+    "fie_invalidTextContent": "Invalid text content",
+    "fie_baselineShift": "Baseline shift",
     "Save_as_WebP": "Save as WebP",
     "Save_as_JPG": "Save as JPEG",
     "Save_as_PNG": "Save as PNG",

@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "à téléverser",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Aucun aperçu disponible pour cet élément de recadrage",
+    "fie_invalidTextContent": "Contenu de texte invalide",
+    "fie_baselineShift": "Décalage de la ligne de base",
     "Save_as_WebP": "Enregistrer en WebP",
     "Save_as_JPG": "Enregistrer en JPEG",
     "Save_as_PNG": "Enregistrer en PNG",

@@ -222,6 +222,8 @@
     "fie_toBeUploaded": "do przesłania",
     "fie_plus": "+",
     "fie_cropItemNoEffect": "Brak podglądu dla tego elementu przycinania",
+    "fie_invalidTextContent": "Nieprawidłowa treść tekstu",
+    "fie_baselineShift": "Przesunięcie linii bazowej",
     "Save_as_WebP": "Zapisz jako WebP",
     "Save_as_JPG": "Zapisz jako JPEG",
     "Save_as_PNG": "Zapisz jako PNG",
