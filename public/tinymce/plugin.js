@@ -78,35 +78,45 @@
   function injectStyles() {
     if (stylesInjected) return;
     stylesInjected = true;
+    // Styles are hardened with !important + an explicit reset so a host page's
+    // global button/typography CSS can't override the window (colours, centring…).
     var css =
-      '.fim-dd-overlay{position:fixed;inset:0;z-index:2000000;display:flex;align-items:center;justify-content:center;' +
-      'background:rgba(15,23,42,.55);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}' +
-      '.fim-dd-modal{background:#fff;color:#0f172a;border-radius:12px;box-shadow:0 30px 60px rgba(0,0,0,.35);' +
-      'width:min(900px,94vw);max-height:88vh;display:flex;flex-direction:column;overflow:hidden}' +
-      '.fim-dd-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid #e2e8f0}' +
-      '.fim-dd-head h3{margin:0;font-size:15px;font-weight:600}' +
-      '.fim-dd-x{margin-left:auto;border:0;background:transparent;font-size:22px;line-height:1;cursor:pointer;color:#64748b;padding:0 4px}' +
-      '.fim-dd-x:hover{color:#0f172a}' +
-      '.fim-dd-body{padding:16px;overflow:auto}' +
-      '.fim-dd-status{padding:28px 16px;text-align:center;color:#64748b}' +
+      '.fim-dd-overlay{position:fixed!important;inset:0!important;z-index:2147483600!important;display:flex!important;align-items:center!important;justify-content:center!important;' +
+      'background:rgba(15,23,42,.55)!important;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif!important}' +
+      '.fim-dd-overlay *,.fim-dd-overlay *::before,.fim-dd-overlay *::after{box-sizing:border-box!important;font-family:inherit!important}' +
+      '.fim-dd-modal{background:#fff!important;color:#0f172a!important;border-radius:12px!important;box-shadow:0 30px 60px rgba(0,0,0,.35)!important;' +
+      'width:min(900px,94vw)!important;max-height:88vh!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}' +
+      '.fim-dd-head{display:flex!important;align-items:center!important;gap:10px!important;padding:13px 16px!important;border-bottom:1px solid #e2e8f0!important}' +
+      '.fim-dd-head h3{margin:0!important;font-size:15px!important;font-weight:600!important;color:#0f172a!important}' +
+      '.fim-dd-x{box-sizing:border-box!important;margin:0 0 0 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;' +
+      'width:32px!important;height:32px!important;border:0!important;background:transparent!important;font-size:22px!important;line-height:1!important;cursor:pointer!important;color:#64748b!important;padding:0!important}' +
+      '.fim-dd-x:hover{color:#0f172a!important}' +
+      '.fim-dd-body{padding:16px!important;overflow:auto!important}' +
+      '.fim-dd-status{padding:28px 16px!important;text-align:center!important;color:#64748b!important}' +
       '.fim-dd-spin{width:26px;height:26px;border:3px solid #cbd5e1;border-top-color:#2563eb;border-radius:50%;' +
       'margin:0 auto 12px;animation:fim-dd-rot .8s linear infinite}' +
       '@keyframes fim-dd-rot{to{transform:rotate(360deg)}}' +
-      '.fim-dd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}' +
-      '.fim-dd-item{border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;display:flex;flex-direction:column}' +
-      '.fim-dd-thumb{height:150px;background:#f1f5f9 center/cover no-repeat;border-bottom:1px solid #e2e8f0}' +
-      '.fim-dd-name{padding:7px 10px 0;font-size:12px;color:#475569;word-break:break-all}' +
-      '.fim-dd-btns{display:flex;gap:6px;padding:10px}' +
-      '.fim-dd-btn{flex:1;cursor:pointer;border:1px solid #cbd5e1;background:#fff;color:#1e293b;border-radius:7px;' +
-      'padding:7px 8px;font-size:12.5px;font-weight:550;transition:background .12s,border-color .12s}' +
-      '.fim-dd-btn:hover{background:#f1f5f9}' +
-      '.fim-dd-btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}' +
-      '.fim-dd-btn.primary:hover{background:#1d4ed8}' +
-      '.fim-dd-item.is-done{box-shadow:inset 0 0 0 2px #16a34a}' +
+      '.fim-dd-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))!important;gap:14px!important}' +
+      '.fim-dd-item{border:1px solid #e2e8f0!important;border-radius:10px!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}' +
+      '.fim-dd-thumb{height:150px!important;background:#f1f5f9!important;border-bottom:1px solid #e2e8f0!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}' +
+      '.fim-dd-thumb .fim-dd-img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;margin:0!important;border:0!important;max-width:none!important;border-radius:0!important}' +
+      '.fim-dd-thumb.fim-dd-file{flex-direction:column!important;gap:6px!important;background:#f8fafc!important;color:#64748b!important}' +
+      '.fim-dd-file svg{width:42px!important;height:42px!important}' +
+      '.fim-dd-file span{font-size:11px!important;font-weight:600!important;letter-spacing:.04em!important;color:#94a3b8!important}' +
+      '.fim-dd-name{margin:0!important;padding:7px 10px 0!important;font-size:12px!important;color:#475569!important;word-break:break-all!important;text-align:left!important}' +
+      '.fim-dd-btns{display:flex!important;gap:6px!important;padding:10px!important}' +
+      '.fim-dd-btn{box-sizing:border-box!important;flex:1 1 auto!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;' +
+      '-webkit-appearance:none!important;appearance:none!important;cursor:pointer!important;margin:0!important;border:1px solid #cbd5e1!important;background:#fff!important;color:#1e293b!important;' +
+      'border-radius:7px!important;padding:8px 10px!important;min-height:38px!important;width:auto!important;font-family:inherit!important;font-size:12.5px!important;font-weight:600!important;line-height:1.2!important;' +
+      'letter-spacing:normal!important;text-transform:none!important;text-decoration:none!important;text-shadow:none!important;box-shadow:none!important;transition:background .12s,border-color .12s}' +
+      '.fim-dd-btn:hover{background:#f1f5f9!important;color:#0f172a!important}' +
+      '.fim-dd-btn.primary{background:#2563eb!important;border-color:#2563eb!important;color:#fff!important}' +
+      '.fim-dd-btn.primary:hover{background:#1d4ed8!important;border-color:#1d4ed8!important;color:#fff!important}' +
+      '.fim-dd-item.is-done{box-shadow:inset 0 0 0 2px #16a34a!important}' +
       '.fim-dd-item.is-done .fim-dd-name::after{content:" \\2713";color:#16a34a;font-weight:700}' +
-      '.fim-dd-foot{display:flex;justify-content:flex-end;gap:10px;padding:12px 16px;border-top:1px solid #e2e8f0}' +
-      '.fim-dd-foot .fim-dd-btn{flex:0 0 auto;min-width:110px}' +
-      '.fim-dd-err{color:#b91c1c}';
+      '.fim-dd-foot{display:flex!important;justify-content:flex-end!important;gap:10px!important;padding:12px 16px!important;border-top:1px solid #e2e8f0!important}' +
+      '.fim-dd-foot .fim-dd-btn{flex:0 0 auto!important;min-width:120px!important}' +
+      '.fim-dd-err{color:#b91c1c!important}';
     var el = document.createElement('style');
     el.setAttribute('data-fim-dragdrop', '1');
     el.textContent = css;
@@ -241,14 +251,11 @@
     // ----------------------------------------------------------------------
     //  Drag & drop image upload
     // ----------------------------------------------------------------------
-    function imageFilesFromDataTransfer(dt) {
+    function filesFromDataTransfer(dt) {
       var out = [];
-      if (!dt) return out;
-      var list = dt.files;
-      if (!list || !list.length) return out;
-      for (var i = 0; i < list.length; i++) {
-        var f = list[i];
-        if (f && f.type && f.type.indexOf('image/') === 0) out.push(f);
+      if (!dt || !dt.files) return out;
+      for (var i = 0; i < dt.files.length; i++) {
+        if (dt.files[i]) out.push(dt.files[i]);
       }
       return out;
     }
@@ -287,6 +294,12 @@
       editor.insertContent('<img src="' + full + '" alt="" />');
     }
 
+    function insertFileLink(item) {
+      var full = escapeHtmlAttr(toRelativeUrl(item.url));
+      var name = escapeHtml(item.name || (item.url.split('/').pop()) || 'file');
+      editor.insertContent('<a href="' + full + '">' + name + '</a>');
+    }
+
     function openInsertWindow(session, files) {
       injectStyles();
       var overlay = document.createElement('div');
@@ -302,16 +315,26 @@
 
       var insertPreviewLabel = tr(session, 'DragDrop_insert_preview', 'Insert preview');
       var insertImageLabel = tr(session, 'DragDrop_insert_image', 'Insert image');
+      var insertLinkLabel = tr(session, 'DragDrop_insert_link', 'Insert link');
+      var fileIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
 
       var itemsHtml = files.map(function (f, idx) {
-        var thumb = escapeHtmlAttr(toRelativeUrl(f.thumbUrl || f.url));
-        return '<div class="fim-dd-item">' +
-          '<div class="fim-dd-thumb" style="background-image:url(\'' + thumb + '\')"></div>' +
+        var head, btns;
+        if (f.isImage !== false) {
+          var thumb = escapeHtmlAttr(toRelativeUrl(f.thumbUrl || f.url));
+          var full = escapeHtmlAttr(toRelativeUrl(f.url));
+          head = '<div class="fim-dd-thumb"><img class="fim-dd-img" src="' + thumb + '" data-full="' + full + '" alt=""></div>';
+          btns =
+            '<button type="button" class="fim-dd-btn primary" data-act="preview" data-i="' + idx + '">' + escapeHtml(insertPreviewLabel) + '</button>' +
+            '<button type="button" class="fim-dd-btn" data-act="image" data-i="' + idx + '">' + escapeHtml(insertImageLabel) + '</button>';
+        } else {
+          var ext = ((f.name || '').split('.').pop() || '').toUpperCase();
+          head = '<div class="fim-dd-thumb fim-dd-file">' + fileIcon + '<span>' + escapeHtml(ext) + '</span></div>';
+          btns = '<button type="button" class="fim-dd-btn primary" data-act="link" data-i="' + idx + '">' + escapeHtml(insertLinkLabel) + '</button>';
+        }
+        return '<div class="fim-dd-item">' + head +
           '<div class="fim-dd-name">' + escapeHtml(f.name || '') + '</div>' +
-          '<div class="fim-dd-btns">' +
-          '<button type="button" class="fim-dd-btn primary" data-act="preview" data-i="' + idx + '">' + escapeHtml(insertPreviewLabel) + '</button>' +
-          '<button type="button" class="fim-dd-btn" data-act="image" data-i="' + idx + '">' + escapeHtml(insertImageLabel) + '</button>' +
-          '</div></div>';
+          '<div class="fim-dd-btns">' + btns + '</div></div>';
       }).join('');
 
       var closeLabel = tr(session, 'DragDrop_close', 'Close');
@@ -330,13 +353,24 @@
         if (!btn) return;
         var item = files[parseInt(btn.getAttribute('data-i'), 10)];
         if (!item) return;
-        if (btn.getAttribute('data-act') === 'preview') insertPreviewLink(item);
-        else insertFullImage(item);
-        // Keep the window open so the other images can still be inserted;
-        // auto-close only when there was a single image.
+        var act = btn.getAttribute('data-act');
+        if (act === 'preview') insertPreviewLink(item);
+        else if (act === 'image') insertFullImage(item);
+        else insertFileLink(item);
+        // Keep the window open so the other files can still be inserted;
+        // auto-close only when there was a single file.
         if (files.length === 1) { close(); return; }
         var card = btn.closest('.fim-dd-item');
         if (card) card.classList.add('is-done');
+      });
+
+      // If a thumbnail fails to load, fall back to the full image.
+      Array.prototype.forEach.call(overlay.querySelectorAll('.fim-dd-img'), function (img) {
+        img.addEventListener('error', function handler() {
+          img.removeEventListener('error', handler);
+          var full = img.getAttribute('data-full');
+          if (full && img.getAttribute('src') !== full) { img.src = full; }
+        });
       });
 
       document.body.appendChild(overlay);
@@ -384,16 +418,24 @@
 
     function onDrop(e) {
       if (!editor.options.get('fileimagemanager_dragdrop')) return;
-      var files = imageFilesFromDataTransfer(e.dataTransfer);
-      if (!files.length) return; // let TinyMCE handle non-image drops normally
+
+      var dt = e.dataTransfer;
+      var hasFiles = dt && dt.types && Array.prototype.indexOf.call(dt.types, 'Files') !== -1;
+      if (!hasFiles) return; // not a file drop (text/html/url) — let TinyMCE handle it
 
       var base = getBaseUrl();
       var warm = sessions[base] && sessions[base].config;
       // If the server has the feature switched off, don't hijack the drop.
       if (warm && warm.dragDropUpload === false) return;
 
+      // It IS a file drop and the feature is on: take over so the browser can never
+      // navigate to the dropped file (which would lose the editor content).
       e.preventDefault();
       e.stopImmediatePropagation();
+
+      var files = filesFromDataTransfer(dt);
+      if (!files.length) return;
+
       setCaretFromPoint(e.clientX, e.clientY);
 
       var status = openStatusWindow(null);

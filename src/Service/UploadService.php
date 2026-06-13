@@ -64,7 +64,7 @@ class UploadService
      * Paths use forward slashes throughout: currentPath is normalised to "/" in
      * AppConfig, PHP accepts "/" on Windows, and the relative path doubles as a URL.
      *
-     * @return array{name: string, path: string, size: int, type: string, url: string, thumbUrl: string}[]
+     * @return array{name: string, path: string, size: int, type: string, url: string, isImage: bool, thumbUrl: ?string}[]
      */
     public function handleDragDropUpload(array $files): array
     {
@@ -88,7 +88,12 @@ class UploadService
 
         foreach ($results as &$result) {
             $result['url'] = $this->config->uploadDir . $result['path'];
-            $result['thumbUrl'] = $this->thumbnails->getThumbnailUrl($result['path']);
+            $ext = mb_strtolower(pathinfo($result['path'], PATHINFO_EXTENSION));
+            $isImage = $this->security->isImageExtension($ext);
+            $result['isImage'] = $isImage;
+            // Images get a thumbnail (for the picker + the "preview" insert); other files
+            // (PDF, …) have no thumbnail and are inserted as a link.
+            $result['thumbUrl'] = $isImage ? $this->thumbnails->getThumbnailUrl($result['path']) : null;
         }
         unset($result);
 
