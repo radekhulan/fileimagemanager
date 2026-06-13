@@ -1,5 +1,9 @@
 {
     "_language_name": "Nederlands",
+    "DragDrop_uploaded": "Geüploade afbeeldingen",
+    "DragDrop_insert_preview": "Voorbeeld invoegen",
+    "DragDrop_insert_image": "Afbeelding invoegen",
+    "DragDrop_close": "Sluiten",
     "View": "Bekijken",
     "Select": "Selecteren",
     "Deselect_All": "Alles deselecteren",

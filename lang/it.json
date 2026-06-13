@@ -1,5 +1,9 @@
 {
     "_language_name": "Italiano",
+    "DragDrop_uploaded": "Immagini caricate",
+    "DragDrop_insert_preview": "Inserisci anteprima",
+    "DragDrop_insert_image": "Inserisci immagine",
+    "DragDrop_close": "Chiudi",
     "View": "Visualizza",
     "Select": "Seleziona",
     "Deselect_All": "Deselect All",

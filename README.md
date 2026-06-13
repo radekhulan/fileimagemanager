@@ -5,6 +5,13 @@ Modern, responsive web file manager built with **Vue 3 + TypeScript** frontend a
 Developed by **[Radek Hulán](https://mywebdesign.dev/)**
 with the amazing assistance of [Claude Code](https://claude.ai/claude-code).
 
+> [!TIP]
+> **Want TinyMCE wired up in one command?** The companion bundle
+> **[TinyMCE with integrated modern File & Image Manager](https://github.com/radekhulan/tinymce-imagemanager)**
+> downloads TinyMCE 8 (GPL) + all language packs, this File & Image Manager, and a custom Lucide
+> icon pack — and wires them together (toolbar button, file picker **and drag & drop**) with a
+> single setup script. No Composer, no npm build.
+
 ## Table of Contents
 
 - [Features](#features)
@@ -246,6 +253,25 @@ All options are in `config/filemanager.php` with inline documentation.
 | `filePermission` | `0644` | Default file permissions (Linux) |
 | `folderPermission` | `0755` | Default folder permissions (Linux) |
 
+### Drag & drop upload (TinyMCE)
+
+Used by the bundled TinyMCE plugin when images are dropped straight onto the editor (see [TinyMCE 8 (Plugin)](#tinymce-8-plugin)).
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `dragdrop_upload` | `true` | Master switch for drag & drop upload from the editor |
+| `dragdrop_path` | `cms/{YYYY}/{MM}/{DD}` | Target folder under the upload root for dropped images |
+
+`dragdrop_path` supports date placeholders, which are created automatically on demand:
+
+| Placeholder | Meaning | Placeholder | Meaning |
+|---|---|---|---|
+| `{YYYY}` | Year (4 digits) | `{DD}` | Day (01–31) |
+| `{YY}` | Year (2 digits) | `{HH}` | Hour (00–23) |
+| `{MM}` | Month (01–12) | `{mm}` | Minute (00–59) |
+
+Examples: `cms/{YYYY}/{MM}/{DD}`, `{YY}{MM}`, `uploads`. Each editor can opt out via `fileimagemanager_dragdrop: false`. The endpoint reuses the standard upload pipeline (extension blacklist, MIME check, size limits) and **ignores any client-supplied path** — the destination is taken only from this config.
+
 ### Permissions
 
 | Option | Default | Description |
@@ -350,11 +376,13 @@ tinymce.init({
 | `fileimagemanager_url` | auto-detected | File manager URL (e.g. `/public/`) |
 | `fileimagemanager_crossdomain` | `false` | Enable cross-domain postMessage mode |
 | `fileimagemanager_title` | `File Image Manager` | Dialog title |
+| `fileimagemanager_dragdrop` | `true` | Drop images straight onto the editor to upload them (per editor) |
 
 **Behavior:**
 
 - **Toolbar button** (`fileimagemanager`): opens the file manager dialog. Clicking a file inserts it into the editor.
 - **Image/media/link dialogs**: the browse button in TinyMCE native dialogs opens the file manager via `file_picker_callback`.
+- **Drag & drop upload**: drop one or more image files straight onto the editor and they are uploaded without opening the file manager. A small window then shows their thumbnails so you can insert each one — as a **preview linked to the full image** (`<a href="full"><img src="thumb"></a>`) or as the **full image** (`<img>`). Works with multiple editors on one page; disable it per editor with `fileimagemanager_dragdrop: false`. The target folder and the master switch are set server-side — see [`dragdrop_upload` / `dragdrop_path`](#drag--drop-upload-tinymce) in the configuration.
 - **Smart insertion**: if text or an image is selected in the editor, the chosen file is inserted as a link (`<a>`) wrapping the selection. Without selection, images insert as `<img>`, videos as `<video>`, audio as `<audio>`, and other files as `<a>` links.
 - **Preview**: the eye icon on file hover always shows a preview, even in editor mode.
 - **Relative URLs**: absolute URLs from the file manager are automatically converted to relative paths.

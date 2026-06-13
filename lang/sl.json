@@ -1,5 +1,9 @@
 {
     "_language_name": "Slovenščina",
+    "DragDrop_uploaded": "Naložene slike",
+    "DragDrop_insert_preview": "Vstavi predogled",
+    "DragDrop_insert_image": "Vstavi sliko",
+    "DragDrop_close": "Zapri",
     "View": "Prikaži",
     "Select": "Označi",
     "Deselect_All": "Deselect All",

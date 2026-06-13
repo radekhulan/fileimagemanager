@@ -55,6 +55,72 @@ class UploadService
     }
 
     /**
+     * Handle a drag & drop upload coming from the TinyMCE plugin.
+     *
+     * Resolves the configured target path (with date placeholders), creates it on
+     * demand, stores the files, and returns each result enriched with the full
+     * image URL and a (213x160) thumbnail URL so the editor can offer both.
+     *
+     * Paths use forward slashes throughout: currentPath is normalised to "/" in
+     * AppConfig, PHP accepts "/" on Windows, and the relative path doubles as a URL.
+     *
+     * @return array{name: string, path: string, size: int, type: string, url: string, thumbUrl: string}[]
+     */
+    public function handleDragDropUpload(array $files): array
+    {
+        if (!$this->config->dragDropUpload) {
+            throw new UploadException('Drag & drop upload is disabled');
+        }
+
+        $targetDir = $this->resolveDragDropDir();
+        $targetPath = $this->config->currentPath . $targetDir;
+
+        if (
+            !is_dir($targetPath)
+            && !@mkdir($targetPath, $this->config->folderPermission, true)
+            && !is_dir($targetPath)
+        ) {
+            throw new UploadException('Failed to create upload directory');
+        }
+
+        // handleUpload() validates the path is inside the upload root and processes the files.
+        $results = $this->handleUpload($targetDir, $files);
+
+        foreach ($results as &$result) {
+            $result['url'] = $this->config->uploadDir . $result['path'];
+            $result['thumbUrl'] = $this->thumbnails->getThumbnailUrl($result['path']);
+        }
+        unset($result);
+
+        return $results;
+    }
+
+    /**
+     * Resolve the configured drag & drop target directory, expanding date
+     * placeholders and stripping anything that could escape the upload root.
+     * Returns a relative path with a trailing slash, or '' for the root.
+     */
+    private function resolveDragDropDir(): string
+    {
+        $path = strtr($this->config->dragDropPath, [
+            '{YYYY}' => date('Y'),
+            '{YY}'   => date('y'),
+            '{MM}'   => date('m'),
+            '{DD}'   => date('d'),
+            '{HH}'   => date('H'),
+            '{mm}'   => date('i'),
+        ]);
+
+        $path = str_replace('\\', '/', $path);
+        $path = preg_replace('#\.\.+#', '', $path);            // neutralise ".." traversal
+        $path = preg_replace('#[^A-Za-z0-9_./-]#', '', $path); // allow only safe characters
+        $path = preg_replace('#/+#', '/', $path);              // collapse repeated slashes
+        $path = trim($path, '/');
+
+        return $path === '' ? '' : $path . '/';
+    }
+
+    /**
      * Upload a file from a URL.
      *
      * @return array{name: string, path: string, size: int, type: string}

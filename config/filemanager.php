@@ -64,6 +64,30 @@ $config = [
 
     /*
     |--------------------------------------------------------------------------
+    | TinyMCE drag & drop upload
+    |--------------------------------------------------------------------------
+    |
+    | When the bundled TinyMCE plugin is active, images dropped straight onto
+    | the editor are uploaded here without opening the file manager, and a small
+    | window then lets the user insert each one (as a preview linked to the full
+    | image, or as the full image). The plugin can disable this per editor via
+    | the `fileimagemanager_dragdrop` init option.
+    |
+    | dragdrop_upload - Master switch for the feature (default: true).
+    | dragdrop_path   - Target folder under the upload root where dropped images
+    |                   are stored. Supports date placeholders, which are created
+    |                   automatically on demand:
+    |                       {YYYY} year (4 digits)   {YY} year (2 digits)
+    |                       {MM}   month (01-12)     {DD} day (01-31)
+    |                       {HH}   hour (00-23)      {mm} minute (00-59)
+    |                   Examples: 'cms/{YYYY}/{MM}/{DD}', '{YY}{MM}', 'uploads'.
+    |
+    */
+    'dragdrop_upload' => true,
+    'dragdrop_path' => 'cms/{YYYY}/{MM}/{DD}',
+
+    /*
+    |--------------------------------------------------------------------------
     | Selection
     |--------------------------------------------------------------------------
     |

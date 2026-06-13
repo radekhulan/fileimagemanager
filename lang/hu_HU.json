@@ -1,5 +1,9 @@
 {
     "_language_name": "Magyar",
+    "DragDrop_uploaded": "Feltöltött képek",
+    "DragDrop_insert_preview": "Előnézet beszúrása",
+    "DragDrop_insert_image": "Kép beszúrása",
+    "DragDrop_close": "Bezárás",
     "View": "Megjelenítés",
     "Select": "Tallózás",
     "Deselect_All": "Kijelölés törlése",

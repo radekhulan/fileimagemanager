@@ -47,6 +47,29 @@ final class UploadController
         return JsonResponse::success(['files' => $results]);
     }
 
+    /**
+     * Drag & drop upload from the TinyMCE plugin: stores dropped images in the
+     * configured (date-based) folder and returns full + thumbnail URLs.
+     */
+    public function uploadDragDrop(Request $request): JsonResponse
+    {
+        if (!$this->config->uploadFiles) {
+            return JsonResponse::error('Uploads disabled', 403);
+        }
+        if (!$this->config->dragDropUpload) {
+            return JsonResponse::error('Drag & drop upload disabled', 403);
+        }
+
+        $files = $request->files();
+        if (empty($files)) {
+            return JsonResponse::error('No files uploaded');
+        }
+
+        $results = $this->uploadService->handleDragDropUpload($files);
+
+        return JsonResponse::success(['files' => $results]);
+    }
+
     public function uploadFromUrl(Request $request): JsonResponse
     {
         if (!$this->config->uploadFiles || !$this->config->urlUpload) {

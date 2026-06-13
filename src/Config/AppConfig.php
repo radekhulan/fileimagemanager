@@ -186,6 +186,10 @@ final readonly class AppConfig
 
         // Debug
         public bool $debugErrorMessage = false,
+
+        // TinyMCE drag & drop upload
+        public bool $dragDropUpload = true,
+        public string $dragDropPath = 'cms/{YYYY}/{MM}/{DD}',
     ) {}
 
     public static function fromArray(array $config): self
@@ -319,6 +323,9 @@ final readonly class AppConfig
             corsAllowedOrigins: $config['cors_allowed_origins'] ?? [],
 
             debugErrorMessage: (bool) ($config['debug_error_message'] ?? false),
+
+            dragDropUpload: (bool) ($config['dragdrop_upload'] ?? true),
+            dragDropPath: (string) ($config['dragdrop_path'] ?? 'cms/{YYYY}/{MM}/{DD}'),
         );
     }
 
@@ -377,6 +384,7 @@ final readonly class AppConfig
             'defaultView' => $this->defaultView,
             'defaultImageFormat' => $this->defaultImageFormat,
             'uploadResizeOptions' => $this->uploadResizeOptions,
+            'dragDropUpload' => $this->dragDropUpload,
         ];
     }
 
