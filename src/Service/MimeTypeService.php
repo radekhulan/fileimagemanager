@@ -59,7 +59,6 @@ final class MimeTypeService
         }
 
         $mime = finfo_file($finfo, $filePath);
-        finfo_close($finfo);
 
         return $mime ?: 'application/octet-stream';
     }

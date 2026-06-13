@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RFM\Tests\Unit\Controller;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -11,6 +12,7 @@ use RFM\Controller\UploadController;
 use RFM\Service\UploadService;
 use RFM\Tests\Unit\TestConfigTrait;
 
+#[AllowMockObjectsWithoutExpectations]
 #[CoversClass(UploadController::class)]
 final class UploadControllerTest extends TestCase
 {

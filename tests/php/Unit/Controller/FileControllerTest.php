@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RFM\Tests\Unit\Controller;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -12,6 +13,7 @@ use RFM\Enum\SortField;
 use RFM\Service\FileSystemService;
 use RFM\Tests\Unit\TestConfigTrait;
 
+#[AllowMockObjectsWithoutExpectations]
 #[CoversClass(FileController::class)]
 final class FileControllerTest extends TestCase
 {
