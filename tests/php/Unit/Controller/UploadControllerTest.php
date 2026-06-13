@@ -65,7 +65,7 @@ final class UploadControllerTest extends TestCase
         $uploadService = $this->createMock(UploadService::class);
         $uploadService->expects(self::once())
             ->method('handleUpload')
-            ->with('photos/', self::isType('array'))
+            ->with('photos/', self::isArray())
             ->willReturn([['name' => 'test.jpg', 'path' => 'photos/test.jpg', 'size' => 1024, 'type' => 'image/jpeg']]);
 
         $controller = new UploadController($config, $uploadService);
