@@ -30,6 +30,7 @@ final class Router
         $this->post('/api/upload', Controller\UploadController::class, 'upload');
         $this->post('/api/upload/url', Controller\UploadController::class, 'uploadFromUrl');
         $this->post('/api/upload/dragdrop', Controller\UploadController::class, 'uploadDragDrop');
+        $this->post('/api/upload/dragdrop/delete', Controller\UploadController::class, 'uploadDragDropDelete');
 
         // File operations
         $this->post('/api/operations/rename', Controller\OperationController::class, 'rename');

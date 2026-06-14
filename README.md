@@ -272,6 +272,8 @@ Used by the bundled TinyMCE plugin when images are dropped straight onto the edi
 
 Examples: `cms/{YYYY}/{MM}/{DD}`, `{YY}{MM}`, `uploads`. Each editor can opt out via `fileimagemanager_dragdrop: false`. The endpoint reuses the standard upload pipeline (extension blacklist, MIME check, size limits) and **ignores any client-supplied path** — the destination is taken only from this config.
 
+**Removing an upload:** in the insert window, hovering a tile shows a red ✕ that deletes that file (and its thumbnail) on the server and drops the tile — no confirmation. Removal is gated by the same `dragdrop_upload` switch and is restricted to the `dragdrop_path` base folder, so it can only ever delete files this feature created.
+
 ### Permissions
 
 | Option | Default | Description |
@@ -382,7 +384,7 @@ tinymce.init({
 
 - **Toolbar button** (`fileimagemanager`): opens the file manager dialog. Clicking a file inserts it into the editor.
 - **Image/media/link dialogs**: the browse button in TinyMCE native dialogs opens the file manager via `file_picker_callback`.
-- **Drag & drop upload**: drop one or more image files straight onto the editor and they are uploaded without opening the file manager. A small window then shows their thumbnails so you can insert each one — as a **preview linked to the full image** (`<a href="full"><img src="thumb"></a>`) or as the **full image** (`<img>`). Works with multiple editors on one page; disable it per editor with `fileimagemanager_dragdrop: false`. The target folder and the master switch are set server-side — see [`dragdrop_upload` / `dragdrop_path`](#drag--drop-upload-tinymce) in the configuration.
+- **Drag & drop upload**: drop one or more files straight onto the editor and they are uploaded without opening the file manager. A small window then shows their thumbnails so you can insert each one — images as a **preview linked to the full image** (`<a href="full"><img src="thumb"></a>`) or as the **full image** (`<img>`); other files (PDF, …) as a **link**. Hovering a tile shows a red ✕ that **deletes** that upload (file + thumbnail) server-side and removes it from the window, without confirmation. Works with multiple editors on one page; disable it per editor with `fileimagemanager_dragdrop: false`. The target folder and the master switch are set server-side — see [`dragdrop_upload` / `dragdrop_path`](#drag--drop-upload-tinymce) in the configuration.
 - **Smart insertion**: if text or an image is selected in the editor, the chosen file is inserted as a link (`<a>`) wrapping the selection. Without selection, images insert as `<img>`, videos as `<video>`, audio as `<audio>`, and other files as `<a>` links.
 - **Preview**: the eye icon on file hover always shows a preview, even in editor mode.
 - **Relative URLs**: absolute URLs from the file manager are automatically converted to relative paths.

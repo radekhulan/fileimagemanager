@@ -6,7 +6,7 @@ namespace RFM\Service;
 
 use RFM\Config\AppConfig;
 use RFM\Enum\ImageResizeMode;
-use RFM\Exception\{UploadException, InvalidExtensionException};
+use RFM\Exception\{UploadException, InvalidExtensionException, FileNotFoundException};
 
 class UploadService
 {
@@ -98,6 +98,67 @@ class UploadService
         unset($result);
 
         return $results;
+    }
+
+    /**
+     * Delete a file (and its thumbnail) that was previously stored via drag & drop.
+     *
+     * Used by the TinyMCE plugin's "remove" button so the user can discard an image
+     * they just dropped. Deletion is restricted to the configured drag & drop base
+     * directory (the static part of dragDropPath before any {date} token) on top of
+     * the usual upload-root containment check — so it can only ever remove files this
+     * feature created, never arbitrary files elsewhere in the upload root.
+     */
+    public function handleDragDropDelete(string $relativePath): void
+    {
+        if (!$this->config->dragDropUpload) {
+            throw new UploadException('Drag & drop upload is disabled');
+        }
+
+        $relativePath = str_replace('\\', '/', $relativePath);
+        $relativePath = preg_replace('#\.\.+#', '', $relativePath); // neutralise ".." traversal
+        $relativePath = ltrim($relativePath, '/');
+
+        if ($relativePath === '') {
+            throw new UploadException('File path required');
+        }
+
+        // Defense in depth: only allow deleting inside the drag & drop base folder.
+        $base = $this->dragDropBaseDir();
+        if ($base !== '' && !str_starts_with($relativePath . '/', $base . '/')) {
+            throw new UploadException('Path is outside the drag & drop directory');
+        }
+
+        $fullPath = $this->config->currentPath . $relativePath;
+        $this->security->validatePath($fullPath);
+
+        if (!is_file($fullPath)) {
+            throw new FileNotFoundException("File not found: {$relativePath}");
+        }
+
+        @unlink($fullPath);
+        $this->thumbnails->deleteThumbnail($relativePath);
+    }
+
+    /**
+     * The static prefix of dragDropPath (everything before the first {date} token),
+     * sanitised the same way resolveDragDropDir() sanitises paths. Returns '' when
+     * the path starts with a token (no static prefix to anchor on).
+     */
+    private function dragDropBaseDir(): string
+    {
+        $path = $this->config->dragDropPath;
+        $pos = strpos($path, '{');
+        if ($pos !== false) {
+            $path = substr($path, 0, $pos);
+        }
+
+        $path = str_replace('\\', '/', $path);
+        $path = preg_replace('#\.\.+#', '', $path);
+        $path = preg_replace('#[^A-Za-z0-9_./-]#', '', $path);
+        $path = preg_replace('#/+#', '/', $path);
+
+        return trim($path, '/');
     }
 
     /**

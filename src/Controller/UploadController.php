@@ -70,6 +70,31 @@ final class UploadController
         return JsonResponse::success(['files' => $results]);
     }
 
+    /**
+     * Delete a file that was just stored via drag & drop (the plugin's "remove"
+     * button). Removes both the full file and its thumbnail. Gated by the same
+     * flags as the upload itself; the service additionally restricts deletion to
+     * the configured drag & drop directory.
+     */
+    public function uploadDragDropDelete(Request $request): JsonResponse
+    {
+        if (!$this->config->uploadFiles) {
+            return JsonResponse::error('Uploads disabled', 403);
+        }
+        if (!$this->config->dragDropUpload) {
+            return JsonResponse::error('Drag & drop upload disabled', 403);
+        }
+
+        $path = $request->post('path', '');
+        if (!is_string($path) || $path === '') {
+            return JsonResponse::error('File path required');
+        }
+
+        $this->uploadService->handleDragDropDelete($path);
+
+        return JsonResponse::success();
+    }
+
     public function uploadFromUrl(Request $request): JsonResponse
     {
         if (!$this->config->uploadFiles || !$this->config->urlUpload) {

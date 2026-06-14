@@ -14,10 +14,13 @@
  *   });
  *
  * Drag & drop: when enabled (and allowed by the server config `dragdrop_upload`),
- * dropping image files straight onto the editor uploads them to the configured
- * folder (server option `dragdrop_path`, e.g. cms/{YYYY}/{MM}/{DD}) and opens a
- * small window to insert each one — as a preview linked to the full image, or as
- * the full image. Works with multiple editors on one page (handlers are per editor).
+ * dropping files straight onto the editor uploads them to the configured folder
+ * (server option `dragdrop_path`, e.g. cms/{YYYY}/{MM}/{DD}) and opens a small
+ * window to insert each one — images as a preview linked to the full image or as
+ * the full image, other files (PDF, …) as a link. Hovering a tile shows a red
+ * cross that deletes that upload (file + thumbnail) server-side and removes it
+ * from the window, no confirmation. Works with multiple editors on one page
+ * (handlers are per editor).
  */
 (function () {
   'use strict';
@@ -97,7 +100,16 @@
       'margin:0 auto 12px;animation:fim-dd-rot .8s linear infinite}' +
       '@keyframes fim-dd-rot{to{transform:rotate(360deg)}}' +
       '.fim-dd-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))!important;gap:14px!important}' +
-      '.fim-dd-item{border:1px solid #e2e8f0!important;border-radius:10px!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}' +
+      '.fim-dd-item{position:relative!important;border:1px solid #e2e8f0!important;border-radius:10px!important;overflow:hidden!important;display:flex!important;flex-direction:column!important}' +
+      '.fim-dd-del{box-sizing:border-box!important;position:absolute!important;top:8px!important;right:8px!important;z-index:3!important;' +
+      'width:28px!important;height:28px!important;padding:0!important;margin:0!important;border:0!important;border-radius:50%!important;' +
+      'display:none!important;align-items:center!important;justify-content:center!important;cursor:pointer!important;' +
+      'background:rgba(220,38,38,.92)!important;color:#fff!important;font-size:16px!important;line-height:1!important;' +
+      'box-shadow:0 2px 6px rgba(0,0,0,.3)!important;transition:background .12s!important}' +
+      '.fim-dd-item:hover .fim-dd-del,.fim-dd-del:focus{display:inline-flex!important}' +
+      '.fim-dd-del:hover{background:#b91c1c!important;color:#fff!important}' +
+      '.fim-dd-del:disabled{opacity:.55!important;cursor:default!important}' +
+      '.fim-dd-item.is-removing{opacity:.45!important;pointer-events:none!important}' +
       '.fim-dd-thumb{height:150px!important;background:#f1f5f9!important;border-bottom:1px solid #e2e8f0!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}' +
       '.fim-dd-thumb .fim-dd-img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important;margin:0!important;border:0!important;max-width:none!important;border-radius:0!important}' +
       '.fim-dd-thumb.fim-dd-file{flex-direction:column!important;gap:6px!important;background:#f8fafc!important;color:#64748b!important}' +
@@ -283,6 +295,26 @@
       });
     }
 
+    function deleteUploaded(base, session, item) {
+      return fetch(base + 'api/upload/dragdrop/delete', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': (session && session.csrf) || '',
+        },
+        body: JSON.stringify({ path: (item && item.path) || '' }),
+      })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+        .then(function (res) {
+          if (!res.ok || !res.data || res.data.success === false) {
+            throw new Error((res.data && res.data.error) || 'Delete failed');
+          }
+          return true;
+        });
+    }
+
     function insertPreviewLink(item) {
       var full = escapeHtmlAttr(toRelativeUrl(item.url));
       var thumb = escapeHtmlAttr(toRelativeUrl(item.thumbUrl || item.url));
@@ -300,7 +332,7 @@
       editor.insertContent('<a href="' + full + '">' + name + '</a>');
     }
 
-    function openInsertWindow(session, files) {
+    function openInsertWindow(session, files, base) {
       injectStyles();
       var overlay = document.createElement('div');
       overlay.className = 'fim-dd-overlay';
@@ -316,6 +348,7 @@
       var insertPreviewLabel = tr(session, 'DragDrop_insert_preview', 'Insert preview');
       var insertImageLabel = tr(session, 'DragDrop_insert_image', 'Insert image');
       var insertLinkLabel = tr(session, 'DragDrop_insert_link', 'Insert link');
+      var deleteLabel = tr(session, 'DragDrop_delete', 'Delete');
       var fileIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
 
       var itemsHtml = files.map(function (f, idx) {
@@ -332,7 +365,9 @@
           head = '<div class="fim-dd-thumb fim-dd-file">' + fileIcon + '<span>' + escapeHtml(ext) + '</span></div>';
           btns = '<button type="button" class="fim-dd-btn primary" data-act="link" data-i="' + idx + '">' + escapeHtml(insertLinkLabel) + '</button>';
         }
-        return '<div class="fim-dd-item">' + head +
+        var delBtn = '<button type="button" class="fim-dd-del" data-del="' + idx + '" aria-label="' +
+          escapeHtmlAttr(deleteLabel) + '" title="' + escapeHtmlAttr(deleteLabel) + '">&times;</button>';
+        return '<div class="fim-dd-item" data-idx="' + idx + '">' + delBtn + head +
           '<div class="fim-dd-name">' + escapeHtml(f.name || '') + '</div>' +
           '<div class="fim-dd-btns">' + btns + '</div></div>';
       }).join('');
@@ -349,6 +384,28 @@
       overlay.querySelector('.fim-dd-x').addEventListener('click', close);
       overlay.querySelector('.fim-dd-close').addEventListener('click', close);
       overlay.querySelector('.fim-dd-grid').addEventListener('click', function (e) {
+        // Delete (red cross): remove the file on the server, then drop the tile.
+        var delBtn = e.target.closest ? e.target.closest('.fim-dd-del') : null;
+        if (delBtn) {
+          var card = delBtn.closest('.fim-dd-item');
+          var di = parseInt(delBtn.getAttribute('data-del'), 10);
+          var ditem = files[di];
+          if (!ditem || !card || card.classList.contains('is-removing')) return;
+          card.classList.add('is-removing');
+          delBtn.disabled = true;
+          deleteUploaded(base, session, ditem).then(function () {
+            files[di] = null; // keep index-based insert buttons valid
+            if (card.parentNode) card.parentNode.removeChild(card);
+            // Nothing left to insert → close the window.
+            if (!overlay.querySelector('.fim-dd-item')) close();
+          }).catch(function () {
+            // Re-enable so the user can retry on failure.
+            card.classList.remove('is-removing');
+            delBtn.disabled = false;
+          });
+          return;
+        }
+
         var btn = e.target.closest ? e.target.closest('.fim-dd-btn') : null;
         if (!btn) return;
         var item = files[parseInt(btn.getAttribute('data-i'), 10)];
@@ -444,7 +501,7 @@
         if (!result) return;
         if (result.disabled) return; // server disabled mid-flight
         if (result.files && result.files.length) {
-          openInsertWindow(result.session, result.files);
+          openInsertWindow(result.session, result.files, base);
         }
       }).catch(function (err) {
         status.error((err && err.message) || 'Upload failed');
