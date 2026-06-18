@@ -27,10 +27,10 @@ const config = configStore.config
   >
     <!-- Folder icon area -->
     <div class="relative aspect-[4/3] bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50
-                dark:from-amber-950/30 dark:via-orange-950/20 dark:to-yellow-950/10
+                dark:from-neutral-900 dark:via-neutral-900 dark:to-neutral-900
                 flex items-center justify-center overflow-hidden p-3.5">
       <svg
-        class="w-full h-full text-amber-500 dark:text-amber-400 drop-shadow-md"
+        class="w-full h-full text-amber-500 dark:text-neutral-600 drop-shadow-md dark:drop-shadow-none"
         viewBox="0 0 48 40"
         fill="currentColor"
         preserveAspectRatio="xMidYMid meet"
@@ -93,7 +93,7 @@ const config = configStore.config
       >
         {{ props.item.name }}
       </p>
-      <p class="mt-0.5 text-[10px] text-amber-500/70 dark:text-amber-400/50 font-medium uppercase tracking-wide leading-tight">
+      <p class="mt-0.5 text-[10px] text-amber-500/70 dark:text-neutral-500/35 font-medium uppercase tracking-wide leading-tight">
         {{ configStore.t('Folder') }}
       </p>
     </div>

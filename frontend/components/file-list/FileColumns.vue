@@ -164,7 +164,7 @@ function onGoUp() {
       />
 
       <!-- Folder icon -->
-      <svg class="w-9 h-9 flex-shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 48 48" fill="currentColor">
+      <svg class="w-9 h-9 flex-shrink-0 text-amber-500 dark:text-neutral-600" viewBox="0 0 48 48" fill="currentColor">
         <path d="M4 12c0-1.1.9-2 2-2h10l4 4h20c1.1 0 2 .9 2 2v2H4v-6z" opacity="0.7" />
         <path d="M4 18h40v20c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V18z" opacity="0.9" />
       </svg>

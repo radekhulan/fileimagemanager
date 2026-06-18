@@ -7,9 +7,9 @@ export function getCategoryColor(category: FileCategory): string {
     video: 'text-purple-600 dark:text-purple-400',
     audio: 'text-rose-600 dark:text-rose-400',
     document: 'text-gray-500 dark:text-gray-400',
-    archive: 'text-amber-600 dark:text-amber-400',
+    archive: 'text-amber-600 dark:text-neutral-600',
     misc: 'text-gray-500 dark:text-gray-400',
-    directory: 'text-amber-500 dark:text-amber-400',
+    directory: 'text-amber-500 dark:text-neutral-600',
   }[category]
 }
 
