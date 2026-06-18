@@ -315,24 +315,30 @@
         });
     }
 
-    function insertPreviewLink(item) {
+    function insertPreviewLink(item, insertionPoint) {
+      if (insertionPoint) insertionPoint.restore();
       var full = escapeHtmlAttr(toRelativeUrl(item.url));
       var thumb = escapeHtmlAttr(toRelativeUrl(item.thumbUrl || item.url));
       editor.insertContent('<a href="' + full + '"><img src="' + thumb + '" alt="" /></a>');
+      if (insertionPoint) insertionPoint.snapshot();
     }
 
-    function insertFullImage(item) {
+    function insertFullImage(item, insertionPoint) {
+      if (insertionPoint) insertionPoint.restore();
       var full = escapeHtmlAttr(toRelativeUrl(item.url));
       editor.insertContent('<img src="' + full + '" alt="" />');
+      if (insertionPoint) insertionPoint.snapshot();
     }
 
-    function insertFileLink(item) {
+    function insertFileLink(item, insertionPoint) {
+      if (insertionPoint) insertionPoint.restore();
       var full = escapeHtmlAttr(toRelativeUrl(item.url));
       var name = escapeHtml(item.name || (item.url.split('/').pop()) || 'file');
       editor.insertContent('<a href="' + full + '">' + name + '</a>');
+      if (insertionPoint) insertionPoint.snapshot();
     }
 
-    function openInsertWindow(session, files, base) {
+    function openInsertWindow(session, files, base, insertionPoint) {
       injectStyles();
       var overlay = document.createElement('div');
       overlay.className = 'fim-dd-overlay';
@@ -411,9 +417,9 @@
         var item = files[parseInt(btn.getAttribute('data-i'), 10)];
         if (!item) return;
         var act = btn.getAttribute('data-act');
-        if (act === 'preview') insertPreviewLink(item);
-        else if (act === 'image') insertFullImage(item);
-        else insertFileLink(item);
+        if (act === 'preview') insertPreviewLink(item, insertionPoint);
+        else if (act === 'image') insertFullImage(item, insertionPoint);
+        else insertFileLink(item, insertionPoint);
         // Keep the window open so the other files can still be inserted;
         // auto-close only when there was a single file.
         if (files.length === 1) { close(); return; }
@@ -466,6 +472,58 @@
       } catch (e) { /* ignore */ }
     }
 
+    function createInsertionPoint() {
+      var bookmark = null;
+
+      function snapshot() {
+        try {
+          if (editor.selection && editor.selection.getBookmark) {
+            bookmark = editor.selection.getBookmark(2, true);
+          }
+        } catch (e) {
+          bookmark = null;
+        }
+      }
+
+      function restore() {
+        try {
+          if (editor.focus) editor.focus(true);
+          if (bookmark && editor.selection && editor.selection.moveToBookmark) {
+            editor.selection.moveToBookmark(bookmark);
+          }
+        } catch (e) { /* ignore */ }
+      }
+
+      snapshot();
+
+      return {
+        restore: restore,
+        snapshot: snapshot,
+      };
+    }
+
+    function handleDirectInsert(base, files, insertionPoint) {
+      if (!files.length) return false;
+
+      var warm = sessions[base] && sessions[base].config;
+      // If the server has the feature switched off, don't hijack the insert.
+      if (warm && warm.dragDropUpload === false) return false;
+
+      var status = openStatusWindow(null);
+      uploadDropped(base, files).then(function (result) {
+        status.remove();
+        if (!result) return;
+        if (result.disabled) return; // server disabled mid-flight
+        if (result.files && result.files.length) {
+          openInsertWindow(result.session, result.files, base, insertionPoint);
+        }
+      }).catch(function (err) {
+        status.error((err && err.message) || 'Upload failed');
+      });
+
+      return true;
+    }
+
     function onDragOver(e) {
       if (!editor.options.get('fileimagemanager_dragdrop')) return;
       if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], 'Files') !== -1) {
@@ -492,20 +550,28 @@
 
       var files = filesFromDataTransfer(dt);
       if (!files.length) return;
-
       setCaretFromPoint(e.clientX, e.clientY);
+      handleDirectInsert(base, files, createInsertionPoint());
+    }
 
-      var status = openStatusWindow(null);
-      uploadDropped(base, files).then(function (result) {
-        status.remove();
-        if (!result) return;
-        if (result.disabled) return; // server disabled mid-flight
-        if (result.files && result.files.length) {
-          openInsertWindow(result.session, result.files, base);
-        }
-      }).catch(function (err) {
-        status.error((err && err.message) || 'Upload failed');
-      });
+    function onPaste(e) {
+      if (!editor.options.get('fileimagemanager_dragdrop')) return;
+
+      var dt = e.clipboardData;
+      var hasFiles = dt && dt.types && Array.prototype.indexOf.call(dt.types || [], 'Files') !== -1;
+      if (!hasFiles) return; // normal text/html paste — let TinyMCE handle it
+
+      var base = getBaseUrl();
+      var warm = sessions[base] && sessions[base].config;
+      // If the server has the feature switched off, keep TinyMCE's native paste behavior.
+      if (warm && warm.dragDropUpload === false) return;
+
+      var files = filesFromDataTransfer(dt);
+      if (!files.length) return;
+
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      handleDirectInsert(base, files, createInsertionPoint());
     }
 
     editor.on('init', function () {
@@ -516,6 +582,7 @@
       if (doc) {
         doc.addEventListener('dragover', onDragOver, true);
         doc.addEventListener('drop', onDrop, true);
+        doc.addEventListener('paste', onPaste, true);
       }
     });
 

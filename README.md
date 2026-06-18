@@ -378,13 +378,13 @@ tinymce.init({
 | `fileimagemanager_url` | auto-detected | File manager URL (e.g. `/public/`) |
 | `fileimagemanager_crossdomain` | `false` | Enable cross-domain postMessage mode |
 | `fileimagemanager_title` | `File Image Manager` | Dialog title |
-| `fileimagemanager_dragdrop` | `true` | Drop images straight onto the editor to upload them (per editor) |
+| `fileimagemanager_dragdrop` | `true` | Drop files or paste clipboard images straight into the editor to upload them (per editor) |
 
 **Behavior:**
 
 - **Toolbar button** (`fileimagemanager`): opens the file manager dialog. Clicking a file inserts it into the editor.
 - **Image/media/link dialogs**: the browse button in TinyMCE native dialogs opens the file manager via `file_picker_callback`.
-- **Drag & drop upload**: drop one or more files straight onto the editor and they are uploaded without opening the file manager. A small window then shows their thumbnails so you can insert each one — images as a **preview linked to the full image** (`<a href="full"><img src="thumb"></a>`) or as the **full image** (`<img>`); other files (PDF, …) as a **link**. Hovering a tile shows a red ✕ that **deletes** that upload (file + thumbnail) server-side and removes it from the window, without confirmation. Works with multiple editors on one page; disable it per editor with `fileimagemanager_dragdrop: false`. The target folder and the master switch are set server-side — see [`dragdrop_upload` / `dragdrop_path`](#drag--drop-upload-tinymce) in the configuration.
+- **Drag & drop / clipboard upload**: drop one or more files straight onto the editor, or paste an image from the clipboard, and they are uploaded without opening the file manager. A small window then shows their thumbnails so you can insert each one — images as a **preview linked to the full image** (`<a href="full"><img src="thumb"></a>`) or as the **full image** (`<img>`); other files (PDF, …) as a **link**. Hovering a tile shows a red ✕ that **deletes** that upload (file + thumbnail) server-side and removes it from the window, without confirmation. Works with multiple editors on one page; disable it per editor with `fileimagemanager_dragdrop: false`. The target folder and the master switch are set server-side — see [`dragdrop_upload` / `dragdrop_path`](#drag--drop-upload-tinymce) in the configuration.
 - **Smart insertion**: if text or an image is selected in the editor, the chosen file is inserted as a link (`<a>`) wrapping the selection. Without selection, images insert as `<img>`, videos as `<video>`, audio as `<audio>`, and other files as `<a>` links.
 - **Preview**: the eye icon on file hover always shows a preview, even in editor mode.
 - **Relative URLs**: absolute URLs from the file manager are automatically converted to relative paths.
@@ -814,4 +814,3 @@ The script runs the full frontend build, installs production-only Composer depen
 ## License
 
 [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/) - Public Domain
-
