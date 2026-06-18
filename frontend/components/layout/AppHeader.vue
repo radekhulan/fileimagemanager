@@ -438,12 +438,12 @@ const config = computed(() => configStore.config)
       v-if="fileStore.hasSelection"
       class="flex flex-wrap items-center gap-2 px-3 py-1.5 bg-rfm-primary/10 dark:bg-rfm-primary/20 border-t border-rfm-primary/20"
     >
-      <span class="text-xs font-medium text-rfm-primary dark:text-blue-300">
+      <span class="text-xs font-medium text-rfm-primary dark:text-rfm-primary">
         {{ t('Selected') }}: {{ fileStore.selectionCount }}
       </span>
 
       <button
-        class="rounded-full bg-rfm-primary/15 px-2.5 py-1 text-xs font-medium text-rfm-primary dark:text-blue-300 hover:bg-rfm-primary/25 transition-colors"
+        class="rounded-full bg-rfm-primary/15 px-2.5 py-1 text-xs font-medium text-rfm-primary dark:text-rfm-primary hover:bg-rfm-primary/25 transition-colors"
         @click="fileStore.selectAll()"
       >
         {{ t('Select_All') }}

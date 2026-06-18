@@ -2,19 +2,90 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/*
+ * Theme palette matched to myinvoice.cz (indigo-tinted neutrals + indigo accent).
+ * Light values live here in @theme (:root); dark values are overridden in `.dark`
+ * below. Both the `gray` and `neutral` Tailwind scales are remapped to the same
+ * indigo ramp so every existing `*-gray-*` / `*-neutral-*` utility picks up the
+ * brand colors without touching components.
+ */
 @theme {
-  --color-rfm-primary: #3b82f6;
-  --color-rfm-primary-hover: #2563eb;
-  --color-rfm-danger: #ef4444;
-  --color-rfm-danger-hover: #dc2626;
-  --color-rfm-success: #10b981;
-  --color-rfm-warning: #f59e0b;
+  /* Accent / semantic (light) */
+  --color-rfm-primary: #5c45a0;
+  --color-rfm-primary-hover: #3b2d83;
+  --color-rfm-danger: #d45b5b;
+  --color-rfm-danger-hover: #b84545;
+  --color-rfm-success: #4caf7a;
+  --color-rfm-warning: #e8a547;
   --color-rfm-surface-light: #ffffff;
-  --color-rfm-surface-dark: #1a1a1a;
-  --color-rfm-toolbar-light: #f3f4f6;
-  --color-rfm-toolbar-dark: #262626;
-  --color-rfm-border-light: #e5e7eb;
-  --color-rfm-border-dark: #404040;
+  --color-rfm-surface-dark: #1e1b2b;
+  --color-rfm-toolbar-light: #f4f2f8;
+  --color-rfm-toolbar-dark: #1e1b2b;
+  --color-rfm-border-light: #e7e3ee;
+  --color-rfm-border-dark: #2c2840;
+
+  /* Neutral ramp (light) — myinvoice neutral scale */
+  --color-neutral-50: #fbfafd;
+  --color-neutral-100: #f4f2f8;
+  --color-neutral-200: #e7e3ee;
+  --color-neutral-300: #d2ccdf;
+  --color-neutral-400: #a7a0ba;
+  --color-neutral-500: #7a748c;
+  --color-neutral-600: #5a5470;
+  --color-neutral-700: #403b52;
+  --color-neutral-800: #2a2638;
+  --color-neutral-900: #15131d;
+  --color-neutral-950: #0d0b14;
+
+  /* Gray ramp mirrors neutral so text/border utilities match (light) */
+  --color-gray-50: #fbfafd;
+  --color-gray-100: #f4f2f8;
+  --color-gray-200: #e7e3ee;
+  --color-gray-300: #d2ccdf;
+  --color-gray-400: #a7a0ba;
+  --color-gray-500: #7a748c;
+  --color-gray-600: #5a5470;
+  --color-gray-700: #403b52;
+  --color-gray-800: #2a2638;
+  --color-gray-900: #15131d;
+  --color-gray-950: #0d0b14;
+}
+
+/* Dark mode — myinvoice dark palette (page bg #14121c, surface #1e1b2b) */
+.dark {
+  /* Accent / semantic (dark) */
+  --color-rfm-primary: #7c68c4;
+  --color-rfm-primary-hover: #9c8fda;
+  --color-rfm-danger: #e06a6a;
+  --color-rfm-danger-hover: #c95555;
+  --color-rfm-success: #56a98a;
+  --color-rfm-warning: #e2ae5c;
+
+  /* Neutral ramp (dark) — high numbers = surfaces, low = foreground text */
+  --color-neutral-50: #f8f7fc;
+  --color-neutral-100: #f3f1f9;
+  --color-neutral-200: #e2deec;
+  --color-neutral-300: #c6c0da;
+  --color-neutral-400: #a8a1be;
+  --color-neutral-500: #968fad;
+  --color-neutral-600: #3b3656;
+  --color-neutral-700: #2c2840;
+  --color-neutral-800: #1e1b2b;
+  --color-neutral-900: #14121c;
+  --color-neutral-950: #0e0c16;
+
+  /* Gray ramp mirrors neutral (dark) */
+  --color-gray-50: #f8f7fc;
+  --color-gray-100: #f3f1f9;
+  --color-gray-200: #e2deec;
+  --color-gray-300: #c6c0da;
+  --color-gray-400: #a8a1be;
+  --color-gray-500: #968fad;
+  --color-gray-600: #3b3656;
+  --color-gray-700: #2c2840;
+  --color-gray-800: #1e1b2b;
+  --color-gray-900: #14121c;
+  --color-gray-950: #0e0c16;
 }
 
 /* Smooth transitions for dark mode */
@@ -37,12 +108,12 @@ html.dark {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d2ccdf;
   border-radius: 4px;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #3b3656;
 }
 
 /* File item hover effect */
@@ -59,14 +130,14 @@ html.dark {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Drop zone active state */
+/* Drop zone active state (indigo, matched to --color-rfm-primary) */
 .drop-zone-active {
   border-color: var(--color-rfm-primary);
-  background-color: rgba(59, 130, 246, 0.05);
+  background-color: rgba(92, 69, 160, 0.06);
 }
 
 .dark .drop-zone-active {
-  background-color: rgba(59, 130, 246, 0.1);
+  background-color: rgba(124, 104, 196, 0.12);
 }
 
 /* Context menu animation */

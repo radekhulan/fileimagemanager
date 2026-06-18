@@ -32,7 +32,7 @@ function onDrop(e: DragEvent) {
     :class="[
       'border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer',
       isDragging
-        ? 'border-rfm-primary bg-blue-50 dark:bg-blue-900/20 drop-zone-active'
+        ? 'border-rfm-primary drop-zone-active'
         : 'border-gray-300 dark:border-neutral-600 hover:border-gray-400 dark:hover:border-neutral-500'
     ]"
   >
