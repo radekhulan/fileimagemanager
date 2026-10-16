@@ -1,10 +1,10 @@
 diff --git a/node_modules/konva/lib/Util.js b/node_modules/konva/lib/Util.js
-index 78facf8..19df605 100644
+index fb0aa8d..82a1aab 100644
 --- a/node_modules/konva/lib/Util.js
 +++ b/node_modules/konva/lib/Util.js
-@@ -62,8 +62,14 @@ export class Transform {
-         return this;
-     }
+@@ -148,8 +148,14 @@ export class Transform {
+      * @returns {Konva.Transform}
+      */
      rotate(rad) {
 -        const c = Math.cos(rad);
 -        const s = Math.sin(rad);
